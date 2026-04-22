@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
-import { Gift, ShoppingBag, Heart, Sparkles } from "lucide-react";
+import { Gift, ShoppingBag, Heart } from "lucide-react";
 
 interface HomeProps {
   onNavigateToAuth: () => void;
@@ -8,20 +8,18 @@ interface HomeProps {
 
 export default function Home({ onNavigateToAuth }: HomeProps) {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen bg-white text-[#111111]">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-          <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-            TipFlow
-          </div>
-          <div className="flex items-center gap-10">
-            <a href="#" className="text-gray-300 hover:text-white transition-colors font-medium">Features</a>
-            <a href="#" className="text-gray-300 hover:text-white transition-colors font-medium">Pricing</a>
-            <a href="#" className="text-gray-300 hover:text-white transition-colors font-medium">Creators</a>
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#111111] border-b-2 border-[#e8185d]">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="text-xl font-black text-white tracking-tight">TipFlow</div>
+          <div className="flex items-center gap-8">
+            <a href="#" className="text-white/60 hover:text-white transition-colors text-sm font-medium tracking-wide">Features</a>
+            <a href="#" className="text-white/60 hover:text-white transition-colors text-sm font-medium tracking-wide">Pricing</a>
+            <a href="#" className="text-white/60 hover:text-white transition-colors text-sm font-medium tracking-wide">Creators</a>
             <button
               onClick={onNavigateToAuth}
-              className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-semibold transition-all"
+              className="px-5 py-2 bg-[#e8185d] hover:bg-[#c9164f] text-white text-sm font-bold uppercase tracking-widest transition-colors"
             >
               Get Started
             </button>
@@ -30,47 +28,33 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-40 pb-32 px-6 overflow-hidden">
-        <div className="max-w-7xl mx-auto relative z-10">
+      <section className="pt-40 pb-32 px-6 bg-white">
+        <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="max-w-5xl mx-auto text-center"
+            className="max-w-4xl mx-auto text-center"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                y: [0, -5, 0]
-              }}
-              transition={{
-                opacity: { duration: 0.5, delay: 0.2 },
-                scale: { duration: 0.5, delay: 0.2 },
-                y: { duration: 2, repeat: Infinity, ease: "easeInOut" }
-              }}
-              className="inline-block mb-6"
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ opacity: { duration: 0.5, delay: 0.2 }, scale: { duration: 0.5, delay: 0.2 } }}
+              className="inline-block mb-8"
             >
-              <div className="px-5 py-2 bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-full text-sm font-medium">
-                <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  Wishlists + Tips. Zero Fees.
-                </span>
+              <div className="px-4 py-1.5 border border-[#e8185d] text-[#e8185d] text-xs font-bold uppercase tracking-widest">
+                Fan Gifts. Zero Fees.
               </div>
             </motion.div>
 
-            <h1 className="text-7xl md:text-8xl font-bold mb-8 leading-none">
-              <span className="bg-gradient-to-r from-white via-white to-gray-300 bg-clip-text text-transparent">
-                Your wishlist,
-              </span>
+            <h1 className="text-7xl md:text-8xl font-black mb-8 leading-none tracking-tight text-[#111111]">
+              Your wishlist,
               <br />
-              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
-                funded
-              </span>
+              <span className="text-[#e8185d]">funded.</span>
             </h1>
 
-            <p className="text-2xl text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Share your wishlist. Your fans buy you gifts. You get exactly what you want with zero fees.
+            <p className="text-xl text-[#6b6b6b] mb-12 max-w-2xl mx-auto leading-relaxed">
+              Share your list. Your fans buy the gifts. You keep 100%. No platform cut, ever.
             </p>
 
             <motion.div
@@ -81,28 +65,43 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
             >
               <motion.button
                 onClick={onNavigateToAuth}
-                whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(168, 85, 247, 0.4)" }}
-                whileTap={{ scale: 0.95 }}
-                className="px-10 py-5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-2xl text-xl font-bold transition-all shadow-lg shadow-purple-500/25"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="px-10 py-4 bg-[#111111] hover:bg-[#e8185d] text-white text-lg font-bold uppercase tracking-widest transition-colors"
               >
-                Create Your Wishlist
+                Start Your Wishlist
               </motion.button>
               <motion.button
-                whileHover={{ scale: 1.05, backgroundColor: "rgba(255, 255, 255, 0.15)" }}
-                whileTap={{ scale: 0.95 }}
-                className="px-10 py-5 backdrop-blur-sm border border-white/10 rounded-2xl text-xl font-bold transition-all"
-                style={{ backgroundColor: "rgba(255, 255, 255, 0.05)" }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="px-10 py-4 border-2 border-[#111111] text-[#111111] text-lg font-bold uppercase tracking-widest hover:bg-[#111111] hover:text-white transition-colors"
               >
-                See How It Works
+                How It Works
               </motion.button>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
+      {/* Stats strip */}
+      <div className="bg-[#111111] py-6 px-6">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-12">
+          {[
+            { stat: "10,000+", label: "Creators" },
+            { stat: "$0", label: "Platform Fees" },
+            { stat: "2 min", label: "Setup Time" },
+          ].map((item) => (
+            <div key={item.label} className="text-center">
+              <div className="text-3xl font-black text-white">{item.stat}</div>
+              <div className="text-xs font-bold uppercase tracking-widest text-white/40 mt-1">{item.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Feature Section 1 - Wishlists */}
-      <section className="py-32 px-6 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto relative z-10">
+      <section className="py-32 px-6 bg-white">
+        <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -116,43 +115,36 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
               viewport={{ once: true }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              <motion.div
-                whileHover={{ scale: 1.05, y: -2 }}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600/20 to-purple-600/10 border border-purple-500/30 rounded-full mb-8"
-              >
-                <Gift className="w-5 h-5 text-purple-400" />
-                <span className="font-semibold text-purple-400">Wishlists</span>
-              </motion.div>
-              <h2 className="text-6xl font-bold mb-6 leading-tight">
-                Get the gifts
+              <div className="flex items-center gap-2 mb-6">
+                <Gift className="w-4 h-4 text-[#e8185d]" />
+                <span className="text-xs font-bold uppercase tracking-widest text-[#e8185d]">Wishlists</span>
+              </div>
+              <h2 className="text-5xl font-black mb-6 leading-tight text-[#111111] tracking-tight">
+                Get exactly
                 <br />
-                <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  you actually want
-                </span>
+                what you want.
               </h2>
-              <p className="text-xl text-gray-400 mb-8 leading-relaxed">
-                Add anything from any store to your wishlist. Your fans browse, pick what they want to gift, and you receive exactly what you need.
+              <p className="text-lg text-[#6b6b6b] mb-10 leading-relaxed">
+                Add any item from any store. Fans browse, choose what to gift, and it ships straight to you — your address never shared.
               </p>
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {[
-                  { title: "Add from any store", desc: "Amazon, Etsy, Target, anywhere online", delay: 0.1 },
-                  { title: "Privacy-first", desc: "Your address stays hidden from supporters", delay: 0.2 },
-                  { title: "Zero fees", desc: "Keep 100% of tips and cash gifts", delay: 0.3 }
+                  { title: "Any store, any item", desc: "Amazon, Etsy, Target — add anything with a link." },
+                  { title: "Privacy-first", desc: "Your address is never visible to supporters." },
+                  { title: "Zero platform fees", desc: "Keep every dollar your fans contribute." },
                 ].map((item, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: item.delay }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
                     className="flex items-start gap-4"
                   >
-                    <div className="w-8 h-8 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center flex-shrink-0 mt-1">
-                      <div className="w-2 h-2 rounded-full bg-purple-400"></div>
-                    </div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#e8185d] mt-2.5 flex-shrink-0" />
                     <div>
-                      <div className="font-semibold text-white mb-1">{item.title}</div>
-                      <div className="text-gray-400">{item.desc}</div>
+                      <div className="font-bold text-[#111111] mb-0.5">{item.title}</div>
+                      <div className="text-[#6b6b6b] text-sm">{item.desc}</div>
                     </div>
                   </motion.div>
                 ))}
@@ -163,139 +155,158 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              className="relative"
             >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8 }}
-                className="absolute -top-4 -right-4 w-full h-full bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-3xl blur-xl"
-              ></motion.div>
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                transition={{ duration: 0.3 }}
-                className="relative bg-[#1a1a1a] border border-white/10 rounded-3xl p-8 overflow-hidden"
-              >
+              <div className="border border-[#e0e0e0] overflow-hidden shadow-sm">
                 <ImageWithFallback
                   src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYXJrJTIwbW9kZSUyMGFuYWx5dGljcyUyMGRhc2hib2FyZCUyMHVpfGVufDF8fHx8MTc3NjA2MzE2Nnww&ixlib=rb-4.1.0&q=80&w=1080"
                   alt="Wishlist Dashboard"
-                  className="w-full h-auto rounded-2xl"
+                  className="w-full h-auto"
                 />
-              </motion.div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Feature Section 2 */}
+      <section className="py-32 px-6 bg-[#f5f5f5]">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="grid md:grid-cols-2 gap-20 items-center"
+          >
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="order-2 md:order-1 border border-[#e0e0e0] bg-white p-8"
+            >
+              <div className="space-y-4">
+                {[
+                  { name: "boogerbill01", amount: "$4,699", rank: 1 },
+                  { name: "TheBull963", amount: "$3,710", rank: 2 },
+                  { name: "Maxroberts99", amount: "$2,905", rank: 3 },
+                ].map((entry) => (
+                  <div key={entry.rank} className="flex items-center gap-4 p-4 border border-[#e0e0e0]">
+                    <div className="w-8 h-8 bg-[#111111] text-white flex items-center justify-center text-xs font-black">
+                      #{entry.rank}
+                    </div>
+                    <div className="w-10 h-10 bg-[#f5f5f5] border border-[#e0e0e0] flex items-center justify-center text-xs font-bold text-[#6b6b6b]">
+                      {entry.name.slice(0, 2).toUpperCase()}
+                    </div>
+                    <span className="flex-1 text-sm font-bold text-[#111111]">{entry.name}</span>
+                    <span className="text-[#e8185d] font-black text-sm">{entry.amount}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="order-1 md:order-2"
+            >
+              <div className="flex items-center gap-2 mb-6">
+                <Heart className="w-4 h-4 text-[#e8185d]" />
+                <span className="text-xs font-bold uppercase tracking-widest text-[#e8185d]">Community</span>
+              </div>
+              <h2 className="text-5xl font-black mb-6 leading-tight text-[#111111] tracking-tight">
+                Your fans
+                <br />
+                compete to gift you.
+              </h2>
+              <p className="text-lg text-[#6b6b6b] leading-relaxed">
+                Public leaderboards turn gifting into a community moment. Your most dedicated supporters get recognized — and they love it.
+              </p>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-40 px-6 relative overflow-hidden">
-        <div className="max-w-5xl mx-auto text-center relative z-10">
+      <section className="py-40 px-6 bg-white">
+        <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <h2 className="text-7xl md:text-8xl font-bold mb-8 leading-none">
-              <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-                Start your
-              </span>
+            <div className="text-xs font-bold uppercase tracking-widest text-[#999999] mb-6">Ready?</div>
+            <h2 className="text-7xl md:text-8xl font-black mb-8 leading-none tracking-tight text-[#111111]">
+              Start your
               <br />
-              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400 bg-clip-text text-transparent">
-                wishlist
-              </span>
+              <span className="text-[#e8185d]">wishlist.</span>
             </h2>
-            <p className="text-2xl text-gray-400 mb-12 max-w-3xl mx-auto leading-relaxed">
-              Join thousands of creators getting gifted exactly what they want
+            <p className="text-xl text-[#6b6b6b] mb-12 max-w-xl mx-auto">
+              Join 10,000+ creators getting gifted exactly what they want.
             </p>
             <motion.button
               onClick={onNavigateToAuth}
-              whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(168, 85, 247, 0.4)" }}
-              whileTap={{ scale: 0.95 }}
-              className="px-12 py-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-2xl text-2xl font-bold transition-all shadow-lg shadow-purple-500/25"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-12 py-5 bg-[#e8185d] hover:bg-[#c9164f] text-white text-xl font-black uppercase tracking-widest transition-colors"
             >
               Create Your Wishlist
             </motion.button>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-8 text-gray-400"
-            >
-              {[
-                { text: "100% free for creators", delay: 0.5 },
-                { text: "Set up in 2 minutes", delay: 0.6 },
-                { text: "No credit card needed", delay: 0.7 }
-              ].map((item, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: item.delay }}
-                  className="flex items-center gap-2"
-                >
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    whileInView={{ scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: item.delay + 0.2, type: "spring", stiffness: 200 }}
-                    className="w-2 h-2 rounded-full bg-green-500"
-                  ></motion.div>
-                  <span>{item.text}</span>
-                </motion.div>
+            <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-10 text-sm text-[#999999]">
+              {["100% free for creators", "Set up in 2 minutes", "No credit card needed"].map((item) => (
+                <div key={item} className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#059669]" />
+                  <span>{item}</span>
+                </div>
               ))}
-            </motion.div>
+            </div>
           </motion.div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-16 px-6">
+      <footer className="border-t border-[#e0e0e0] py-16 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-5 gap-12 mb-12">
             <div className="md:col-span-2">
-              <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-4">
-                TipFlow
-              </div>
-              <p className="text-gray-400 mb-6 max-w-xs">
+              <div className="text-xl font-black text-[#111111] mb-4">TipFlow</div>
+              <p className="text-[#6b6b6b] mb-6 max-w-xs text-sm leading-relaxed">
                 The wishlist platform for creators. Get gifted what you actually want. Zero fees, ever.
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-4 text-white">Product</h3>
-              <ul className="space-y-3 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Security</a></li>
+              <h3 className="text-xs font-bold uppercase tracking-widest text-[#999999] mb-4">Product</h3>
+              <ul className="space-y-3 text-sm text-[#6b6b6b]">
+                <li><a href="#" className="hover:text-[#111111] transition-colors">Features</a></li>
+                <li><a href="#" className="hover:text-[#111111] transition-colors">Pricing</a></li>
+                <li><a href="#" className="hover:text-[#111111] transition-colors">Security</a></li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-4 text-white">Resources</h3>
-              <ul className="space-y-3 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Creator Stories</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
+              <h3 className="text-xs font-bold uppercase tracking-widest text-[#999999] mb-4">Resources</h3>
+              <ul className="space-y-3 text-sm text-[#6b6b6b]">
+                <li><a href="#" className="hover:text-[#111111] transition-colors">Creator Stories</a></li>
+                <li><a href="#" className="hover:text-[#111111] transition-colors">Blog</a></li>
+                <li><a href="#" className="hover:text-[#111111] transition-colors">Help Center</a></li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-4 text-white">Company</h3>
-              <ul className="space-y-3 text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
+              <h3 className="text-xs font-bold uppercase tracking-widest text-[#999999] mb-4">Company</h3>
+              <ul className="space-y-3 text-sm text-[#6b6b6b]">
+                <li><a href="#" className="hover:text-[#111111] transition-colors">About</a></li>
+                <li><a href="#" className="hover:text-[#111111] transition-colors">Careers</a></li>
+                <li><a href="#" className="hover:text-[#111111] transition-colors">Contact</a></li>
               </ul>
             </div>
           </div>
-          <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
+          <div className="pt-8 border-t border-[#e0e0e0] flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[#999999]">
             <p>© 2026 TipFlow. All rights reserved.</p>
             <div className="flex gap-6">
-              <a href="#" className="hover:text-white transition-colors">Privacy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms</a>
-              <a href="#" className="hover:text-white transition-colors">Cookies</a>
+              <a href="#" className="hover:text-[#111111] transition-colors">Privacy</a>
+              <a href="#" className="hover:text-[#111111] transition-colors">Terms</a>
+              <a href="#" className="hover:text-[#111111] transition-colors">Cookies</a>
             </div>
           </div>
         </div>
