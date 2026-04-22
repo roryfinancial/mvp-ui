@@ -18,6 +18,13 @@ export default function App() {
   const [currentView, setCurrentView] = useState<AppView>("home");
   const [userType, setUserType] = useState<UserType>("creator");
   const [returnWishlistId, setReturnWishlistId] = useState<number | null>(null);
+  const [creditBalance, setCreditBalance] = useState<number>(1240);
+  const [settingsSection, setSettingsSection] = useState<"profile" | "account" | "notifications" | "privacy" | "balance">("profile");
+
+  const goToSettings = (section: "profile" | "account" | "notifications" | "privacy" | "balance" = "profile") => {
+    setSettingsSection(section);
+    setCurrentView("settings");
+  };
 
   const goToDashboard = (wishlistId: number | null = null) => {
     setReturnWishlistId(wishlistId);
@@ -58,12 +65,14 @@ export default function App() {
     return (
       <CreatorDashboard
         initialWishlistId={returnWishlistId}
+        creditBalance={creditBalance}
         onLogout={() => setCurrentView("home")}
         onCreateWishlist={() => setCurrentView("createWishlist")}
         onAddItem={() => setCurrentView("createProject")}
         onViewProject={() => setCurrentView("projectOverview")}
         onViewAnalytics={() => setCurrentView("analytics")}
-        onViewSettings={() => setCurrentView("settings")}
+        onViewSettings={() => goToSettings()}
+        onViewBalance={() => goToSettings("balance")}
       />
     );
   }
@@ -71,10 +80,12 @@ export default function App() {
   if (currentView === "supporterDashboard") {
     return (
       <SupporterDashboard
+        creditBalance={creditBalance}
         onLogout={() => setCurrentView("home")}
         onViewProject={() => setCurrentView("projectOverview")}
         onViewCreator={() => setCurrentView("creatorProfile")}
-        onViewSettings={() => setCurrentView("settings")}
+        onViewSettings={() => goToSettings()}
+        onViewBalance={() => goToSettings("balance")}
       />
     );
   }
@@ -115,6 +126,7 @@ export default function App() {
   if (currentView === "creatorProfile") {
     return (
       <CreatorProfile
+        creditBalance={creditBalance}
         onBack={() => {
           if (userType === "creator") {
             setCurrentView("creatorDashboard");
@@ -123,6 +135,7 @@ export default function App() {
           }
         }}
         onViewProject={() => setCurrentView("projectOverview")}
+        onViewSettings={() => setCurrentView("settings")}
       />
     );
   }
@@ -130,9 +143,12 @@ export default function App() {
   if (currentView === "settings") {
     return (
       <Settings
+        creditBalance={creditBalance}
+        onUpdateBalance={setCreditBalance}
         onNavigateDashboard={() => setCurrentView("creatorDashboard")}
         onNavigateAnalytics={() => setCurrentView("analytics")}
         onLogout={() => setCurrentView("home")}
+        initialSection={settingsSection}
       />
     );
   }

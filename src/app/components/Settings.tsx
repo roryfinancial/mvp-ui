@@ -1,13 +1,16 @@
 import { motion } from "motion/react";
 import { useState } from "react";
-import { Search, User, Bell, Lock, Mail, Key, Shield, LayoutDashboard, BarChart3, Settings as SettingsIcon, LogOut } from "lucide-react";
+import { Search, User, Bell, Lock, Mail, Key, Shield, LayoutDashboard, BarChart3, DollarSign, Settings as SettingsIcon, LogOut } from "lucide-react";
 
 interface SettingsProps {
   username?: string;
   email?: string;
+  creditBalance?: number;
+  onUpdateBalance?: (newBalance: number) => void;
   onNavigateDashboard?: () => void;
   onNavigateAnalytics?: () => void;
   onLogout?: () => void;
+  initialSection?: "profile" | "account" | "notifications" | "privacy" | "balance";
 }
 
 export default function Settings({
@@ -16,9 +19,17 @@ export default function Settings({
   onNavigateDashboard,
   onNavigateAnalytics,
   onLogout,
+  initialSection = "profile",
 }: SettingsProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeSection, setActiveSection] = useState<"profile" | "account" | "notifications" | "privacy">("profile");
+  const [activeSection, setActiveSection] = useState<"profile" | "account" | "notifications" | "privacy" | "balance">(initialSection);
+  const creditBalance = "$1,240.00";
+  const spendingHistory = [
+    { label: "Last week", amount: "$180.00" },
+    { label: "Last month", amount: "$840.00" },
+    { label: "Last year", amount: "$12,500.00" },
+    { label: "All time", amount: "$28,320.00" },
+  ];
 
   // Form states
   const [displayName, setDisplayName] = useState(username);
@@ -135,6 +146,17 @@ export default function Settings({
               >
                 <Mail className="w-5 h-5" />
                 <span className="font-medium">Account</span>
+              </button>
+              <button
+                onClick={() => setActiveSection("balance")}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                  activeSection === "balance"
+                    ? "bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-white"
+                    : "text-gray-400 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <DollarSign className="w-5 h-5" />
+                <span className="font-medium">Credit & Spending</span>
               </button>
               <button
                 onClick={() => setActiveSection("notifications")}
@@ -261,6 +283,33 @@ export default function Settings({
                     <button className="px-4 py-2 rounded-xl bg-red-600/10 border border-red-500/30 text-red-400 hover:bg-red-600/20 transition-all">
                       Delete Account
                     </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Balance Section */}
+              {activeSection === "balance" && (
+                <div className="space-y-6">
+                  <div className="rounded-3xl p-6 bg-[#0f0f18] border border-white/10">
+                    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                      <div>
+                        <p className="text-sm text-gray-400 uppercase tracking-[0.2em] mb-2">Current Credit Balance</p>
+                        <p className="text-4xl font-bold text-white">{creditBalance}</p>
+                        <p className="text-sm text-gray-400 mt-2">Your available balance for purchases and tips.</p>
+                      </div>
+                      <div className="rounded-3xl bg-gradient-to-br from-purple-600/20 to-pink-600/20 p-4 border border-white/10">
+                        <DollarSign className="w-8 h-8 text-pink-400" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {spendingHistory.map((item) => (
+                      <div key={item.label} className="rounded-3xl p-6 bg-[#0f0f18] border border-white/10">
+                        <p className="text-sm text-gray-400">{item.label}</p>
+                        <p className="mt-4 text-3xl font-semibold text-white">{item.amount}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

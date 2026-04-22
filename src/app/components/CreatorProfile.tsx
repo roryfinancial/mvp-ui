@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { useState } from "react";
-import { Search, User, ArrowLeft, Check, TrendingUp, ArrowUp, Medal, Twitter, Instagram, Youtube, Twitch } from "lucide-react";
+import { Search, User, ArrowLeft, Check, TrendingUp, ArrowUp, Medal, DollarSign, Twitter, Instagram, Youtube, Twitch } from "lucide-react";
 
 interface WishlistItem {
   title: string;
@@ -25,11 +25,13 @@ interface RecentGift {
 interface CreatorProfileProps {
   creatorName?: string;
   username?: string;
+  creditBalance?: number;
   leaderboard?: LeaderboardEntry[];
   recentGifts?: RecentGift[];
   wishlistItems?: WishlistItem[];
   onBack?: () => void;
   onViewProject?: () => void;
+  onViewSettings?: () => void;
 }
 
 export default function CreatorProfile({
@@ -53,8 +55,10 @@ export default function CreatorProfile({
     { title: "Universal Audio Apollo X4 Gen 2", status: "active" },
     { title: "Orange Juice Vase", status: "gifted", giftedBy: "Anonymous" },
   ],
+  creditBalance = 0,
   onBack,
   onViewProject,
+  onViewSettings,
 }: CreatorProfileProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"wishlist" | "surprise" | "gifts">("wishlist");
@@ -97,6 +101,13 @@ export default function CreatorProfile({
             </div>
           </div>
           <div className="flex items-center gap-6">
+            <button
+              onClick={onViewSettings}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#14141f] border border-white/10 text-white hover:bg-white/10 transition-all"
+            >
+              <DollarSign className="w-4 h-4 text-pink-400" />
+              <span className="text-sm font-medium">Balance ${creditBalance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </button>
             <div className="relative hidden sm:block">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
               <input
