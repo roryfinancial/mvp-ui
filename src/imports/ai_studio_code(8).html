@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supporter Dashboard - WishCraft</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons (Profile placeholder, Search, list items) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        charcoal: {
+                            800: '#1e1e24', // Main container background
+                            900: '#1e1e24', // Lighter dark-gray, consistent
+                            950: '#121217', // Deep charcoal body background
+                        },
+                        accent: {
+                            DEFAULT: '#8b5cf6', // Vibrant violet
+                            hover: '#7c3aed',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Import Inter font from Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-charcoal-950 text-gray-300 antialiased min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main Supporter Dashboard Container -->
+    <div class="w-full max-w-4xl mx-auto bg-charcoal-800 rounded-xl shadow-2xl overflow-hidden
+                md:grid md:grid-cols-2 md:divide-x md:divide-white/10">
+        
+        <!-- Left Side: Supporter Profile & Positions -->
+        <div class="p-8 md:p-10 flex flex-col space-y-8">
+            
+            <!-- Avatar & Username -->
+            <div class="flex items-center gap-4 mb-4">
+                <!-- Avatar Placeholder -->
+                <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-gray-400 text-3xl flex-shrink-0">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <!-- Username -->
+                <h1 class="text-3xl font-extrabold text-white">Username</h1>
+            </div>
+
+            <!-- My Positions -->
+            <div>
+                <h2 class="text-xl font-semibold text-white mb-4">My positions:</h2>
+                <ul class="space-y-3 pl-2">
+                    <li class="w-full h-10 bg-white/5 rounded-md flex items-center px-4 text-gray-400 text-sm">
+                        <span class="text-accent font-bold mr-3">#1</span> on Project 1
+                    </li>
+                    <li class="w-full h-10 bg-white/5 rounded-md flex items-center px-4 text-gray-400 text-sm">
+                        <span class="text-accent font-bold mr-3">#3</span> on Project 2
+                    </li>
+                    <li class="w-full h-10 bg-white/5 rounded-md flex items-center px-4 text-gray-400 text-sm">
+                        <span class="text-accent font-bold mr-3">#257</span> on Project 3
+                    </li>
+                </ul>
+            </div>
+            <!-- More content could be added here to push the right side content down if needed, or adjust overall height. -->
+
+        </div>
+
+        <!-- Right Side: Global Rankings & Search -->
+        <div class="p-8 md:p-10 flex flex-col space-y-8 border-t border-white/10 md:border-t-0">
+            
+            <!-- Search Bar -->
+            <div class="relative flex items-center w-full">
+                <input type="text" placeholder="Search"
+                       class="w-full p-2 pl-9 rounded-md bg-charcoal-950 border border-white/10 focus:outline-none focus:ring-1 focus:ring-accent text-white placeholder-gray-500 text-sm transition-colors duration-200"
+                       aria-label="Search">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 text-gray-500 text-sm"></i>
+            </div>
+
+            <!-- Global Rankings -->
+            <div class="flex-grow">
+                <h2 class="text-xl font-semibold text-white mb-4">Global Rankings</h2>
+                
+                <h3 class="text-lg font-medium text-gray-200 mb-3">Top-funded Creators</h3>
+                <ul class="space-y-2 mb-6">
+                    <li class="w-full h-9 bg-white/5 rounded-md flex items-center px-4 text-gray-400 text-sm">Creator Name A</li>
+                    <li class="w-full h-9 bg-white/5 rounded-md flex items-center px-4 text-gray-400 text-sm">Creator Name B</li>
+                    <li class="w-full h-9 bg-white/5 rounded-md flex items-center px-4 text-gray-400 text-sm">Creator Name C</li>
+                </ul>
+
+                <h3 class="text-lg font-medium text-gray-200 mb-3">Top-funded Projects</h3>
+                <ul class="space-y-2">
+                    <li class="w-full h-9 bg-white/5 rounded-md flex items-center px-4 text-gray-400 text-sm">Project X</li>
+                    <li class="w-full h-9 bg-white/5 rounded-md flex items-center px-4 text-gray-400 text-sm">Project Y</li>
+                    <li class="w-full h-9 bg-white/5 rounded-md flex items-center px-4 text-gray-400 text-sm">Project Z</li>
+                </ul>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

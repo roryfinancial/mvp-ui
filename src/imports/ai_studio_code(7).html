@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creator Dashboard - Alice Spark</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons (Profile placeholder, Search) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        charcoal: {
+                            800: '#1e1e24', // Main container background
+                            900: '#1e1e24', // Lighter dark-gray, consistent
+                            950: '#121217', // Deep charcoal body background
+                        },
+                        accent: {
+                            DEFAULT: '#8b5cf6', // Vibrant violet
+                            hover: '#7c3aed',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Import Inter font from Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-charcoal-950 text-gray-300 antialiased min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main Creator Dashboard Container -->
+    <div class="w-full max-w-4xl mx-auto bg-charcoal-800 rounded-xl shadow-2xl overflow-hidden p-6 md:p-8">
+        
+        <!-- Top Section: Username, Avatar, Make a Project, Search -->
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-6 mb-8 pb-6 border-b border-white/10">
+            
+            <!-- Avatar & Username & Make a Project Button -->
+            <div class="flex-1 flex flex-col items-center sm:items-start text-center sm:text-left">
+                <div class="flex items-center gap-4 mb-4">
+                    <!-- Avatar Placeholder -->
+                    <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center text-gray-400 text-3xl">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <!-- Username -->
+                    <h1 class="text-3xl font-extrabold text-white">Username</h1>
+                </div>
+                <!-- Make a Project Button -->
+                <button class="w-48 px-4 py-2 rounded-md bg-accent hover:bg-accent-hover text-white font-semibold text-sm transition-colors duration-200 shadow-md">
+                    Make a Project
+                </button>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="relative flex items-center w-full sm:w-64 mt-4 sm:mt-0">
+                <input type="text" placeholder="Search"
+                       class="w-full p-2 pl-9 rounded-md bg-charcoal-950 border border-white/10 focus:outline-none focus:ring-1 focus:ring-accent text-white placeholder-gray-500 text-sm transition-colors duration-200"
+                       aria-label="Search">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 text-gray-500 text-sm"></i>
+            </div>
+        </div>
+
+        <!-- Bottom Section: My Supporters & My Projects -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Left Column: My Supporters -->
+            <div>
+                <h2 class="text-xl font-semibold text-white mb-4">My Supporters</h2>
+                <ul class="space-y-3">
+                    <li class="w-full h-10 bg-white/5 rounded-md flex items-center px-4 text-gray-400 text-sm">
+                        <i class="fa-solid fa-circle text-xs mr-3 opacity-50"></i> Supporter Name 1
+                    </li>
+                    <li class="w-full h-10 bg-white/5 rounded-md flex items-center px-4 text-gray-400 text-sm">
+                        <i class="fa-solid fa-circle text-xs mr-3 opacity-50"></i> Supporter Name 2
+                    </li>
+                    <li class="w-full h-10 bg-white/5 rounded-md flex items-center px-4 text-gray-400 text-sm">
+                        <i class="fa-solid fa-circle text-xs mr-3 opacity-50"></i> Supporter Name 3
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Right Column: My Projects -->
+            <div>
+                <h2 class="text-xl font-semibold text-white mb-4">My Projects</h2>
+                <div class="space-y-4">
+                    <!-- Project Card Placeholder 1 -->
+                    <div class="bg-white/5 rounded-md p-3 flex items-center gap-3 border border-white/10">
+                        <div class="w-16 h-12 bg-gray-600 rounded-sm flex-shrink-0"></div> <!-- Image Placeholder -->
+                        <div class="flex-grow space-y-1">
+                            <div class="w-3/4 h-4 bg-gray-500 rounded"></div> <!-- Project Title -->
+                            <div class="w-1/2 h-3 bg-gray-600 rounded"></div> <!-- Project Description Line -->
+                        </div>
+                    </div>
+                    <!-- Project Card Placeholder 2 -->
+                    <div class="bg-white/5 rounded-md p-3 flex items-center gap-3 border border-white/10">
+                        <div class="w-16 h-12 bg-gray-600 rounded-sm flex-shrink-0"></div> <!-- Image Placeholder -->
+                        <div class="flex-grow space-y-1">
+                            <div class="w-4/5 h-4 bg-gray-500 rounded"></div> <!-- Project Title -->
+                            <div class="w-2/3 h-3 bg-gray-600 rounded"></div> <!-- Project Description Line -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

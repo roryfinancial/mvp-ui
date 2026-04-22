@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creator Dashboard: Ellie Fier - WishCraft</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        charcoal: {
+                            800: '#1e1e24', // Main container background
+                            900: '#1e1e24', // Sidebar & card background
+                            950: '#121217', // Body background
+                        },
+                        accent: {
+                            DEFAULT: '#8b5cf6', // Vibrant violet
+                            hover: '#7c3aed',
+                        },
+                        // Custom colors for leaderboard ranks
+                        rank1: '#FFD700', // Gold
+                        rank2: '#C0C0C0', // Silver
+                        rank3: '#CD7F32', // Bronze
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1e1e24; /* charcoal-900 */
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #3b3b42; /* A slightly lighter dark gray */
+            border-radius: 20px;
+            border: 2px solid #1e1e24;
+        }
+
+        /* Subtle gradient for the pink circle accent button on cards */
+        .pink-circle-icon {
+            background: linear-gradient(to right, #ec4899, #f472b6); /* Tailwind pink-500 to pink-400 */
+            box-shadow: 0 4px 10px rgba(236, 72, 153, 0.4); /* Soft pink shadow */
+        }
+    </style>
+</head>
+<body class="bg-charcoal-950 text-gray-300 antialiased min-h-screen">
+
+    <div class="flex flex-col md:grid md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr] gap-0 min-h-screen">
+        
+        <!-- Left Sidebar: Profile, Leaderboard, Recent Gifters -->
+        <aside class="w-full md:sticky md:top-0 md:h-screen bg-charcoal-900 border-r border-white/5 p-6 flex flex-col custom-scrollbar overflow-y-auto">
+            
+            <!-- Creator Profile Info -->
+            <div class="flex items-center gap-4 mb-8">
+                <div class="relative w-16 h-16 rounded-full overflow-hidden border-2 border-accent">
+                    <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
+                         alt="Ellie Fier" class="w-full h-full object-cover">
+                    <span class="absolute bottom-0 right-0 w-4 h-4 bg-accent rounded-full border-2 border-charcoal-900 flex items-center justify-center text-white text-xs">
+                        <i class="fas fa-check"></i>
+                    </span>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white leading-tight">Ellie Fier</h1>
+                    <p class="text-gray-400 text-sm">@elliefiermusic</p>
+                </div>
+            </div>
+
+            <!-- Leaderboard -->
+            <div class="mb-8">
+                <h2 class="text-lg font-semibold text-white mb-4">Leaderboard</h2>
+                <ul class="space-y-3">
+                    <li class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-charcoal-800 flex items-center justify-center text-white font-bold text-sm" style="background-image: url('https://images.unsplash.com/photo-1531427186611-cdfd6757108b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); background-size: cover; background-position: center;">
+                            <span class="w-4 h-4 rounded-full bg-rank1 flex items-center justify-center text-xs font-bold text-black absolute -bottom-1 -right-1 border-2 border-charcoal-900">1</span>
+                        </div>
+                        <div>
+                            <p class="text-white font-medium">boogerbill01</p>
+                            <p class="text-gray-400 text-sm">$4,699.79</p>
+                        </div>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center text-white font-bold text-sm">
+                            <span class="w-4 h-4 rounded-full bg-rank2 flex items-center justify-center text-xs font-bold text-black absolute -bottom-1 -right-1 border-2 border-charcoal-900">2</span>
+                            T
+                        </div>
+                        <div>
+                            <p class="text-white font-medium">TheBull963</p>
+                            <p class="text-gray-400 text-sm">$3,710.90</p>
+                        </div>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-charcoal-800 flex items-center justify-center text-white font-bold text-sm" style="background-image: url('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); background-size: cover; background-position: center;">
+                            <span class="w-4 h-4 rounded-full bg-rank3 flex items-center justify-center text-xs font-bold text-black absolute -bottom-1 -right-1 border-2 border-charcoal-900">3</span>
+                        </div>
+                        <div>
+                            <p class="text-white font-medium">Maxroberts99</p>
+                            <p class="text-gray-400 text-sm">$2,905.11</p>
+                        </div>
+                    </li>
+                </ul>
+                <div class="flex gap-2 text-sm text-gray-400 mt-4 border border-white/10 rounded-full p-0.5">
+                    <button class="flex-1 py-1 rounded-full hover:bg-white/5 transition-colors">Week</button>
+                    <button class="flex-1 py-1 rounded-full bg-accent text-white hover:bg-accent-hover transition-colors">Month</button>
+                    <button class="flex-1 py-1 rounded-full hover:bg-white/5 transition-colors">All</button>
+                </div>
+            </div>
+
+            <!-- Recent Gifters -->
+            <div>
+                <h2 class="text-lg font-semibold text-white mb-4">Recent Gifts Received</h2>
+                <ul class="space-y-3">
+                    <li class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-charcoal-800 flex items-center justify-center text-white font-bold text-sm" style="background-image: url('https://images.unsplash.com/photo-1628157545939-5ce50529d2f6?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); background-size: cover; background-position: center;"></div>
+                        <div>
+                            <p class="text-white font-medium">jimdonly1</p>
+                            <p class="text-gray-400 text-sm">1mo ago</p>
+                        </div>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-accent/30 flex items-center justify-center text-white font-bold text-sm">A</div>
+                        <div>
+                            <p class="text-white font-medium">Anonymous</p>
+                            <p class="text-gray-400 text-sm">2mo ago</p>
+                        </div>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-accent/30 flex items-center justify-center text-white font-bold text-sm">A</div>
+                        <div>
+                            <p class="text-white font-medium">Anonymous</p>
+                            <p class="text-gray-400 text-sm">2mo ago</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+        </aside>
+
+        <!-- Right Main Content: Tabs and Grid of Wishlist Items -->
+        <main class="flex-1 p-6 bg-charcoal-950">
+            <!-- Tabs -->
+            <div class="flex gap-6 mb-8 border-b border-white/10">
+                <button class="pb-3 text-lg font-semibold text-white border-b-2 border-accent">Wishlist</button>
+                <button class="pb-3 text-lg font-semibold text-gray-400 hover:text-white transition-colors">Surprise</button>
+                <button class="pb-3 text-lg font-semibold text-gray-400 hover:text-white transition-colors">Gifts</button>
+            </div>
+
+            <!-- Grid of Wishlist Items -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- Wishlist Item 1: Ableton Push 3 -->
+                <div class="bg-charcoal-900 border border-white/10 rounded-lg p-3 flex flex-col shadow-sm relative">
+                    <img src="https://images.unsplash.com/photo-1616070743606-2580572e352b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
+                         alt="Ableton Push 3" class="w-full h-40 object-cover rounded-md mb-3 border border-white/5">
+                    <h3 class="text-base font-semibold text-white mb-1 leading-tight">Ableton Push 3</h3>
+                    <p class="text-gray-400 text-xs mb-3">View contributors</p>
+                    <div class="absolute top-5 right-5 w-8 h-8 rounded-full pink-circle-icon flex items-center justify-center">
+                        <i class="fas fa-arrow-up text-white text-xs"></i>
+                    </div>
+                </div>
+
+                <!-- Wishlist Item 2: Bose Soundbar -->
+                <div class="bg-charcoal-900 border border-white/10 rounded-lg p-3 flex flex-col shadow-sm relative">
+                    <img src="https://images.unsplash.com/photo-1610427320490-6715f5c53195?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
+                         alt="Bose Solo Soundbar Series II" class="w-full h-40 object-cover rounded-md mb-3 border border-white/5">
+                    <h3 class="text-base font-semibold text-white mb-1 leading-tight">Bose Solo Soundbar Series II</h3>
+                    <p class="text-gray-400 text-xs mb-3">Gifted by Anonymous</p>
+                    <div class="absolute top-5 right-5 w-8 h-8 rounded-full pink-circle-icon flex items-center justify-center">
+                        <i class="fas fa-check text-white text-xs"></i>
+                    </div>
+                </div>
+
+                <!-- Wishlist Item 3: TV Stand -->
+                <div class="bg-charcoal-900 border border-white/10 rounded-lg p-3 flex flex-col shadow-sm relative">
+                    <img src="https://images.unsplash.com/photo-1627883253724-c10ac255e100?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
+                         alt="Scarlett TV Stand" class="w-full h-40 object-cover rounded-md mb-3 border border-white/5">
+                    <h3 class="text-base font-semibold text-white mb-1 leading-tight">Sand & Stable™ Scarlett TV Stand &...</h3>
+                    <p class="text-gray-400 text-xs mb-3">Gifted by Anonymous</p>
+                    <div class="absolute top-5 right-5 w-8 h-8 rounded-full pink-circle-icon flex items-center justify-center">
+                        <i class="fas fa-check text-white text-xs"></i>
+                    </div>
+                </div>
+
+                <!-- Wishlist Item 4: Lift Top Coffee Table -->
+                <div class="bg-charcoal-900 border border-white/10 rounded-lg p-3 flex flex-col shadow-sm relative">
+                    <img src="https://images.unsplash.com/photo-1613043831771-85e640274112?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
+                         alt="Mid-Century Lift Top Coffee Table" class="w-full h-40 object-cover rounded-md mb-3 border border-white/5">
+                    <h3 class="text-base font-semibold text-white mb-1 leading-tight">George Oliver Mid-Century Lift Top...</h3>
+                    <p class="text-gray-400 text-xs mb-3">Gifted by Anonymous</p>
+                    <div class="absolute top-5 right-5 w-8 h-8 rounded-full pink-circle-icon flex items-center justify-center">
+                        <i class="fas fa-check text-white text-xs"></i>
+                    </div>
+                </div>
+
+                <!-- Wishlist Item 5: Universal Audio Apollo -->
+                <div class="bg-charcoal-900 border border-white/10 rounded-lg p-3 flex flex-col shadow-sm relative">
+                    <img src="https://images.unsplash.com/photo-1629807577583-20757a31b409?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
+                         alt="Universal Audio Apollo X4 Gen 2" class="w-full h-40 object-cover rounded-md mb-3 border border-white/5">
+                    <h3 class="text-base font-semibold text-white mb-1 leading-tight">Universal Audio Apollo X4 Gen 2</h3>
+                    <p class="text-gray-400 text-xs mb-3">View contributors</p>
+                    <div class="absolute top-5 right-5 w-8 h-8 rounded-full pink-circle-icon flex items-center justify-center">
+                        <i class="fas fa-arrow-up text-white text-xs"></i>
+                    </div>
+                </div>
+
+                <!-- Wishlist Item 6: Orange Juice Vase -->
+                <div class="bg-charcoal-900 border border-white/10 rounded-lg p-3 flex flex-col shadow-sm relative">
+                    <img src="https://images.unsplash.com/photo-1594915609650-e8ac5817a021?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
+                         alt="Orange Juice Vase" class="w-full h-40 object-cover rounded-md mb-3 border border-white/5">
+                    <h3 class="text-base font-semibold text-white mb-1 leading-tight">Orange Juice Vase</h3>
+                    <p class="text-gray-400 text-xs mb-3">Gifted by Anonymous</p>
+                    <div class="absolute top-5 right-5 w-8 h-8 rounded-full pink-circle-icon flex items-center justify-center">
+                        <i class="fas fa-check text-white text-xs"></i>
+                    </div>
+                </div>
+
+                <!-- Wishlist Item 7: Boho Wooden Rainbow Wall Shelf -->
+                <div class="bg-charcoal-900 border border-white/10 rounded-lg p-3 flex flex-col shadow-sm relative">
+                    <img src="https://images.unsplash.com/photo-1610427320490-6715f5c53195?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
+                         alt="2 Pcs Boho Wooden Rainbow Wall Shelf" class="w-full h-40 object-cover rounded-md mb-3 border border-white/5">
+                    <h3 class="text-base font-semibold text-white mb-1 leading-tight">2 Pcs Boho Wooden Rainbow Wall Shelf</h3>
+                    <p class="text-gray-400 text-xs mb-3">View contributors</p>
+                    <div class="absolute top-5 right-5 w-8 h-8 rounded-full pink-circle-icon flex items-center justify-center">
+                        <i class="fas fa-arrow-up text-white text-xs"></i>
+                    </div>
+                </div>
+
+                <!-- Wishlist Item 8: Sunset Lamp -->
+                <div class="bg-charcoal-900 border border-white/10 rounded-lg p-3 flex flex-col shadow-sm relative">
+                    <img src="https://images.unsplash.com/photo-1510511459019-5fda772427db?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
+                         alt="Sunset Lamp for the Vibess" class="w-full h-40 object-cover rounded-md mb-3 border border-white/5">
+                    <h3 class="text-base font-semibold text-white mb-1 leading-tight">Sunset Lamp for the Vibess</h3>
+                    <p class="text-gray-400 text-xs mb-3">View contributors</p>
+                    <div class="absolute top-5 right-5 w-8 h-8 rounded-full pink-circle-icon flex items-center justify-center">
+                        <i class="fas fa-arrow-up text-white text-xs"></i>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+    </div>
+
+</body>
+</html>

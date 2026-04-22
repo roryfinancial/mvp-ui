@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WishCraft - Creator / Supporter View</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons (Search, list items if desired later) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        charcoal: {
+                            800: '#1e1e24', // Main container background
+                            900: '#1e1e24', // Lighter dark-gray, consistent
+                            950: '#121217', // Deep charcoal body background and input background
+                        },
+                        accent: {
+                            DEFAULT: '#8b5cf6', // Vibrant violet
+                            hover: '#7c3aed',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Import Inter font from Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+
+        /* Active state for the toggle buttons (enhanced prominence) */
+        .toggle-button.active {
+            background-color: var(--tw-colors-accent-DEFAULT); /* Use defined accent color */
+            color: white; /* Active text color */
+            font-weight: 600; /* Semibold for active state */
+            box-shadow: 0 0 0 2px var(--tw-colors-accent-DEFAULT), 0 0 0 4px rgba(139,92,246,0.3); /* subtle glow */
+        }
+        .toggle-button {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            font-weight: 500; /* Medium for inactive state */
+        }
+    </style>
+</head>
+<body class="bg-charcoal-950 text-gray-300 antialiased min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main Container for the entire view -->
+    <div class="w-full max-w-xl mx-auto bg-charcoal-800 rounded-xl shadow-2xl overflow-hidden p-6">
+        
+        <!-- Toggle Switch for Creator / Supporter -->
+        <div class="bg-charcoal-950 rounded-full p-1 flex mb-8 border border-white/10">
+            <button id="creatorToggle" class="toggle-button flex-1 text-center py-2 px-3 rounded-full text-base text-gray-400 active">
+                🎨 I'm a Creator
+            </button>
+            <button id="supporterToggle" class="toggle-button flex-1 text-center py-2 px-3 rounded-full text-base text-gray-400">
+                👋 I'm a Supporter
+            </button>
+        </div>
+
+        <!-- Content for "I'm a Creator" -->
+        <div id="creatorContent" class="flex flex-col space-y-6">
+            <button class="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-accent hover:bg-accent-hover text-white font-semibold text-lg transition-colors duration-200 shadow-md">
+                <i class="fa-solid fa-plus text-sm"></i> Make a Project
+            </button>
+
+            <div>
+                <h3 class="text-xl font-semibold text-gray-200 mb-4 text-center">Top-funded Creators</h3>
+                <ul class="space-y-3 px-2">
+                    <li class="w-full h-10 bg-white/5 rounded-lg flex items-center px-4 text-gray-400">Creator Name 1</li>
+                    <li class="w-full h-10 bg-white/5 rounded-lg flex items-center px-4 text-gray-400">Creator Name 2</li>
+                    <li class="w-full h-10 bg-white/5 rounded-lg flex items-center px-4 text-gray-400">Creator Name 3</li>
+                </ul>
+            </div>
+
+            <button class="w-full px-6 py-3 rounded-lg border border-white/10 text-white font-semibold text-lg hover:bg-white/5 transition-colors duration-200">
+                Start Creating
+            </button>
+        </div>
+
+        <!-- Content for "I'm a Supporter" (initially hidden) -->
+        <div id="supporterContent" class="hidden flex-col space-y-6">
+            <div class="relative flex items-center w-full">
+                <input type="text" placeholder="Search projects or creators..."
+                       class="w-full p-3 pl-10 rounded-lg bg-charcoal-950 border border-white/10 focus:outline-none focus:ring-1 focus:ring-accent text-white placeholder-gray-500 text-base transition-colors duration-200"
+                       aria-label="Search">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 text-gray-500"></i>
+            </div>
+
+            <div>
+                <h3 class="text-xl font-semibold text-gray-200 mb-4 text-center">Top-funded Projects</h3>
+                <ul class="space-y-3 px-2">
+                    <li class="w-full h-10 bg-white/5 rounded-lg flex items-center px-4 text-gray-400">Project Name 1</li>
+                    <li class="w-full h-10 bg-white/5 rounded-lg flex items-center px-4 text-gray-400">Project Name 2</li>
+                    <li class="w-full h-10 bg-white/5 rounded-lg flex items-center px-4 text-gray-400">Project Name 3</li>
+                </ul>
+            </div>
+
+            <button class="w-full px-6 py-3 rounded-lg border border-white/10 text-white font-semibold text-lg hover:bg-white/5 transition-colors duration-200">
+                Start Supporting
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        const creatorToggle = document.getElementById('creatorToggle');
+        const supporterToggle = document.getElementById('supporterToggle');
+        const creatorContent = document.getElementById('creatorContent');
+        const supporterContent = document.getElementById('supporterContent');
+
+        function showSection(section) {
+            // Remove active state from all toggles
+            creatorToggle.classList.remove('active');
+            supporterToggle.classList.remove('active');
+
+            // Hide all content sections
+            creatorContent.classList.add('hidden');
+            supporterContent.classList.add('hidden');
+
+            if (section === 'creator') {
+                creatorToggle.classList.add('active');
+                creatorContent.classList.remove('hidden');
+                creatorContent.classList.add('flex'); // Ensure flex display when active
+            } else if (section === 'supporter') {
+                supporterToggle.classList.add('active');
+                supporterContent.classList.remove('hidden');
+                supporterContent.classList.add('flex'); // Ensure flex display when active
+            }
+        }
+
+        // Add event listeners
+        creatorToggle.addEventListener('click', () => showSection('creator'));
+        supporterToggle.addEventListener('click', () => showSection('supporter'));
+
+        // Initialize with 'Creator' section visible
+        showSection('creator');
+    </script>
+</body>
+</html>

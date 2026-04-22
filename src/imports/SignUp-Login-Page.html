@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - WishCraft Creator Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        charcoal: {
+                            900: '#1e1e24', // Lighter dark-gray for cards and form background
+                            950: '#121217', // Deep charcoal body background
+                        },
+                        accent: {
+                            DEFAULT: '#8b5cf6', // Vibrant violet
+                            hover: '#7c3aed',
+                        },
+                        // Custom colors for social buttons for brand identity, even if used subtly
+                        google: '#DB4437',
+                        twitch: '#9146FF',
+                        x: '#000000', // X (formerly Twitter) is black
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Import Inter font from Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+
+        /* Custom styles for the vibrant left-side graphic space */
+        .creator-graphic-bg {
+            background-image: linear-gradient(135deg, rgba(139, 92, 246, 0.7) 0%, rgba(59, 130, 246, 0.7) 100%), 
+                              url('https://images.unsplash.com/photo-1542831371-29b0f74f9d13?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); /* Abstract digital creative image */
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-center; /* Adjusted for smaller screens when it stacks */
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            position: relative;
+            isolation: isolate; /* To ensure z-index on pseudo elements for overlay if needed */
+        }
+        .creator-graphic-bg::before { /* For an even more controlled gradient overlay */
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 100%);
+            z-index: -1;
+        }
+
+        .creator-graphic-bg h2 {
+            font-size: 2rem; /* Reduced from 2.5rem */
+            line-height: 1.2;
+            font-weight: 700;
+        }
+        .creator-graphic-bg p {
+            font-size: 1.1rem; /* Reduced from 1.25rem */
+            margin-top: 0.75rem; /* Reduced margin */
+        }
+
+        /* Active state for the toggle buttons */
+        .toggle-button.active {
+            background-color: var(--tw-colors-accent-DEFAULT); /* Use defined accent color */
+            color: white;
+            box-shadow: 0 0 0 2px var(--tw-colors-accent-DEFAULT), 0 0 0 4px rgba(139,92,246,0.3); /* subtle glow */
+        }
+        .toggle-button {
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="bg-charcoal-950 text-gray-300 antialiased min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main Container - Reduced max-w and min-h -->
+    <div class="flex flex-col md:flex-row w-full max-w-4xl mx-auto min-h-[calc(100vh-4rem)] md:min-h-[600px] bg-charcoal-900 rounded-lg overflow-hidden shadow-2xl">
+        <!-- Left Side: Vibrant Graphic / Photo Space - Reduced padding -->
+        <div class="relative w-full md:w-1/2 creator-graphic-bg p-6 flex-col text-center">
+            <h2 class="mb-3 text-white">Unlock Your Creative Potential</h2>
+            <p class="text-white/80 max-w-xs mx-auto">
+                WishCraft helps creators connect with their audience and get support.
+            </p>
+        </div>
+
+        <!-- Right Side: Auth Form - Reduced padding -->
+        <div class="w-full md:w-1/2 p-6 md:p-8 flex flex-col justify-center">
+            <h1 class="text-2xl font-bold text-white mb-5 text-center">Join WishCraft</h1> <!-- Reduced from text-3xl -->
+
+            <!-- Sign-up Toggles - Reduced margin-bottom -->
+            <div class="bg-charcoal-950 rounded-full p-1 flex mb-6 border border-white/5">
+                <button id="creatorToggle" class="toggle-button flex-1 text-center py-2 px-3 rounded-full text-sm font-medium text-gray-400 active">
+                    Sign up as a Creator
+                </button>
+                <button id="fanToggle" class="toggle-button flex-1 text-center py-2 px-3 rounded-full text-sm font-medium text-gray-400">
+                    Sign up as a Fan
+                </button>
+            </div>
+
+            <!-- Social Sign-up Buttons - Reduced space-y and button padding -->
+            <div class="space-y-3 mb-5">
+                <button class="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-lg border border-white/10 bg-black/20 hover:bg-black/40 transition-colors text-white font-medium text-sm">
+                    <!-- Google SVG Icon -->
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.24 10.29v3.1h5.21c-.22 1.4-1.12 3.12-3.83 3.12-2.3 0-4.18-1.9-4.18-4.25s1.88-4.25 4.18-4.25c1.19 0 2.08.51 2.57 1.05l2.76-2.67C19.22 4.19 16.22 3 12.24 3 7.37 3 3.4 6.7 3.4 12c0 5.3 3.97 9 8.84 9 4.88 0 8.35-3.59 8.35-8.61 0-.61-.06-1.19-.16-1.74h-8.2z"/></svg>
+                    Continue with Google
+                </button>
+                <button class="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-lg border border-white/10 bg-twitch/20 hover:bg-twitch/40 transition-colors text-white font-medium text-sm">
+                    <!-- Twitch SVG Icon -->
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.571 5.094h1.714v4.714H11.571zm4.714 0h1.714v4.714H16.285zM8.571 0L3 5.571V19.8h4.714v4.714h4.714L19.8 19.8V0zm8.229 14.571h-2.857v2.857H13.44l-2.857 2.857v-2.857H6.285V3.857h10.515z"/></svg>
+                    Continue with Twitch
+                </button>
+                <button class="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-lg border border-white/10 bg-black/20 hover:bg-black/40 transition-colors text-white font-medium text-sm">
+                    <!-- X (formerly Twitter) SVG Icon -->
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.901 1.144h3.68l-8.157 9.066L24 22.846h-7.406l-5.698-6.321-6.191 6.321H0l8.665-9.617L.027 1.144h8.324l5.069 5.867L18.901 1.144Zm-.439 2.37L7.493 21.43h2.396l10.969-18.916h-2.396Z"/></svg>
+                    Continue with X
+                </button>
+            </div>
+
+            <!-- OR Divider - Reduced margin-bottom -->
+            <div class="flex items-center mb-5">
+                <hr class="flex-grow border-white/5">
+                <span class="px-3 text-gray-500 text-xs">or</span> <!-- Reduced from text-sm -->
+                <hr class="flex-grow border-white/5">
+            </div>
+
+            <!-- Email Input - Reduced padding -->
+            <div class="mb-5">
+                <label for="email" class="sr-only">Email address</label>
+                <input type="email" id="email" placeholder="Email address"
+                       class="w-full p-3.5 rounded-lg bg-charcoal-950 border border-white/10 focus:outline-none focus:ring-2 focus:ring-accent text-white placeholder-gray-500 transition-colors duration-200 text-sm"
+                       aria-label="Email address" required>
+            </div>
+
+            <!-- Primary CTA - Reduced padding -->
+            <button class="w-full bg-accent hover:bg-accent-hover text-white px-5 py-3.5 rounded-lg font-semibold text-base transition-all duration-200 mb-5">
+                Continue
+            </button>
+
+            <!-- Terms and Login Link - Reduced text size -->
+            <p class="text-xs text-gray-500 text-center">
+                By continuing, you agree to WishCraft's
+                <a href="#" class="text-accent hover:underline">Terms of Service</a> and
+                <a href="#" class="text-accent hover:underline">Privacy Policy</a>.
+            </p>
+            <p class="text-xs text-gray-400 text-center mt-3"> <!-- Reduced from text-sm -->
+                Already have an account?
+                <a href="#" class="text-accent hover:underline font-medium">Log in</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript for toggle functionality
+        const creatorToggle = document.getElementById('creatorToggle');
+        const fanToggle = document.getElementById('fanToggle');
+
+        creatorToggle.addEventListener('click', () => {
+            creatorToggle.classList.add('active');
+            fanToggle.classList.remove('active');
+            // In a real application, you'd update a hidden input or global state here
+            console.log("Selected: Creator"); 
+        });
+
+        fanToggle.addEventListener('click', () => {
+            fanToggle.classList.add('active');
+            creatorToggle.classList.remove('active');
+            // In a real application, you'd update a hidden input or global state here
+            console.log("Selected: Fan");
+        });
+    </script>
+</body>
+</html>

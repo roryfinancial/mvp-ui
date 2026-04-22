@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make a Project - WishCraft Creator Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons (Question mark, Search, Add, List items) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        charcoal: {
+                            800: '#1e1e24', // Main container background
+                            900: '#1e1e24', // Lighter dark-gray, consistent
+                            950: '#121217', // Deep charcoal body background and input background
+                        },
+                        accent: {
+                            DEFAULT: '#8b5cf6', // Vibrant violet
+                            hover: '#7c3aed',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Import Inter font from Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-charcoal-950 text-gray-300 antialiased min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main "Make a Project" Container -->
+    <div class="w-full max-w-4xl mx-auto bg-charcoal-800 rounded-xl shadow-2xl overflow-hidden p-6 md:p-8">
+        
+        <!-- Top Section: Title & Search -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 pb-6 border-b border-white/10">
+            <h1 class="text-3xl font-extrabold text-white text-center sm:text-left">Make a Project</h1>
+            
+            <!-- Search Bar -->
+            <div class="relative flex items-center w-full sm:w-64">
+                <input type="text" placeholder="Search"
+                       class="w-full p-2 pl-9 rounded-md bg-charcoal-950 border border-white/10 focus:outline-none focus:ring-1 focus:ring-accent text-white placeholder-gray-500 text-sm transition-colors duration-200"
+                       aria-label="Search">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 text-gray-500 text-sm"></i>
+            </div>
+        </div>
+
+        <!-- Project Details: Image & Description -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            
+            <!-- Image Placeholder -->
+            <div class="h-48 rounded-md bg-charcoal-950 border-2 border-dashed border-gray-600
+                        flex items-center justify-center flex-col text-gray-500 text-center cursor-pointer
+                        hover:border-accent hover:text-accent transition-colors duration-200">
+                <i class="fa-solid fa-image text-3xl mb-2"></i>
+                <p class="text-sm">Upload Project Thumbnail</p>
+                <p class="text-xs mt-1">(Click or drag image here)</p>
+            </div>
+
+            <!-- Description Field -->
+            <textarea placeholder="Description" rows="8"
+                      class="h-48 w-full p-3 rounded-md bg-charcoal-950 border border-white/10
+                             focus:outline-none focus:ring-1 focus:ring-accent text-white
+                             placeholder-gray-500 text-sm resize-none transition-colors duration-200"
+                      aria-label="Project Description"></textarea>
+        </div>
+
+        <!-- Goals Section (Wishlists) -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-white mb-4">Goals (Wishlists)</h2>
+            
+            <!-- Add New Goal Input -->
+            <div class="flex flex-col sm:flex-row gap-3 mb-6">
+                <input type="text" placeholder="Add a new goal item (e.g., 'New Monitor', 'Coffee Fund')"
+                       class="flex-grow p-2.5 rounded-md bg-charcoal-950 border border-white/10
+                              focus:outline-none focus:ring-1 focus:ring-accent text-white
+                              placeholder-gray-500 text-sm transition-colors duration-200"
+                       aria-label="New Goal Item">
+                <button class="px-5 py-2.5 rounded-md bg-accent hover:bg-accent-hover text-white font-semibold text-sm transition-colors duration-200">
+                    <i class="fa-solid fa-plus mr-2"></i> Add Goal
+                </button>
+            </div>
+
+            <!-- List of Existing Goals (Placeholders) -->
+            <ul class="space-y-3">
+                <!-- Goal Item 1 -->
+                <li class="bg-white/5 rounded-md p-3 flex items-center gap-3 border border-white/10">
+                    <div class="w-12 h-10 bg-gray-600 rounded-sm flex-shrink-0"></div> <!-- Item Image Placeholder -->
+                    <div class="flex-grow space-y-1">
+                        <div class="w-4/5 h-4 bg-gray-500 rounded"></div> <!-- Item Name Placeholder -->
+                        <div class="w-1/3 h-3 bg-gray-600 rounded"></div> <!-- Item Price/Detail Placeholder -->
+                    </div>
+                    <button class="text-gray-500 hover:text-red-500 transition-colors duration-200">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </li>
+                <!-- Goal Item 2 -->
+                <li class="bg-white/5 rounded-md p-3 flex items-center gap-3 border border-white/10">
+                    <div class="w-12 h-10 bg-gray-600 rounded-sm flex-shrink-0"></div> <!-- Item Image Placeholder -->
+                    <div class="flex-grow space-y-1">
+                        <div class="w-3/4 h-4 bg-gray-500 rounded"></div> <!-- Item Name Placeholder -->
+                        <div class="w-1/2 h-3 bg-gray-600 rounded"></div> <!-- Item Price/Detail Placeholder -->
+                    </div>
+                    <button class="text-gray-500 hover:text-red-500 transition-colors duration-200">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-end gap-4 mt-6">
+            <button class="px-6 py-2.5 rounded-md border border-white/10 text-white font-semibold text-base hover:bg-white/5 transition-colors duration-200">
+                Cancel
+            </button>
+            <button class="px-6 py-2.5 rounded-md bg-accent hover:bg-accent-hover text-white font-semibold text-base transition-colors duration-200 shadow-md">
+                Create Project
+            </button>
+        </div>
+
+    </div>
+
+</body>
+</html>

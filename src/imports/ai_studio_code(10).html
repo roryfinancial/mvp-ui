@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Project: My Awesome Game - WishCraft</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons (User, Down arrow) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        charcoal: {
+                            800: '#1e1e24', // Main container background
+                            900: '#1e1e24', // Lighter dark-gray, consistent
+                            950: '#121217', // Deep charcoal body background
+                        },
+                        accent: {
+                            DEFAULT: '#8b5cf6', // Vibrant violet
+                            hover: '#7c3aed',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Import Inter font from Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-charcoal-950 text-gray-300 antialiased min-h-screen flex items-center justify-center p-4">
+
+    <!-- Main Project Management Container -->
+    <div class="w-full max-w-4xl mx-auto bg-charcoal-800 rounded-xl shadow-2xl overflow-hidden p-6 md:p-8">
+        
+        <!-- Top Section: Project Name, Creator, Thumbnail -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-6 mb-8 pb-6 border-b border-white/10">
+            <!-- Project Thumbnail -->
+            <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-lg bg-white/5 flex items-center justify-center text-gray-400 text-4xl flex-shrink-0">
+                <i class="fa-solid fa-image"></i>
+            </div>
+            
+            <!-- Project Name & Creator -->
+            <div class="flex-grow text-center sm:text-left">
+                <h1 class="text-3xl font-extrabold text-white mb-2">My Awesome Game</h1>
+                <span class="inline-block px-3 py-1 rounded-full bg-accent/20 text-accent font-medium text-sm">
+                    by Creator Name
+                </span>
+            </div>
+        </div>
+
+        <!-- Main Content Grid: Description/Funding on Left, Supporters on Right -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Left Column: Description, Support, Total Funded, Goals (Wishlists) -->
+            <div>
+                <h2 class="text-xl font-semibold text-white mb-4">Description</h2>
+                <div class="h-40 bg-charcoal-900 border border-white/10 rounded-md p-4 text-gray-400 text-sm leading-relaxed mb-6">
+                    This is a placeholder for a detailed description of "My Awesome Game." It would cover game mechanics, art style, development roadmap, and what funding will help achieve. We are building an epic open-world RPG with pixel-art graphics and a deep narrative. Your support helps us afford better tools, pay artists, and dedicate full-time effort to make this dream a reality!
+                </div>
+
+                <!-- Support/Tipping Section -->
+                <div class="flex items-center gap-3 mb-6">
+                    <input type="number" placeholder="$__.__" min="1"
+                           class="w-32 p-2 rounded-md bg-charcoal-950 border border-white/10
+                                  focus:outline-none focus:ring-1 focus:ring-accent text-white
+                                  placeholder-gray-500 text-base transition-colors duration-200"
+                           aria-label="Amount to support">
+                    <button class="px-5 py-2 rounded-md bg-accent hover:bg-accent-hover text-white font-semibold text-base transition-colors duration-200 shadow-md">
+                        Support
+                    </button>
+                </div>
+
+                <!-- Total Funded & Goals -->
+                <div class="space-y-4">
+                    <p class="text-lg font-bold text-white">Total Funded: <span class="text-accent">$1,234.56</span></p>
+                    
+                    <!-- Goals (Optional/Collapsible) -->
+                    <div class="bg-charcoal-900 border border-white/10 rounded-md p-4">
+                        <div class="flex items-center justify-between cursor-pointer" onclick="document.getElementById('goals-list').classList.toggle('hidden'); document.querySelector('#goals-toggle-icon').classList.toggle('fa-chevron-up'); document.querySelector('#goals-toggle-icon').classList.toggle('fa-chevron-down');">
+                            <h3 class="text-lg font-semibold text-white">Goals (Optional)</h3>
+                            <i id="goals-toggle-icon" class="fa-solid fa-chevron-down text-gray-400 text-sm"></i>
+                        </div>
+                        <ul id="goals-list" class="mt-4 space-y-2 hidden"> <!-- Initially hidden -->
+                            <li class="flex justify-between items-center text-gray-400 text-sm">
+                                New Monitor <span class="text-white font-medium">80% Funded</span>
+                            </li>
+                            <li class="flex justify-between items-center text-gray-400 text-sm">
+                                Game Engine License <span class="text-white font-medium">10% Funded</span>
+                            </li>
+                            <li class="flex justify-between items-center text-gray-400 text-sm">
+                                Coffee Fund <span class="text-white font-medium">100% Funded</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Leading Supporters -->
+            <div>
+                <h2 class="text-xl font-semibold text-white mb-4">Leading Supporters</h2>
+                <ul class="space-y-3">
+                    <!-- Supporter 1 -->
+                    <li class="bg-charcoal-900 border border-white/10 rounded-md p-3 flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-accent/30 flex items-center justify-center text-white text-sm font-semibold">
+                            S1
+                        </div>
+                        <span class="text-white font-medium">Supporter Name 1</span>
+                        <span class="ml-auto text-gray-400 text-sm">($100)</span>
+                    </li>
+                    <!-- Supporter 2 -->
+                    <li class="bg-charcoal-900 border border-white/10 rounded-md p-3 flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-accent/30 flex items-center justify-center text-white text-sm font-semibold">
+                            S2
+                        </div>
+                        <span class="text-white font-medium">Supporter Name 2</span>
+                        <span class="ml-auto text-gray-400 text-sm">($75)</span>
+                    </li>
+                    <!-- Supporter 3 -->
+                    <li class="bg-charcoal-900 border border-white/10 rounded-md p-3 flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-accent/30 flex items-center justify-center text-white text-sm font-semibold">
+                            S3
+                        </div>
+                        <span class="text-white font-medium">Supporter Name 3</span>
+                        <span class="ml-auto text-gray-400 text-sm">($50)</span>
+                    </li>
+                    <!-- Supporter 4 -->
+                    <li class="bg-charcoal-900 border border-white/10 rounded-md p-3 flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-accent/30 flex items-center justify-center text-white text-sm font-semibold">
+                            S4
+                        </div>
+                        <span class="text-white font-medium">Supporter Name 4</span>
+                        <span class="ml-auto text-gray-400 text-sm">($30)</span>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
