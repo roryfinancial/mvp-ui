@@ -1,16 +1,18 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
-import { Plus, Search, User, LogOut, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, LayoutDashboard, BarChart3, Settings as SettingsIcon, ChevronDown, List } from "lucide-react";
+import { Plus, Search, User, LogOut, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, LayoutDashboard, BarChart3, Settings as SettingsIcon, ChevronDown, List, DollarSign } from "lucide-react";
 
 interface CreatorDashboardProps {
   username?: string;
   initialWishlistId?: number | null;
+  creditBalance?: number;
   onLogout?: () => void;
   onCreateWishlist?: () => void;
   onAddItem?: () => void;
   onViewProject?: () => void;
   onViewAnalytics?: () => void;
   onViewSettings?: () => void;
+  onViewBalance?: () => void;
 }
 
 interface Supporter {
@@ -38,7 +40,7 @@ interface Wishlist {
   items: WishlistItem[];
 }
 
-export default function CreatorDashboard({ username = "Username", initialWishlistId = null, onLogout, onCreateWishlist, onAddItem, onViewProject, onViewAnalytics, onViewSettings }: CreatorDashboardProps) {
+export default function CreatorDashboard({ username = "Username", initialWishlistId = null, creditBalance = 0, onLogout, onCreateWishlist, onAddItem, onViewProject, onViewAnalytics, onViewSettings, onViewBalance }: CreatorDashboardProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [selectedWishlistId, setSelectedWishlistId] = useState<number | null>(initialWishlistId);
@@ -110,6 +112,13 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <button
+              onClick={onViewBalance}
+              className="flex items-center gap-2 px-3 py-2 rounded-md border border-white/20 text-white hover:bg-white/10 transition-colors text-sm font-medium"
+            >
+              <DollarSign className="w-4 h-4 text-accent" />
+              <span className="hidden sm:inline">${creditBalance?.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </button>
             <div className="relative hidden sm:block">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 z-10" />
               <input

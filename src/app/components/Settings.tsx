@@ -1,24 +1,35 @@
 import { motion } from "motion/react";
 import { useState } from "react";
-import { Search, User, Bell, Lock, Mail, Key, Shield, LayoutDashboard, BarChart3, Settings as SettingsIcon, LogOut } from "lucide-react";
+import { Search, User, Bell, Lock, Mail, Key, Shield, LayoutDashboard, BarChart3, DollarSign, Settings as SettingsIcon, LogOut } from "lucide-react";
 
 interface SettingsProps {
   username?: string;
   email?: string;
+  creditBalance?: number;
+  onUpdateBalance?: (newBalance: number) => void;
   onNavigateDashboard?: () => void;
   onNavigateAnalytics?: () => void;
   onLogout?: () => void;
+  initialSection?: "profile" | "account" | "notifications" | "privacy" | "balance";
 }
 
 export default function Settings({
   username = "Username",
   email = "user@example.com",
+  creditBalance,
   onNavigateDashboard,
   onNavigateAnalytics,
   onLogout,
+  initialSection = "profile",
 }: SettingsProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeSection, setActiveSection] = useState<"profile" | "account" | "notifications" | "privacy">("profile");
+  const [activeSection, setActiveSection] = useState<"profile" | "account" | "notifications" | "privacy" | "balance">(initialSection);
+  const spendingHistory = [
+    { label: "Last week", amount: "$180.00" },
+    { label: "Last month", amount: "$840.00" },
+    { label: "Last year", amount: "$12,500.00" },
+    { label: "All time", amount: "$28,320.00" },
+  ];
 
   const [displayName, setDisplayName] = useState(username);
   const [userEmail, setUserEmail] = useState(email);
@@ -33,10 +44,11 @@ export default function Settings({
   const [showLeaderboard, setShowLeaderboard] = useState(true);
 
   const navItems = [
-    { key: "profile" as const,       icon: <User className="w-4 h-4" />,   label: "Profile" },
-    { key: "account" as const,       icon: <Mail className="w-4 h-4" />,   label: "Account" },
-    { key: "notifications" as const, icon: <Bell className="w-4 h-4" />,   label: "Notifications" },
-    { key: "privacy" as const,       icon: <Shield className="w-4 h-4" />, label: "Privacy & Security" },
+    { key: "profile" as const,       icon: <User className="w-4 h-4" />,        label: "Profile" },
+    { key: "account" as const,       icon: <Mail className="w-4 h-4" />,        label: "Account" },
+    { key: "balance" as const,       icon: <DollarSign className="w-4 h-4" />,  label: "Credit & Spending" },
+    { key: "notifications" as const, icon: <Bell className="w-4 h-4" />,        label: "Notifications" },
+    { key: "privacy" as const,       icon: <Shield className="w-4 h-4" />,      label: "Privacy & Security" },
   ];
 
   const Toggle = ({ value, onChange }: { value: boolean; onChange: () => void }) => (
@@ -215,6 +227,37 @@ export default function Settings({
                     <button className="px-4 py-2 border border-red-500/40 text-red-500 hover:bg-red-500/10 text-sm font-bold transition-colors rounded-md">
                       Delete Account
                     </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Balance Section */}
+              {activeSection === "balance" && (
+                <div className="space-y-6">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-6">Credit & Spending</div>
+
+                  <div className="p-6 border border-border bg-muted rounded-xl card-game">
+                    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                      <div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">Current Balance</p>
+                        <p className="text-4xl font-black text-foreground">
+                          ${creditBalance?.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </p>
+                        <p className="text-subtle text-xs mt-2">Available for purchases and tips</p>
+                      </div>
+                      <div className="p-4 border border-border bg-background rounded-xl">
+                        <DollarSign className="w-8 h-8 text-accent" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {spendingHistory.map((item) => (
+                      <div key={item.label} className="p-6 border border-border bg-muted rounded-xl card-game">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-subtle mb-4">{item.label}</p>
+                        <p className="text-3xl font-black text-foreground">{item.amount}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
