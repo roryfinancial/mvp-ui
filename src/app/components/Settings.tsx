@@ -42,22 +42,22 @@ export default function Settings({
   const Toggle = ({ value, onChange }: { value: boolean; onChange: () => void }) => (
     <button
       onClick={onChange}
-      className={`relative w-11 h-6 transition-colors flex-shrink-0 ${value ? "bg-[#e8185d]" : "bg-[#d0d0d0]"}`}
+      className={`relative w-11 h-6 transition-colors flex-shrink-0 rounded-full ${value ? "bg-accent" : "bg-border"}`}
     >
       <motion.div
         animate={{ x: value ? 22 : 2 }}
         transition={{ duration: 0.2 }}
-        className="absolute top-1 w-4 h-4 bg-white shadow-sm"
+        className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
       />
     </button>
   );
 
-  const inputClass = "w-full px-4 py-3 border border-[#e0e0e0] bg-white text-[#111111] placeholder-[#999999] focus:outline-none focus:ring-2 focus:ring-[#e8185d] focus:border-transparent transition-all text-sm";
+  const inputClass = "w-full px-4 py-3 border border-border bg-background text-foreground placeholder-subtle focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm rounded-md";
 
   return (
-    <div className="min-h-screen bg-white text-[#111111]">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#111111] border-b-2 border-[#e8185d]">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e0e] border-b border-[#e8185d]/40">
         <div className="max-w-full mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <div className="text-xl font-black text-white tracking-tight">TipFlow</div>
@@ -70,7 +70,7 @@ export default function Settings({
                 <BarChart3 className="w-4 h-4" />
                 Analytics
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-[#e8185d] text-white font-medium text-sm">
+              <button className="flex items-center gap-2 px-4 py-2 bg-accent text-white font-medium text-sm rounded-md">
                 <SettingsIcon className="w-4 h-4" />
                 Settings
               </button>
@@ -84,11 +84,11 @@ export default function Settings({
                 placeholder="Search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-[#e8185d] transition-all w-48"
+                className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-accent transition-all w-48 rounded-md"
               />
             </div>
             {onLogout && (
-              <button onClick={onLogout} className="flex items-center gap-2 px-4 py-2 border border-white/20 text-white hover:bg-white/10 text-sm font-medium transition-colors">
+              <button onClick={onLogout} className="flex items-center gap-2 px-4 py-2 border border-white/20 text-white hover:bg-white/10 text-sm font-medium transition-colors rounded-md">
                 <LogOut className="w-4 h-4" />
                 <span className="hidden sm:inline">Logout</span>
               </button>
@@ -106,8 +106,8 @@ export default function Settings({
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="mb-10"
           >
-            <div className="text-[10px] font-black uppercase tracking-widest text-[#999999] mb-2">Account</div>
-            <h1 className="text-5xl font-black text-[#111111] tracking-tight">Settings</h1>
+            <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">Account</div>
+            <h1 className="text-5xl font-black text-foreground tracking-tight">Settings</h1>
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-8">
@@ -122,10 +122,10 @@ export default function Settings({
                 <button
                   key={key}
                   onClick={() => setActiveSection(key)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold transition-colors text-left ${
+                  className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-bold transition-colors text-left rounded-md ${
                     activeSection === key
-                      ? "bg-[#111111] text-white"
-                      : "text-[#6b6b6b] hover:text-[#111111] hover:bg-[#f5f5f5]"
+                      ? "bg-foreground text-background"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
                 >
                   {icon}
@@ -139,20 +139,20 @@ export default function Settings({
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
-              className="border border-[#e0e0e0] bg-white p-8"
+              className="border border-border bg-background p-8 rounded-2xl card-game"
             >
               {/* Profile */}
               {activeSection === "profile" && (
                 <div className="space-y-6">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-[#999999] mb-6">Profile Settings</div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-6">Profile Settings</div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-[#6b6b6b] mb-2">Display Name</label>
+                    <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Display Name</label>
                     <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className={inputClass} />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-[#6b6b6b] mb-2">Bio</label>
+                    <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Bio</label>
                     <textarea
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
@@ -162,12 +162,12 @@ export default function Settings({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-[#6b6b6b] mb-2">Profile Photo</label>
+                    <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Profile Photo</label>
                     <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-[#f5f5f5] border border-[#e0e0e0] flex items-center justify-center">
-                        <User className="w-8 h-8 text-[#d0d0d0]" />
+                      <div className="w-16 h-16 bg-muted border border-border rounded-full flex items-center justify-center">
+                        <User className="w-8 h-8 text-subtle" />
                       </div>
-                      <button className="px-4 py-2 border border-[#e0e0e0] text-[#6b6b6b] hover:text-[#111111] hover:bg-[#f5f5f5] text-sm font-bold transition-colors">
+                      <button className="px-4 py-2 border border-border text-muted-foreground hover:text-foreground hover:bg-muted text-sm font-bold transition-colors rounded-md">
                         Upload Photo
                       </button>
                     </div>
@@ -176,7 +176,7 @@ export default function Settings({
                   <motion.button
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
-                    className="px-8 py-3 bg-[#e8185d] hover:bg-[#c9164f] text-white font-black text-xs uppercase tracking-widest transition-colors"
+                    className="px-8 py-3 rounded-md btn-cta text-white font-black text-xs uppercase tracking-widest"
                   >
                     Save Changes
                   </motion.button>
@@ -186,15 +186,15 @@ export default function Settings({
               {/* Account */}
               {activeSection === "account" && (
                 <div className="space-y-6">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-[#999999] mb-6">Account Settings</div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-6">Account Settings</div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-[#6b6b6b] mb-2">Email Address</label>
+                    <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Email Address</label>
                     <input type="email" value={userEmail} onChange={(e) => setUserEmail(e.target.value)} className={inputClass} />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest text-[#6b6b6b] mb-2">Change Password</label>
+                    <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Change Password</label>
                     <div className="space-y-3">
                       <input type="password" placeholder="Current password" className={inputClass} />
                       <input type="password" placeholder="New password" className={inputClass} />
@@ -205,14 +205,14 @@ export default function Settings({
                   <motion.button
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
-                    className="px-8 py-3 bg-[#e8185d] hover:bg-[#c9164f] text-white font-black text-xs uppercase tracking-widest transition-colors"
+                    className="px-8 py-3 rounded-md btn-cta text-white font-black text-xs uppercase tracking-widest"
                   >
                     Update Account
                   </motion.button>
 
-                  <div className="pt-6 mt-6 border-t border-[#e0e0e0]">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-[#999999] mb-3">Danger Zone</div>
-                    <button className="px-4 py-2 border border-red-300 text-red-500 hover:bg-red-50 text-sm font-bold transition-colors">
+                  <div className="pt-6 mt-6 border-t border-border">
+                    <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">Danger Zone</div>
+                    <button className="px-4 py-2 border border-red-500/40 text-red-500 hover:bg-red-500/10 text-sm font-bold transition-colors rounded-md">
                       Delete Account
                     </button>
                   </div>
@@ -222,7 +222,7 @@ export default function Settings({
               {/* Notifications */}
               {activeSection === "notifications" && (
                 <div className="space-y-4">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-[#999999] mb-6">Notification Preferences</div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-6">Notification Preferences</div>
 
                   {[
                     { label: "Email Notifications", sub: "Receive updates via email", value: emailNotifications, onChange: () => setEmailNotifications(!emailNotifications) },
@@ -230,10 +230,10 @@ export default function Settings({
                     { label: "New Fan Gift",         sub: "When someone gifts to your item",                      value: newSupporter,       onChange: () => setNewSupporter(!newSupporter) },
                     { label: "Goal Reached",         sub: "When a funding goal is fully met",                     value: goalReached,        onChange: () => setGoalReached(!goalReached) },
                   ].map(({ label, sub, value, onChange }) => (
-                    <div key={label} className="flex items-center justify-between p-4 border border-[#e0e0e0] bg-[#f5f5f5]">
+                    <div key={label} className="flex items-center justify-between p-4 border border-border bg-muted rounded-md">
                       <div>
-                        <p className="text-[#111111] font-bold text-sm">{label}</p>
-                        <p className="text-[#999999] text-xs mt-0.5">{sub}</p>
+                        <p className="text-foreground font-bold text-sm">{label}</p>
+                        <p className="text-subtle text-xs mt-0.5">{sub}</p>
                       </div>
                       <Toggle value={value} onChange={onChange} />
                     </div>
@@ -244,48 +244,48 @@ export default function Settings({
               {/* Privacy */}
               {activeSection === "privacy" && (
                 <div className="space-y-4">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-[#999999] mb-6">Privacy & Security</div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-6">Privacy & Security</div>
 
-                  <div className="flex items-center justify-between p-4 border border-[#e0e0e0] bg-[#f5f5f5]">
+                  <div className="flex items-center justify-between p-4 border border-border bg-muted rounded-md">
                     <div>
-                      <p className="text-[#111111] font-bold text-sm">Public Profile</p>
-                      <p className="text-[#999999] text-xs mt-0.5">Allow fans to discover your profile</p>
+                      <p className="text-foreground font-bold text-sm">Public Profile</p>
+                      <p className="text-subtle text-xs mt-0.5">Allow fans to discover your profile</p>
                     </div>
                     <Toggle value={profileVisibility} onChange={() => setProfileVisibility(!profileVisibility)} />
                   </div>
 
-                  <div className="flex items-center justify-between p-4 border border-[#e0e0e0] bg-[#f5f5f5]">
+                  <div className="flex items-center justify-between p-4 border border-border bg-muted rounded-md">
                     <div>
-                      <p className="text-[#111111] font-bold text-sm">Show on Leaderboard</p>
-                      <p className="text-[#999999] text-xs mt-0.5">Display your rank on public leaderboards</p>
+                      <p className="text-foreground font-bold text-sm">Show on Leaderboard</p>
+                      <p className="text-subtle text-xs mt-0.5">Display your rank on public leaderboards</p>
                     </div>
                     <Toggle value={showLeaderboard} onChange={() => setShowLeaderboard(!showLeaderboard)} />
                   </div>
 
-                  <div className="p-4 border border-[#e0e0e0] bg-[#f5f5f5]">
+                  <div className="p-4 border border-border bg-muted rounded-md">
                     <div className="flex items-start gap-3">
-                      <Key className="w-4 h-4 text-[#999999] mt-0.5 flex-shrink-0" />
+                      <Key className="w-4 h-4 text-subtle mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="text-[#111111] font-bold text-sm">Two-Factor Authentication</p>
-                        <p className="text-[#999999] text-xs mt-0.5 mb-3">Add an extra layer of security to your account</p>
-                        <button className="px-4 py-2 border border-[#e0e0e0] bg-white text-[#111111] hover:bg-[#f5f5f5] text-sm font-bold transition-colors">
+                        <p className="text-foreground font-bold text-sm">Two-Factor Authentication</p>
+                        <p className="text-subtle text-xs mt-0.5 mb-3">Add an extra layer of security to your account</p>
+                        <button className="px-4 py-2 border border-border bg-background text-foreground hover:bg-secondary text-sm font-bold transition-colors rounded-md">
                           Enable 2FA
                         </button>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-4 border border-[#e0e0e0] bg-[#f5f5f5]">
+                  <div className="p-4 border border-border bg-muted rounded-md">
                     <div className="flex items-start gap-3">
-                      <Lock className="w-4 h-4 text-[#999999] mt-0.5 flex-shrink-0" />
+                      <Lock className="w-4 h-4 text-subtle mt-0.5 flex-shrink-0" />
                       <div className="flex-1">
-                        <p className="text-[#111111] font-bold text-sm">Connected Accounts</p>
-                        <p className="text-[#999999] text-xs mt-0.5 mb-3">Manage your linked social profiles</p>
+                        <p className="text-foreground font-bold text-sm">Connected Accounts</p>
+                        <p className="text-subtle text-xs mt-0.5 mb-3">Manage your linked social profiles</p>
                         <div className="space-y-2">
-                          <button className="w-full px-4 py-2 border border-[#e0e0e0] bg-white text-[#6b6b6b] hover:text-[#111111] hover:bg-[#f5f5f5] text-sm font-medium transition-colors text-left">
+                          <button className="w-full px-4 py-2 border border-border bg-background text-muted-foreground hover:text-foreground hover:bg-secondary text-sm font-medium transition-colors text-left rounded-md">
                             Twitter — @username
                           </button>
-                          <button className="w-full px-4 py-2 border border-[#e0e0e0] bg-white text-[#6b6b6b] hover:text-[#111111] hover:bg-[#f5f5f5] text-sm font-medium transition-colors text-left">
+                          <button className="w-full px-4 py-2 border border-border bg-background text-muted-foreground hover:text-foreground hover:bg-secondary text-sm font-medium transition-colors text-left rounded-md">
                             Instagram — @username
                           </button>
                         </div>
@@ -299,8 +299,8 @@ export default function Settings({
         </div>
       </section>
 
-      <footer className="py-10 px-6 border-t border-[#e0e0e0]">
-        <div className="max-w-7xl mx-auto text-center text-[#999999] text-sm">
+      <footer className="py-10 px-6 border-t border-border">
+        <div className="max-w-7xl mx-auto text-center text-subtle text-sm">
           <p>© 2026 TipFlow. All rights reserved.</p>
         </div>
       </footer>

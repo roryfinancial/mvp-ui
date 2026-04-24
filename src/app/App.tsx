@@ -1,3 +1,8 @@
+import { Routes, Route, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+import { useState } from "react";
+import ThemeToggle from "./components/ThemeToggle";
+
 import Home from "./pages/Home";
 import Auth from "./components/Auth";
 import OnboardingChoice from "./components/OnboardingChoice";
@@ -9,143 +14,226 @@ import ProjectOverview from "./components/ProjectOverview";
 import CreatorProfile from "./components/CreatorProfile";
 import Settings from "./components/Settings";
 import Analytics from "./components/Analytics";
-import { useState } from "react";
 
-type AppView = "home" | "auth" | "onboarding" | "creatorDashboard" | "supporterDashboard" | "createProject" | "createWishlist" | "projectOverview" | "creatorProfile" | "settings" | "analytics";
 type UserType = "creator" | "supporter";
 
-export default function App() {
-  const [currentView, setCurrentView] = useState<AppView>("home");
-  const [userType, setUserType] = useState<UserType>("creator");
-  const [returnWishlistId, setReturnWishlistId] = useState<number | null>(null);
+// ─── Route wrappers inject navigation via useNavigate ────────────────────────
 
-  const goToDashboard = (wishlistId: number | null = null) => {
-    setReturnWishlistId(wishlistId);
-    setCurrentView("creatorDashboard");
-  };
+function HomeRoute() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>TipFlow — Fan Gifts. Zero Fees.</title>
+        <meta name="description" content="TipFlow lets fans fund the gear, software, and essentials creators actually need — with zero platform fees." />
+        <link rel="canonical" href="https://tipflow.com/" />
+      </Helmet>
+      <Home onNavigateToAuth={() => navigate("/auth")} />
+    </>
+  );
+}
 
-  if (currentView === "auth") {
-    return (
+function AuthRoute({ onAuth }: { onAuth: (t: UserType) => void }) {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>Sign In — TipFlow</title>
+        <meta name="description" content="Sign in or create your TipFlow account to start gifting or building your wishlist." />
+      </Helmet>
       <Auth
-        onBack={() => setCurrentView("home")}
+        onBack={() => navigate("/")}
         onAuthComplete={(type) => {
-          setUserType(type);
-          setCurrentView("onboarding");
+          onAuth(type);
+          navigate("/onboarding");
         }}
       />
-    );
-  }
+    </>
+  );
+}
 
-  if (currentView === "onboarding") {
-    return (
+function OnboardingRoute({ userType }: { userType: UserType }) {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>Get Started — TipFlow</title>
+      </Helmet>
       <OnboardingChoice
         userType={userType}
-        onBack={() => setCurrentView("auth")}
-        onComplete={() => {
-          if (userType === "creator") {
-            setCurrentView("creatorDashboard");
-          } else {
-            setCurrentView("supporterDashboard");
-          }
-        }}
-        onViewCreator={() => setCurrentView("creatorProfile")}
-        onMakeProject={() => setCurrentView("createProject")}
+        onBack={() => navigate("/auth")}
+        onComplete={() => navigate(userType === "creator" ? "/dashboard" : "/supporter")}
+        onViewCreator={() => navigate("/creator/username")}
+        onMakeProject={() => navigate("/dashboard/new-item")}
       />
-    );
-  }
+    </>
+  );
+}
 
-  if (currentView === "creatorDashboard") {
-    return (
+function CreatorDashboardRoute() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>Dashboard — TipFlow</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <CreatorDashboard
-        initialWishlistId={returnWishlistId}
-        onLogout={() => setCurrentView("home")}
-        onCreateWishlist={() => setCurrentView("createWishlist")}
-        onAddItem={() => setCurrentView("createProject")}
-        onViewProject={() => setCurrentView("projectOverview")}
-        onViewAnalytics={() => setCurrentView("analytics")}
-        onViewSettings={() => setCurrentView("settings")}
+        onLogout={() => navigate("/")}
+        onCreateWishlist={() => navigate("/dashboard/new-list")}
+        onAddItem={() => navigate("/dashboard/new-item")}
+        onViewProject={() => navigate("/project/1")}
+        onViewAnalytics={() => navigate("/analytics")}
+        onViewSettings={() => navigate("/settings")}
       />
-    );
-  }
+    </>
+  );
+}
 
-  if (currentView === "supporterDashboard") {
-    return (
+function SupporterDashboardRoute() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>My Dashboard — TipFlow</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <SupporterDashboard
-        onLogout={() => setCurrentView("home")}
-        onViewProject={() => setCurrentView("projectOverview")}
-        onViewCreator={() => setCurrentView("creatorProfile")}
-        onViewSettings={() => setCurrentView("settings")}
+        onLogout={() => navigate("/")}
+        onViewProject={() => navigate("/project/1")}
+        onViewCreator={() => navigate("/creator/username")}
+        onViewSettings={() => navigate("/settings")}
       />
-    );
-  }
+    </>
+  );
+}
 
-  if (currentView === "createWishlist") {
-    return (
+function CreateWishlistRoute() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>New Wishlist — TipFlow</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <CreateWishlist
-        onBack={() => setCurrentView("creatorDashboard")}
-        onCreateWishlist={() => setCurrentView("creatorDashboard")}
+        onBack={() => navigate("/dashboard")}
+        onCreateWishlist={() => navigate("/dashboard")}
       />
-    );
-  }
+    </>
+  );
+}
 
-  if (currentView === "createProject") {
-    return (
+function CreateProjectRoute() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>Add Item — TipFlow</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <CreateProject
-        onBack={() => setCurrentView("creatorDashboard")}
-        onCreateProject={() => setCurrentView("creatorDashboard")}
+        onBack={() => navigate("/dashboard")}
+        onCreateProject={() => navigate("/dashboard")}
       />
-    );
-  }
+    </>
+  );
+}
 
-  if (currentView === "projectOverview") {
-    return (
+function ProjectOverviewRoute({ userType }: { userType: UserType }) {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>Project — TipFlow</title>
+        <meta name="description" content="Support this creator's wishlist item on TipFlow." />
+      </Helmet>
       <ProjectOverview
         isCreator={userType === "creator"}
-        onBack={() => goToDashboard(null)}
-        onBackToWishlist={(id) => goToDashboard(id)}
-        onNavigateDashboard={() => goToDashboard(null)}
-        onNavigateAnalytics={() => setCurrentView("analytics")}
-        onNavigateSettings={() => setCurrentView("settings")}
-        onLogout={() => setCurrentView("home")}
-        onViewCreator={() => setCurrentView("creatorProfile")}
+        onBack={() => navigate(-1 as never)}
+        onBackToWishlist={() => navigate("/dashboard")}
+        onNavigateDashboard={() => navigate("/dashboard")}
+        onNavigateAnalytics={() => navigate("/analytics")}
+        onNavigateSettings={() => navigate("/settings")}
+        onLogout={() => navigate("/")}
+        onViewCreator={() => navigate("/creator/username")}
       />
-    );
-  }
+    </>
+  );
+}
 
-  if (currentView === "creatorProfile") {
-    return (
+function CreatorProfileRoute({ userType }: { userType: UserType }) {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>Creator Profile — TipFlow</title>
+        <meta name="description" content="Support this creator on TipFlow — gift items from their wishlist." />
+      </Helmet>
       <CreatorProfile
-        onBack={() => {
-          if (userType === "creator") {
-            setCurrentView("creatorDashboard");
-          } else {
-            setCurrentView("supporterDashboard");
-          }
-        }}
-        onViewProject={() => setCurrentView("projectOverview")}
+        onBack={() => navigate(userType === "creator" ? "/dashboard" : "/supporter")}
+        onViewProject={() => navigate("/project/1")}
       />
-    );
-  }
+    </>
+  );
+}
 
-  if (currentView === "settings") {
-    return (
+function SettingsRoute() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>Settings — TipFlow</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <Settings
-        onNavigateDashboard={() => setCurrentView("creatorDashboard")}
-        onNavigateAnalytics={() => setCurrentView("analytics")}
-        onLogout={() => setCurrentView("home")}
+        onNavigateDashboard={() => navigate("/dashboard")}
+        onNavigateAnalytics={() => navigate("/analytics")}
+        onLogout={() => navigate("/")}
       />
-    );
-  }
+    </>
+  );
+}
 
-  if (currentView === "analytics") {
-    return (
+function AnalyticsRoute() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>Analytics — TipFlow</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
       <Analytics
-        onNavigateDashboard={() => setCurrentView("creatorDashboard")}
-        onNavigateSettings={() => setCurrentView("settings")}
-        onLogout={() => setCurrentView("home")}
+        onNavigateDashboard={() => navigate("/dashboard")}
+        onNavigateSettings={() => navigate("/settings")}
+        onLogout={() => navigate("/")}
       />
-    );
-  }
+    </>
+  );
+}
 
-  return <Home onNavigateToAuth={() => setCurrentView("auth")} />;
+// ─── Root App ────────────────────────────────────────────────────────────────
+
+export default function App() {
+  const [userType, setUserType] = useState<UserType>("creator");
+
+  return (
+    <>
+      <ThemeToggle />
+      <Routes>
+        <Route path="/" element={<HomeRoute />} />
+        <Route path="/auth" element={<AuthRoute onAuth={setUserType} />} />
+        <Route path="/onboarding" element={<OnboardingRoute userType={userType} />} />
+        <Route path="/dashboard" element={<CreatorDashboardRoute />} />
+        <Route path="/dashboard/new-list" element={<CreateWishlistRoute />} />
+        <Route path="/dashboard/new-item" element={<CreateProjectRoute />} />
+        <Route path="/supporter" element={<SupporterDashboardRoute />} />
+        <Route path="/project/:id" element={<ProjectOverviewRoute userType={userType} />} />
+        <Route path="/creator/:username" element={<CreatorProfileRoute userType={userType} />} />
+        <Route path="/settings" element={<SettingsRoute />} />
+        <Route path="/analytics" element={<AnalyticsRoute />} />
+        <Route path="*" element={<HomeRoute />} />
+      </Routes>
+    </>
+  );
 }

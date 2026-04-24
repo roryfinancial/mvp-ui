@@ -80,14 +80,14 @@ export default function CreatorProfile({
   };
 
   return (
-    <div className="min-h-screen bg-white text-[#111111]">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#111111] border-b-2 border-[#e8185d]">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e0e] border-b border-accent/40">
         <div className="max-w-full mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <div className="text-xl font-black text-white tracking-tight">TipFlow</div>
             <div className="hidden md:flex items-center gap-1">
-              <button className="flex items-center gap-2 px-4 py-2 text-white font-medium text-sm border-b-2 border-[#e8185d]">
+              <button className="flex items-center gap-2 px-4 py-2 text-white font-medium text-sm border-b-2 border-accent">
                 <User className="w-4 h-4" />
                 Profile
               </button>
@@ -103,47 +103,47 @@ export default function CreatorProfile({
                 onChange={(e) => { setSearchQuery(e.target.value); setShowSearchDropdown(true); }}
                 onFocus={() => setShowSearchDropdown(true)}
                 onBlur={() => setTimeout(() => setShowSearchDropdown(false), 200)}
-                className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-[#e8185d] transition-all w-56"
+                className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-accent transition-all w-56"
               />
 
               {showSearchDropdown && searchQuery.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="absolute top-full mt-2 left-0 w-72 bg-white border border-[#e0e0e0] shadow-lg overflow-hidden z-50"
+                  className="absolute top-full mt-2 left-0 w-72 bg-background border border-border shadow-lg overflow-hidden z-50"
                 >
                   {searchResults.creators.length > 0 && (
                     <div className="p-3">
-                      <h3 className="text-[10px] font-black uppercase tracking-widest text-[#999999] mb-2 px-2">Creators</h3>
+                      <h3 className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2 px-2">Creators</h3>
                       {searchResults.creators.map((creator, index) => (
-                        <div key={index} className="flex items-center gap-3 p-2 hover:bg-[#f5f5f5] cursor-pointer transition-colors">
-                          <div className="w-8 h-8 bg-[#f0f0f0] border border-[#e0e0e0] flex items-center justify-center text-[#111111] font-bold text-xs">{creator.initials}</div>
+                        <div key={index} className="flex items-center gap-3 p-2 hover:bg-muted cursor-pointer transition-colors">
+                          <div className="w-8 h-8 bg-muted border border-border flex items-center justify-center text-foreground font-bold text-xs">{creator.initials}</div>
                           <div className="flex-1">
-                            <p className="text-[#111111] font-medium text-sm">{creator.name}</p>
-                            <p className="text-[#999999] text-xs">{creator.username}</p>
+                            <p className="text-foreground font-medium text-sm">{creator.name}</p>
+                            <p className="text-subtle text-xs">{creator.username}</p>
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
                   {searchResults.projects.length > 0 && (
-                    <div className="p-3 border-t border-[#e0e0e0]">
-                      <h3 className="text-[10px] font-black uppercase tracking-widest text-[#999999] mb-2 px-2">Projects</h3>
+                    <div className="p-3 border-t border-border">
+                      <h3 className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2 px-2">Projects</h3>
                       {searchResults.projects.map((project, index) => (
-                        <div key={index} onClick={onViewProject} className="flex items-center gap-3 p-2 hover:bg-[#f5f5f5] cursor-pointer transition-colors">
-                          <div className="w-8 h-8 bg-[#f0f0f0] border border-[#e0e0e0] flex items-center justify-center">
-                            <TrendingUp className="w-4 h-4 text-[#6b6b6b]" />
+                        <div key={index} onClick={onViewProject} className="flex items-center gap-3 p-2 hover:bg-muted cursor-pointer transition-colors">
+                          <div className="w-8 h-8 bg-muted border border-border flex items-center justify-center">
+                            <TrendingUp className="w-4 h-4 text-muted-foreground" />
                           </div>
                           <div className="flex-1">
-                            <p className="text-[#111111] font-medium text-sm">{project.name}</p>
-                            <p className="text-[#999999] text-xs">by {project.creator}</p>
+                            <p className="text-foreground font-medium text-sm">{project.name}</p>
+                            <p className="text-subtle text-xs">by {project.creator}</p>
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
                   {searchResults.creators.length === 0 && searchResults.projects.length === 0 && (
-                    <div className="p-6 text-center text-[#999999] text-sm">No results for "{searchQuery}"</div>
+                    <div className="p-6 text-center text-subtle text-sm">No results for "{searchQuery}"</div>
                   )}
                 </motion.div>
               )}
@@ -164,38 +164,38 @@ export default function CreatorProfile({
       {/* Main Layout */}
       <div className="flex flex-col lg:grid lg:grid-cols-[320px_1fr] gap-0 min-h-screen pt-[57px]">
         {/* Left Sidebar */}
-        <aside className="w-full lg:sticky lg:top-[57px] lg:h-[calc(100vh-57px)] bg-[#f5f5f5] p-6 flex flex-col overflow-y-auto border-r border-[#e0e0e0]">
+        <aside className="w-full lg:sticky lg:top-[57px] lg:h-[calc(100vh-57px)] bg-muted p-6 flex flex-col overflow-y-auto border-r border-border">
           {/* Creator Profile */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="flex items-center gap-4 mb-8 pb-8 border-b border-[#e0e0e0]"
+            className="flex items-center gap-4 mb-8 pb-8 border-b border-border"
           >
             <div className="relative w-16 h-16 bg-[#e0e0e0] border border-[#d0d0d0] flex items-center justify-center flex-shrink-0">
-              <User className="w-7 h-7 text-[#999999]" />
-              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-[#e8185d] flex items-center justify-center">
+              <User className="w-7 h-7 text-subtle" />
+              <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-accent flex items-center justify-center">
                 <Check className="w-3 h-3 text-white" />
               </div>
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-base font-black text-[#111111] leading-tight">{creatorName}</h1>
-              <p className="text-xs text-[#999999] mb-2">{username}</p>
+              <h1 className="text-base font-black text-foreground leading-tight">{creatorName}</h1>
+              <p className="text-xs text-subtle mb-2">{username}</p>
               <div className="flex gap-3">
-                <a href="#" className="text-[#999999] hover:text-[#1d9bf0] transition-colors"><Twitter className="w-3.5 h-3.5" /></a>
-                <a href="#" className="text-[#999999] hover:text-[#e1306c] transition-colors"><Instagram className="w-3.5 h-3.5" /></a>
-                <a href="#" className="text-[#999999] hover:text-[#ff0000] transition-colors"><Youtube className="w-3.5 h-3.5" /></a>
-                <a href="#" className="text-[#999999] hover:text-[#9146ff] transition-colors"><Twitch className="w-3.5 h-3.5" /></a>
+                <a href="#" className="text-subtle hover:text-[#1d9bf0] transition-colors"><Twitter className="w-3.5 h-3.5" /></a>
+                <a href="#" className="text-subtle hover:text-[#e1306c] transition-colors"><Instagram className="w-3.5 h-3.5" /></a>
+                <a href="#" className="text-subtle hover:text-[#ff0000] transition-colors"><Youtube className="w-3.5 h-3.5" /></a>
+                <a href="#" className="text-subtle hover:text-[#9146ff] transition-colors"><Twitch className="w-3.5 h-3.5" /></a>
               </div>
             </div>
           </motion.div>
 
           {/* Action buttons */}
           <div className="flex gap-2 mb-8">
-            <button className="flex-1 py-2.5 border-2 border-[#111111] text-[#111111] text-xs font-black uppercase tracking-widest hover:bg-[#111111] hover:text-white transition-colors">
+            <button className="flex-1 py-2.5 border-2 border-foreground text-foreground text-xs font-black uppercase tracking-widest hover:bg-foreground hover:text-white transition-colors">
               Follow
             </button>
-            <button className="flex-1 py-2.5 bg-[#e8185d] hover:bg-[#c9164f] text-white text-xs font-black uppercase tracking-widest transition-colors">
+            <button className="flex-1 py-2.5 bg-accent hover:bg-[#c9164f] text-white text-xs font-black uppercase tracking-widest transition-colors">
               Message
             </button>
           </div>
@@ -207,7 +207,7 @@ export default function CreatorProfile({
             transition={{ duration: 0.5, delay: 0.1 }}
             className="mb-8"
           >
-            <div className="text-[10px] font-black uppercase tracking-widest text-[#999999] mb-3">Top Donations</div>
+            <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">Top Donations</div>
             <ul className="space-y-2">
               {leaderboard.map((entry, index) => (
                 <motion.li
@@ -218,7 +218,7 @@ export default function CreatorProfile({
                   className="flex items-center gap-3 py-2"
                 >
                   <div className="relative flex-shrink-0">
-                    <div className="w-9 h-9 bg-[#e0e0e0] flex items-center justify-center text-[#111111] font-black text-xs">
+                    <div className="w-9 h-9 bg-[#e0e0e0] flex items-center justify-center text-foreground font-black text-xs">
                       {entry.initials}
                     </div>
                     <span
@@ -229,21 +229,21 @@ export default function CreatorProfile({
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[#111111] font-bold text-sm truncate">{entry.name}</p>
-                    <p className="text-[#999999] text-xs">{entry.amount}</p>
+                    <p className="text-foreground font-bold text-sm truncate">{entry.name}</p>
+                    <p className="text-subtle text-xs">{entry.amount}</p>
                   </div>
                 </motion.li>
               ))}
             </ul>
 
             {/* Period Filter */}
-            <div className="flex mt-4 border border-[#e0e0e0] bg-[#ebebeb]">
+            <div className="flex mt-4 border border-border bg-[#ebebeb]">
               {(["week", "month", "all"] as const).map(p => (
                 <button
                   key={p}
                   onClick={() => setLeaderboardPeriod(p)}
                   className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest transition-colors ${
-                    leaderboardPeriod === p ? "bg-[#111111] text-white" : "text-[#6b6b6b] hover:bg-[#e0e0e0]"
+                    leaderboardPeriod === p ? "bg-foreground text-white" : "text-muted-foreground hover:bg-secondary"
                   }`}
                 >
                   {p}
@@ -258,7 +258,7 @@ export default function CreatorProfile({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <div className="text-[10px] font-black uppercase tracking-widest text-[#999999] mb-3">Recent Gifts</div>
+            <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">Recent Gifts</div>
             <ul className="space-y-2">
               {recentGifts.map((gift, index) => (
                 <motion.li
@@ -268,12 +268,12 @@ export default function CreatorProfile({
                   transition={{ duration: 0.3, delay: 0.3 + index * 0.05 }}
                   className="flex items-center gap-3 py-2"
                 >
-                  <div className="w-9 h-9 bg-[#e0e0e0] flex items-center justify-center text-[#111111] font-black text-xs flex-shrink-0">
+                  <div className="w-9 h-9 bg-[#e0e0e0] flex items-center justify-center text-foreground font-black text-xs flex-shrink-0">
                     {gift.initials}
                   </div>
                   <div>
-                    <p className="text-[#111111] font-bold text-sm">{gift.name}</p>
-                    <p className="text-[#999999] text-xs">{gift.timeAgo}</p>
+                    <p className="text-foreground font-bold text-sm">{gift.name}</p>
+                    <p className="text-subtle text-xs">{gift.timeAgo}</p>
                   </div>
                 </motion.li>
               ))}
@@ -282,20 +282,20 @@ export default function CreatorProfile({
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-8 bg-white">
+        <main className="flex-1 p-8 bg-background">
           {/* Tabs */}
-          <div className="flex gap-8 mb-10 border-b border-[#e0e0e0]">
+          <div className="flex gap-8 mb-10 border-b border-border">
             {(["wishlist", "surprise", "gifts"] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`pb-4 text-base font-black capitalize transition-colors relative ${
-                  activeTab === tab ? "text-[#111111]" : "text-[#999999] hover:text-[#111111]"
+                  activeTab === tab ? "text-foreground" : "text-subtle hover:text-foreground"
                 }`}
               >
                 {tab}
                 {activeTab === tab && (
-                  <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#e8185d]" />
+                  <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent" />
                 )}
               </button>
             ))}
@@ -311,10 +311,10 @@ export default function CreatorProfile({
                 transition={{ duration: 0.4, delay: index * 0.05 }}
                 whileHover={{ y: -2 }}
                 onClick={onViewProject}
-                className="bg-white border border-[#e0e0e0] overflow-hidden group cursor-pointer hover:shadow-md transition-shadow"
+                className="bg-background border border-border overflow-hidden group cursor-pointer hover:shadow-md transition-shadow"
               >
                 {/* Thumbnail */}
-                <div className="relative w-full h-44 flex items-center justify-center bg-[#f5f5f5]">
+                <div className="relative w-full h-44 flex items-center justify-center bg-muted">
                   <User className="w-14 h-14 text-[#d0d0d0]" />
 
                   {/* Status Badge */}
@@ -322,7 +322,7 @@ export default function CreatorProfile({
                     className={`absolute top-3 right-3 px-2 py-1 flex items-center gap-1.5 border text-[10px] font-black uppercase tracking-widest ${
                       item.status === "gifted"
                         ? "bg-[#f0faf5] border-[#22c55e] text-[#16a34a]"
-                        : "bg-[#fff0f4] border-[#e8185d] text-[#e8185d]"
+                        : "bg-[#fff0f4] border-accent text-accent"
                     }`}
                   >
                     {item.status === "gifted" ? (
@@ -335,10 +335,10 @@ export default function CreatorProfile({
 
                 {/* Info */}
                 <div className="p-4">
-                  <h3 className="text-sm font-black text-[#111111] mb-1 leading-tight line-clamp-2 group-hover:text-[#e8185d] transition-colors">
+                  <h3 className="text-sm font-black text-foreground mb-1 leading-tight line-clamp-2 group-hover:text-accent transition-colors">
                     {item.title}
                   </h3>
-                  <p className="text-[#999999] text-xs">
+                  <p className="text-subtle text-xs">
                     {item.status === "gifted" ? `Gifted by ${item.giftedBy}` : "View contributors"}
                   </p>
                 </div>

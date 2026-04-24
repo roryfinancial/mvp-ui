@@ -29,9 +29,9 @@ export default function CreateWishlist({ onBack, onCreateWishlist }: CreateWishl
   };
 
   return (
-    <div className="min-h-screen bg-white text-[#111111]">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#111111] border-b-2 border-[#e8185d]">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e0e] border-b border-accent/40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="text-xl font-black text-white tracking-tight">TipFlow</div>
           <div className="flex items-center gap-4">
@@ -42,7 +42,7 @@ export default function CreateWishlist({ onBack, onCreateWishlist }: CreateWishl
                 placeholder="Search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-[#e8185d] transition-all w-48"
+                className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-accent transition-all w-48"
               />
             </div>
             {onBack && (
@@ -67,9 +67,9 @@ export default function CreateWishlist({ onBack, onCreateWishlist }: CreateWishl
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="mb-12"
           >
-            <div className="text-[10px] font-black uppercase tracking-widest text-[#999999] mb-2">New Wishlist</div>
-            <h1 className="text-5xl font-black text-[#111111] mb-3 tracking-tight">Create a List</h1>
-            <p className="text-lg text-[#6b6b6b]">
+            <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">New Wishlist</div>
+            <h1 className="text-5xl font-black text-foreground mb-3 tracking-tight">Create a List</h1>
+            <p className="text-lg text-muted-foreground">
               A wishlist is a curated collection of items for your fans to fund. Add items after creating the list.
             </p>
           </motion.div>
@@ -82,14 +82,14 @@ export default function CreateWishlist({ onBack, onCreateWishlist }: CreateWishl
           >
             {/* Cover Image */}
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-[#6b6b6b] mb-2">
-                Cover Image <span className="text-[#999999] font-normal normal-case tracking-normal">optional</span>
+              <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                Cover Image <span className="text-subtle font-normal normal-case tracking-normal">optional</span>
               </label>
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
               <motion.div
                 whileHover={{ scale: 1.005 }}
                 onClick={() => fileInputRef.current?.click()}
-                className="relative w-full h-44 overflow-hidden cursor-pointer border-2 border-dashed border-[#e0e0e0] hover:border-[#e8185d] transition-colors group bg-[#f5f5f5]"
+                className="relative w-full h-44 overflow-hidden cursor-pointer border-2 border-dashed border-border hover:border-accent transition-colors group bg-muted"
               >
                 {coverImage ? (
                   <>
@@ -100,18 +100,18 @@ export default function CreateWishlist({ onBack, onCreateWishlist }: CreateWishl
                         Change Image
                       </div>
                     </div>
-                    <button onClick={removeImage} className="absolute top-3 right-3 w-7 h-7 bg-white border border-[#e0e0e0] flex items-center justify-center text-[#111111] hover:bg-red-50 hover:text-red-500 transition-colors z-10">
+                    <button onClick={removeImage} className="absolute top-3 right-3 w-7 h-7 bg-background border border-border flex items-center justify-center text-foreground hover:bg-red-50 hover:text-red-500 transition-colors z-10">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </>
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                    <div className="w-11 h-11 border border-[#e0e0e0] bg-white flex items-center justify-center group-hover:border-[#e8185d] transition-colors">
-                      <ImageIcon className="w-5 h-5 text-[#999999]" />
+                    <div className="w-11 h-11 border border-border bg-background flex items-center justify-center group-hover:border-accent transition-colors">
+                      <ImageIcon className="w-5 h-5 text-subtle" />
                     </div>
                     <div className="text-center">
-                      <p className="text-[#6b6b6b] font-bold text-sm">Upload Cover Image</p>
-                      <p className="text-[#999999] text-xs mt-0.5">Click or drag to upload · PNG, JPG, GIF</p>
+                      <p className="text-muted-foreground font-bold text-sm">Upload Cover Image</p>
+                      <p className="text-subtle text-xs mt-0.5">Click or drag to upload · PNG, JPG, GIF</p>
                     </div>
                   </div>
                 )}
@@ -119,28 +119,28 @@ export default function CreateWishlist({ onBack, onCreateWishlist }: CreateWishl
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-[#6b6b6b] mb-2">
-                List Name <span className="text-[#e8185d]">*</span>
+              <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                List Name <span className="text-accent">*</span>
               </label>
               <input
                 type="text"
                 placeholder="e.g. Creator Essentials, Studio Upgrades"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3.5 border border-[#e0e0e0] bg-white text-[#111111] placeholder-[#999999] focus:outline-none focus:ring-2 focus:ring-[#e8185d] focus:border-transparent transition-all text-sm"
+                className="w-full px-4 py-3.5 border border-border bg-background text-foreground placeholder-[#999999] focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-[#6b6b6b] mb-2">
-                Description <span className="text-[#999999] font-normal normal-case tracking-normal">optional</span>
+              <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                Description <span className="text-subtle font-normal normal-case tracking-normal">optional</span>
               </label>
               <textarea
                 placeholder="Tell fans what this list is about..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
-                className="w-full px-4 py-3.5 border border-[#e0e0e0] bg-white text-[#111111] placeholder-[#999999] focus:outline-none focus:ring-2 focus:ring-[#e8185d] focus:border-transparent transition-all resize-none text-sm"
+                className="w-full px-4 py-3.5 border border-border bg-background text-foreground placeholder-[#999999] focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all resize-none text-sm"
               />
             </div>
 
@@ -149,7 +149,7 @@ export default function CreateWishlist({ onBack, onCreateWishlist }: CreateWishl
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
                 onClick={onBack}
-                className="px-8 py-3 border border-[#e0e0e0] text-[#111111] font-bold text-sm uppercase tracking-wide hover:bg-[#f5f5f5] transition-colors"
+                className="px-8 py-3 border border-border text-foreground font-bold text-sm uppercase tracking-wide hover:bg-muted transition-colors"
               >
                 Cancel
               </motion.button>
@@ -158,7 +158,7 @@ export default function CreateWishlist({ onBack, onCreateWishlist }: CreateWishl
                 whileTap={{ scale: 0.99 }}
                 onClick={onCreateWishlist}
                 disabled={!name.trim()}
-                className="px-8 py-3 bg-[#e8185d] hover:bg-[#c9164f] disabled:opacity-40 disabled:cursor-not-allowed text-white font-black text-sm uppercase tracking-widest transition-colors"
+                className="px-8 py-3 bg-accent hover:bg-[#c9164f] disabled:opacity-40 disabled:cursor-not-allowed text-white font-black text-sm uppercase tracking-widest transition-colors"
               >
                 Create List
               </motion.button>
@@ -167,8 +167,8 @@ export default function CreateWishlist({ onBack, onCreateWishlist }: CreateWishl
         </div>
       </section>
 
-      <footer className="py-10 px-6 border-t border-[#e0e0e0]">
-        <div className="max-w-7xl mx-auto text-center text-[#999999] text-sm">
+      <footer className="py-10 px-6 border-t border-border">
+        <div className="max-w-7xl mx-auto text-center text-subtle text-sm">
           <p>© 2026 TipFlow. All rights reserved.</p>
         </div>
       </footer>

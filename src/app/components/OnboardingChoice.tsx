@@ -23,14 +23,14 @@ export default function OnboardingChoice({ userType, onBack, onComplete, onViewC
   ];
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-muted flex items-center justify-center p-4">
       {onBack && (
         <motion.button
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
           onClick={onBack}
-          className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 border border-[#e0e0e0] bg-white text-[#111111] hover:bg-[#f5f5f5] transition-colors"
+          className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 border border-border bg-background text-foreground hover:bg-muted transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm font-medium">Back</span>
@@ -41,7 +41,7 @@ export default function OnboardingChoice({ userType, onBack, onComplete, onViewC
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4 }}
-        className="w-full max-w-xl mx-auto bg-white border border-[#e0e0e0] shadow-sm p-8"
+        className="w-full max-w-xl mx-auto bg-background border border-border shadow-sm p-8"
       >
         {/* Header */}
         <motion.div
@@ -50,11 +50,11 @@ export default function OnboardingChoice({ userType, onBack, onComplete, onViewC
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mb-8"
         >
-          <div className="text-xs font-bold uppercase tracking-widest text-[#999999] mb-2">Welcome</div>
-          <h1 className="text-3xl font-black text-[#111111] mb-2 tracking-tight">
+          <div className="text-xs font-bold uppercase tracking-widest text-subtle mb-2">Welcome</div>
+          <h1 className="text-3xl font-black text-foreground mb-2 tracking-tight">
             {userType === "creator" ? "Set up your profile." : "Find creators to support."}
           </h1>
-          <p className="text-[#6b6b6b] text-sm">
+          <p className="text-muted-foreground text-sm">
             {userType === "creator" ? "Add your first wishlist item to get started." : "Discover creators and start gifting."}
           </p>
         </motion.div>
@@ -71,14 +71,14 @@ export default function OnboardingChoice({ userType, onBack, onComplete, onViewC
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
               onClick={onMakeProject}
-              className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-[#e8185d] hover:bg-[#c9164f] text-white font-black text-sm uppercase tracking-widest transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-accent hover:bg-[#c9164f] text-white font-black text-sm uppercase tracking-widest transition-colors"
             >
               <Plus className="w-4 h-4" />
               Add a Wishlist Item
             </motion.button>
 
             <div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-[#999999] mb-3 flex items-center gap-2">
+              <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3 flex items-center gap-2">
                 <TrendingUp className="w-3 h-3" />
                 Top Creators
               </div>
@@ -90,10 +90,10 @@ export default function OnboardingChoice({ userType, onBack, onComplete, onViewC
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: 0.1 * index }}
                     onClick={onViewCreator}
-                    className="flex items-center justify-between px-4 py-3 border border-[#e0e0e0] bg-[#f5f5f5] hover:bg-white cursor-pointer transition-colors"
+                    className="flex items-center justify-between px-4 py-3 border border-border bg-muted hover:bg-background cursor-pointer transition-colors"
                   >
-                    <span className="text-[#111111] font-medium text-sm">{creator.name}</span>
-                    <span className="text-[#e8185d] font-black text-sm">{creator.amount}</span>
+                    <span className="text-foreground font-medium text-sm">{creator.name}</span>
+                    <span className="text-accent font-black text-sm">{creator.amount}</span>
                   </motion.div>
                 ))}
               </div>
@@ -103,7 +103,7 @@ export default function OnboardingChoice({ userType, onBack, onComplete, onViewC
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
               onClick={() => onComplete?.()}
-              className="w-full px-6 py-4 border border-[#e0e0e0] text-[#111111] font-bold text-sm uppercase tracking-wide hover:bg-[#f5f5f5] transition-colors"
+              className="w-full px-6 py-4 border border-border text-foreground font-bold text-sm uppercase tracking-wide hover:bg-muted transition-colors"
             >
               Go to Dashboard
             </motion.button>
@@ -119,16 +119,16 @@ export default function OnboardingChoice({ userType, onBack, onComplete, onViewC
             className="space-y-6"
           >
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#999999]" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-subtle" />
               <input
                 type="text"
                 placeholder="Search creators or projects..."
-                className="w-full pl-11 pr-4 py-4 border border-[#e0e0e0] bg-white focus:outline-none focus:ring-2 focus:ring-[#e8185d] text-[#111111] placeholder-[#999999] text-sm transition-all"
+                className="w-full pl-11 pr-4 py-4 border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent text-foreground placeholder-[#999999] text-sm transition-all"
               />
             </div>
 
             <div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-[#999999] mb-3 flex items-center gap-2">
+              <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3 flex items-center gap-2">
                 <Heart className="w-3 h-3" />
                 Trending Projects
               </div>
@@ -139,18 +139,18 @@ export default function OnboardingChoice({ userType, onBack, onComplete, onViewC
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: 0.1 * index }}
-                    className="px-4 py-3 border border-[#e0e0e0] bg-[#f5f5f5] cursor-pointer hover:bg-white transition-colors"
+                    className="px-4 py-3 border border-border bg-muted cursor-pointer hover:bg-background transition-colors"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[#111111] font-medium text-sm">{project.name}</span>
-                      <span className="text-[#e8185d] font-black text-sm">{project.amount}</span>
+                      <span className="text-foreground font-medium text-sm">{project.name}</span>
+                      <span className="text-accent font-black text-sm">{project.amount}</span>
                     </div>
                     <div className="w-full h-1.5 bg-[#e0e0e0] overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${project.progress}%` }}
                         transition={{ duration: 1, delay: 0.3 + 0.1 * index }}
-                        className="h-full bg-[#e8185d]"
+                        className="h-full bg-accent"
                       />
                     </div>
                   </motion.div>
@@ -162,7 +162,7 @@ export default function OnboardingChoice({ userType, onBack, onComplete, onViewC
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
               onClick={() => onComplete?.()}
-              className="w-full px-6 py-4 bg-[#e8185d] hover:bg-[#c9164f] text-white font-black text-sm uppercase tracking-widest transition-colors"
+              className="w-full px-6 py-4 bg-accent hover:bg-[#c9164f] text-white font-black text-sm uppercase tracking-widest transition-colors"
             >
               Explore Creators
             </motion.button>

@@ -44,7 +44,7 @@ const periodStats: Record<TimePeriod, {
 };
 
 const metricConfig: Record<Metric, { label: string; color: string; badgeClass: string }> = {
-  revenue:         { label: "Revenue Over Time",           color: "#e8185d", badgeClass: "text-[#e8185d] bg-[#fff0f4]" },
+  revenue:         { label: "Revenue Over Time",           color: "#e8185d", badgeClass: "text-accent bg-[#fff0f4]" },
   supporters:      { label: "Supporter Growth",            color: "#1d4ed8", badgeClass: "text-[#1d4ed8] bg-[#eff6ff]" },
   gifts:           { label: "Gifts Over Time",             color: "#f59e0b", badgeClass: "text-[#b45309] bg-[#fffbeb]" },
   avgContribution: { label: "Avg. Contribution Over Time", color: "#059669", badgeClass: "text-[#059669] bg-[#ecfdf5]" },
@@ -78,9 +78,9 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
   ];
 
   return (
-    <div className="min-h-screen bg-white text-[#111111]">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#111111] border-b-2 border-[#e8185d]">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e0e] border-b border-accent/40">
         <div className="max-w-full mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <div className="text-xl font-black text-white tracking-tight">TipFlow</div>
@@ -89,7 +89,7 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
                 <LayoutDashboard className="w-4 h-4" />
                 Dashboard
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-[#e8185d] text-white font-medium text-sm">
+              <button className="flex items-center gap-2 px-4 py-2 bg-accent text-white font-medium text-sm">
                 <BarChart3 className="w-4 h-4" />
                 Analytics
               </button>
@@ -107,7 +107,7 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
                 placeholder="Search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-[#e8185d] transition-all w-48"
+                className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-accent transition-all w-48"
               />
             </div>
             {onLogout && (
@@ -131,18 +131,18 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
             className="mb-10 flex items-end justify-between flex-wrap gap-4"
           >
             <div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-[#999999] mb-2">Creator Tools</div>
-              <h1 className="text-5xl font-black text-[#111111] tracking-tight">Analytics</h1>
+              <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">Creator Tools</div>
+              <h1 className="text-5xl font-black text-foreground tracking-tight">Analytics</h1>
             </div>
 
             {/* Time Period Selector */}
-            <div className="flex border border-[#e0e0e0] bg-[#f5f5f5]">
+            <div className="flex border border-border bg-muted">
               {(["week", "month", "year"] as TimePeriod[]).map((p) => (
                 <button
                   key={p}
                   onClick={() => setTimePeriod(p)}
                   className={`px-5 py-2 text-xs font-black uppercase tracking-widest capitalize transition-colors ${
-                    timePeriod === p ? "bg-[#111111] text-white" : "text-[#6b6b6b] hover:bg-[#e0e0e0]"
+                    timePeriod === p ? "bg-foreground text-white" : "text-muted-foreground hover:bg-secondary"
                   }`}
                 >
                   {p}
@@ -165,18 +165,18 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
                   whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.99 }}
                   onClick={() => setSelectedMetric(metric)}
-                  className={`p-6 text-left w-full border-2 transition-all duration-150 bg-white ${
-                    isActive ? "border-[#111111]" : "border-[#e0e0e0] hover:border-[#aaaaaa]"
+                  className={`p-6 text-left w-full border-2 rounded-2xl transition-all duration-150 bg-background card-game ${
+                    isActive ? "border-foreground" : "border-border hover:border-subtle"
                   }`}
                 >
                   <div className="flex items-center justify-between mb-4">
                     {icon}
                     <span className={`text-xs font-black px-2 py-0.5 ${c.badgeClass}`}>{change}</span>
                   </div>
-                  <p className="text-[#999999] text-xs font-bold uppercase tracking-widest mb-1">{label}</p>
-                  <p className="text-3xl font-black text-[#111111]">{value}</p>
+                  <p className="text-subtle text-xs font-bold uppercase tracking-widest mb-1">{label}</p>
+                  <p className="text-3xl font-black text-foreground">{value}</p>
                   {isActive && (
-                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[10px] mt-2 text-[#999999] font-bold uppercase tracking-widest">
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[10px] mt-2 text-subtle font-bold uppercase tracking-widest">
                       Viewing in chart ↓
                     </motion.p>
                   )}
@@ -192,7 +192,7 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
-              className="border border-[#e0e0e0] bg-white p-8"
+              className="border border-border bg-background p-8 rounded-2xl card-game"
             >
               <div className="flex items-center justify-between mb-1">
                 <AnimatePresence mode="wait">
@@ -202,7 +202,7 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 6 }}
                     transition={{ duration: 0.2 }}
-                    className="text-lg font-black text-[#111111] tracking-tight"
+                    className="text-lg font-black text-foreground tracking-tight"
                   >
                     {cfg.label}
                   </motion.h2>
@@ -211,13 +211,13 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
                   {timePeriod}
                 </span>
               </div>
-              <p className="text-[#999999] text-xs mb-6">Click a stat card above to switch metrics</p>
+              <p className="text-subtle text-xs mb-6">Click a stat card above to switch metrics</p>
 
               {/* Bar Chart */}
               <div className="relative h-52">
                 <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
                   {[...Array(4)].map((_, i) => (
-                    <div key={i} className="w-full h-px bg-[#f0f0f0]" />
+                    <div key={i} className="w-full h-px bg-muted" />
                   ))}
                 </div>
 
@@ -250,9 +250,9 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
                                 transition={{ duration: 0.12 }}
                                 className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-20 pointer-events-none"
                               >
-                                <div className="bg-white border border-[#e0e0e0] shadow-md px-2.5 py-1.5 text-center whitespace-nowrap">
-                                  <p className="text-[#111111] font-black text-xs">{chart.format(val)}</p>
-                                  <p className="text-[#999999] text-[10px]">{chart.labels[idx]}</p>
+                                <div className="bg-background border border-border shadow-md px-2.5 py-1.5 text-center whitespace-nowrap">
+                                  <p className="text-foreground font-black text-xs">{chart.format(val)}</p>
+                                  <p className="text-subtle text-[10px]">{chart.labels[idx]}</p>
                                 </div>
                               </motion.div>
                             )}
@@ -290,7 +290,7 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
                     <span
                       key={i}
                       className={`flex-1 text-center text-[10px] transition-colors duration-150 ${
-                        hoveredBar === i ? "text-[#111111] font-black" : "text-[#bbbbbb]"
+                        hoveredBar === i ? "text-foreground font-black" : "text-subtle"
                       }`}
                     >
                       {label}
@@ -305,9 +305,9 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
-              className="border border-[#e0e0e0] bg-white p-8"
+              className="border border-border bg-background p-8 rounded-2xl card-game"
             >
-              <div className="text-[10px] font-black uppercase tracking-widest text-[#999999] mb-5">Recent Activity</div>
+              <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-5">Recent Activity</div>
               <div className="space-y-2 max-h-80 overflow-y-auto">
                 {recentActivity.map((activity, index) => (
                   <motion.div
@@ -316,18 +316,18 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: 0.6 + index * 0.05 }}
                     whileHover={{ x: 4 }}
-                    className="flex items-center gap-4 p-4 border border-[#e0e0e0] hover:bg-[#f5f5f5] transition-colors cursor-pointer"
+                    className="flex items-center gap-4 p-4 border border-border hover:bg-muted transition-colors cursor-pointer"
                   >
-                    <div className="w-10 h-10 bg-[#f0f0f0] border border-[#e0e0e0] flex items-center justify-center flex-shrink-0 font-bold text-xs text-[#6b6b6b]">
+                    <div className="w-10 h-10 bg-muted border border-border flex items-center justify-center flex-shrink-0 font-bold text-xs text-muted-foreground">
                       {activity.initials}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[#111111] font-bold text-sm truncate">{activity.supporter}</p>
-                      <p className="text-[#999999] text-xs truncate">gifted · {activity.project}</p>
+                      <p className="text-foreground font-bold text-sm truncate">{activity.supporter}</p>
+                      <p className="text-subtle text-xs truncate">gifted · {activity.project}</p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-[#e8185d] font-black text-sm">{activity.amount}</p>
-                      <p className="text-[#999999] text-xs">{activity.timeAgo}</p>
+                      <p className="text-accent font-black text-sm">{activity.amount}</p>
+                      <p className="text-subtle text-xs">{activity.timeAgo}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -340,9 +340,9 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="mt-6 border border-[#e0e0e0] bg-white p-8"
+            className="mt-6 border border-border bg-background p-8"
           >
-            <div className="text-[10px] font-black uppercase tracking-widest text-[#999999] mb-6">Top Performing Items</div>
+            <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-6">Top Performing Items</div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {([
                 { name: "New Streaming Setup",     revenue: { week: "$680", month: "$1,890", year: "$8,400" }, supporters: { week: 9,  month: 28, year: 94 } },
@@ -355,12 +355,12 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.8 + index * 0.1 }}
                   whileHover={{ y: -2 }}
-                  className="p-5 border border-[#e0e0e0] bg-[#f5f5f5] hover:bg-white hover:shadow-sm transition-all cursor-pointer"
+                  className="p-5 border border-border bg-muted hover:bg-background hover:shadow-sm transition-all cursor-pointer"
                 >
-                  <h3 className="text-sm font-black text-[#111111] mb-4 truncate">{project.name}</h3>
+                  <h3 className="text-sm font-black text-foreground mb-4 truncate">{project.name}</h3>
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[#999999] text-xs font-bold uppercase tracking-widest">Revenue</span>
+                      <span className="text-subtle text-xs font-bold uppercase tracking-widest">Revenue</span>
                       <AnimatePresence mode="wait">
                         <motion.span
                           key={timePeriod + project.name + "r"}
@@ -368,14 +368,14 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 4 }}
                           transition={{ duration: 0.2 }}
-                          className="text-[#e8185d] font-black text-sm"
+                          className="text-accent font-black text-sm"
                         >
                           {project.revenue[timePeriod]}
                         </motion.span>
                       </AnimatePresence>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-[#999999] text-xs font-bold uppercase tracking-widest">Fans</span>
+                      <span className="text-subtle text-xs font-bold uppercase tracking-widest">Fans</span>
                       <AnimatePresence mode="wait">
                         <motion.span
                           key={timePeriod + project.name + "s"}
@@ -383,7 +383,7 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 4 }}
                           transition={{ duration: 0.2 }}
-                          className="text-[#111111] font-black text-sm"
+                          className="text-foreground font-black text-sm"
                         >
                           {project.supporters[timePeriod]}
                         </motion.span>
@@ -397,8 +397,8 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
         </div>
       </section>
 
-      <footer className="py-10 px-6 border-t border-[#e0e0e0]">
-        <div className="max-w-7xl mx-auto text-center text-[#999999] text-sm">
+      <footer className="py-10 px-6 border-t border-border">
+        <div className="max-w-7xl mx-auto text-center text-subtle text-sm">
           <p>© 2026 TipFlow. All rights reserved.</p>
         </div>
       </footer>

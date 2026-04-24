@@ -1,25 +1,27 @@
 import { motion } from "motion/react";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
-import { Gift, ShoppingBag, Heart } from "lucide-react";
+import { Gift, Heart, Zap, Shield, Trophy } from "lucide-react";
 
 interface HomeProps {
   onNavigateToAuth: () => void;
 }
 
+const RANK_COLORS = ["#FFD700", "#C0C0C0", "#CD7F32"] as const;
+
 export default function Home({ onNavigateToAuth }: HomeProps) {
   return (
-    <div className="min-h-screen bg-white text-[#111111]">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#111111] border-b-2 border-[#e8185d]">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e0e] border-b border-accent/40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="text-xl font-black text-white tracking-tight">TipFlow</div>
           <div className="flex items-center gap-8">
-            <a href="#" className="text-white/60 hover:text-white transition-colors text-sm font-medium tracking-wide">Features</a>
-            <a href="#" className="text-white/60 hover:text-white transition-colors text-sm font-medium tracking-wide">Pricing</a>
-            <a href="#" className="text-white/60 hover:text-white transition-colors text-sm font-medium tracking-wide">Creators</a>
+            <a href="#features" className="text-white/50 hover:text-white transition-colors text-sm font-medium">Features</a>
+            <a href="#pricing" className="text-white/50 hover:text-white transition-colors text-sm font-medium">Pricing</a>
+            <a href="#creators" className="text-white/50 hover:text-white transition-colors text-sm font-medium">Creators</a>
             <button
               onClick={onNavigateToAuth}
-              className="px-5 py-2 bg-[#e8185d] hover:bg-[#c9164f] text-white text-sm font-bold uppercase tracking-widest transition-colors"
+              className="px-5 py-2 rounded-md btn-cta text-white text-sm font-bold uppercase tracking-widest"
             >
               Get Started
             </button>
@@ -27,9 +29,18 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="pt-40 pb-32 px-6 bg-white">
-        <div className="max-w-7xl mx-auto">
+      {/* Hero — dark panel for gaming impact */}
+      <section className="pt-0 pb-0 bg-[#0e0e0e] relative overflow-hidden">
+        {/* Subtle radial glow behind heading */}
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse 70% 55% at 50% 60%, oklch(65.6% 0.241 354.308 / 0.12) 0%, transparent 70%)",
+          }}
+        />
+        <div className="max-w-7xl mx-auto px-6 pt-40 pb-32 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -37,23 +48,29 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
             className="max-w-4xl mx-auto text-center"
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.92 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ opacity: { duration: 0.5, delay: 0.2 }, scale: { duration: 0.5, delay: 0.2 } }}
+              transition={{ duration: 0.5, delay: 0.15 }}
               className="inline-block mb-8"
             >
-              <div className="px-4 py-1.5 border border-[#e8185d] text-[#e8185d] text-xs font-bold uppercase tracking-widest">
-                Fan Gifts. Zero Fees.
+              <div
+                className="px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest text-white/90 border"
+                style={{
+                  borderColor: "oklch(65.6% 0.241 354.308 / 0.5)",
+                  background: "oklch(65.6% 0.241 354.308 / 0.12)",
+                }}
+              >
+                New — Fan Gifts with Zero Fees
               </div>
             </motion.div>
 
-            <h1 className="text-7xl md:text-8xl font-black mb-8 leading-none tracking-tight text-[#111111]">
+            <h1 className="text-7xl md:text-8xl font-black mb-8 leading-none tracking-tight text-white">
               Your wishlist,
               <br />
-              <span className="text-[#e8185d]">funded.</span>
+              <span style={{ color: "oklch(65.6% 0.241 354.308)" }}>funded.</span>
             </h1>
 
-            <p className="text-xl text-[#6b6b6b] mb-12 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-white/50 mb-12 max-w-2xl mx-auto leading-relaxed">
               Share your list. Your fans buy the gifts. You keep 100%. No platform cut, ever.
             </p>
 
@@ -65,16 +82,16 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
             >
               <motion.button
                 onClick={onNavigateToAuth}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="px-10 py-4 bg-[#111111] hover:bg-[#e8185d] text-white text-lg font-bold uppercase tracking-widest transition-colors"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="px-10 py-4 rounded-md btn-cta text-white text-lg font-black uppercase tracking-widest"
               >
                 Start Your Wishlist
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="px-10 py-4 border-2 border-[#111111] text-[#111111] text-lg font-bold uppercase tracking-widest hover:bg-[#111111] hover:text-white transition-colors"
+                className="px-10 py-4 rounded-md border border-white/20 text-white/70 text-lg font-bold uppercase tracking-widest hover:border-white/40 hover:text-white transition-colors"
               >
                 How It Works
               </motion.button>
@@ -84,23 +101,35 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
       </section>
 
       {/* Stats strip */}
-      <div className="bg-[#111111] py-6 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-12">
+      <div className="bg-foreground py-8 px-6 border-y border-white/5">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-16">
           {[
             { stat: "10,000+", label: "Creators" },
             { stat: "$0", label: "Platform Fees" },
             { stat: "2 min", label: "Setup Time" },
-          ].map((item) => (
-            <div key={item.label} className="text-center">
-              <div className="text-3xl font-black text-white">{item.stat}</div>
-              <div className="text-xs font-bold uppercase tracking-widest text-white/40 mt-1">{item.label}</div>
-            </div>
+          ].map((item, i) => (
+            <motion.div
+              key={item.label}
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: i * 0.1 }}
+              className="text-center"
+            >
+              <div
+                className="text-4xl font-black mb-1"
+                style={{ color: "oklch(65.6% 0.241 354.308)" }}
+              >
+                {item.stat}
+              </div>
+              <div className="text-[10px] font-black uppercase tracking-widest text-white/40">{item.label}</div>
+            </motion.div>
           ))}
         </div>
       </div>
 
-      {/* Feature Section 1 - Wishlists */}
-      <section className="py-32 px-6 bg-white">
+      {/* Feature Section 1 — Wishlists */}
+      <section id="features" className="py-28 px-6 bg-background">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0 }}
@@ -110,53 +139,63 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
             className="grid md:grid-cols-2 gap-20 items-center"
           >
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
+              initial={{ opacity: 0, x: -40 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+              transition={{ duration: 0.7, ease: "easeOut" }}
             >
               <div className="flex items-center gap-2 mb-6">
-                <Gift className="w-4 h-4 text-[#e8185d]" />
-                <span className="text-xs font-bold uppercase tracking-widest text-[#e8185d]">Wishlists</span>
+                <Gift className="w-4 h-4" style={{ color: "oklch(65.6% 0.241 354.308)" }} />
+                <span
+                  className="text-xs font-bold uppercase tracking-widest"
+                  style={{ color: "oklch(65.6% 0.241 354.308)" }}
+                >
+                  Wishlists
+                </span>
               </div>
-              <h2 className="text-5xl font-black mb-6 leading-tight text-[#111111] tracking-tight">
+              <h2 className="text-5xl font-black mb-6 leading-tight text-foreground tracking-tight">
                 Get exactly
                 <br />
                 what you want.
               </h2>
-              <p className="text-lg text-[#6b6b6b] mb-10 leading-relaxed">
+              <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
                 Add any item from any store. Fans browse, choose what to gift, and it ships straight to you — your address never shared.
               </p>
-              <div className="space-y-5">
+              <div className="space-y-4">
                 {[
-                  { title: "Any store, any item", desc: "Amazon, Etsy, Target — add anything with a link." },
-                  { title: "Privacy-first", desc: "Your address is never visible to supporters." },
-                  { title: "Zero platform fees", desc: "Keep every dollar your fans contribute." },
-                ].map((item, index) => (
+                  { icon: <Zap className="w-4 h-4" />, title: "Any store, any item", desc: "Amazon, Etsy, Target — add anything with a link." },
+                  { icon: <Shield className="w-4 h-4" />, title: "Privacy-first", desc: "Your address is never visible to supporters." },
+                  { icon: <Gift className="w-4 h-4" />, title: "Zero platform fees", desc: "Keep every dollar your fans contribute." },
+                ].map((item, i) => (
                   <motion.div
-                    key={index}
+                    key={i}
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    className="flex items-start gap-4"
+                    transition={{ duration: 0.5, delay: i * 0.1 }}
+                    className="flex items-start gap-4 p-4 rounded-xl border border-border bg-background card-game"
                   >
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#e8185d] mt-2.5 flex-shrink-0" />
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-white"
+                      style={{ background: "oklch(65.6% 0.241 354.308)" }}
+                    >
+                      {item.icon}
+                    </div>
                     <div>
-                      <div className="font-bold text-[#111111] mb-0.5">{item.title}</div>
-                      <div className="text-[#6b6b6b] text-sm">{item.desc}</div>
+                      <div className="font-bold text-foreground mb-0.5">{item.title}</div>
+                      <div className="text-muted-foreground text-sm">{item.desc}</div>
                     </div>
                   </motion.div>
                 ))}
               </div>
             </motion.div>
             <motion.div
-              initial={{ opacity: 0, x: 50 }}
+              initial={{ opacity: 0, x: 40 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
+              transition={{ duration: 0.7, ease: "easeOut" }}
             >
-              <div className="border border-[#e0e0e0] overflow-hidden shadow-sm">
+              <div className="rounded-2xl overflow-hidden shadow-xl border border-border">
                 <ImageWithFallback
                   src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYXJrJTIwbW9kZSUyMGFuYWx5dGljcyUyMGRhc2hib2FyZCUyMHVpfGVufDF8fHx8MTc3NjA2MzE2Nnww&ixlib=rb-4.1.0&q=80&w=1080"
                   alt="Wishlist Dashboard"
@@ -168,8 +207,8 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
         </div>
       </section>
 
-      {/* Feature Section 2 */}
-      <section className="py-32 px-6 bg-[#f5f5f5]">
+      {/* Feature Section 2 — Leaderboard */}
+      <section className="py-28 px-6 bg-muted">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0 }}
@@ -177,49 +216,70 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
             viewport={{ once: true }}
             className="grid md:grid-cols-2 gap-20 items-center"
           >
+            {/* Leaderboard demo card */}
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
+              initial={{ opacity: 0, x: -40 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="order-2 md:order-1 border border-[#e0e0e0] bg-white p-8"
+              transition={{ duration: 0.7 }}
+              className="order-2 md:order-1"
             >
-              <div className="space-y-4">
-                {[
-                  { name: "boogerbill01", amount: "$4,699", rank: 1 },
-                  { name: "TheBull963", amount: "$3,710", rank: 2 },
-                  { name: "Maxroberts99", amount: "$2,905", rank: 3 },
-                ].map((entry) => (
-                  <div key={entry.rank} className="flex items-center gap-4 p-4 border border-[#e0e0e0]">
-                    <div className="w-8 h-8 bg-[#111111] text-white flex items-center justify-center text-xs font-black">
-                      #{entry.rank}
-                    </div>
-                    <div className="w-10 h-10 bg-[#f5f5f5] border border-[#e0e0e0] flex items-center justify-center text-xs font-bold text-[#6b6b6b]">
-                      {entry.name.slice(0, 2).toUpperCase()}
-                    </div>
-                    <span className="flex-1 text-sm font-bold text-[#111111]">{entry.name}</span>
-                    <span className="text-[#e8185d] font-black text-sm">{entry.amount}</span>
-                  </div>
-                ))}
+              <div className="rounded-2xl overflow-hidden border border-border bg-background card-game">
+                {/* Card header */}
+                <div className="bg-[#0e0e0e] px-6 py-4 flex items-center gap-3">
+                  <Trophy className="w-5 h-5" style={{ color: RANK_COLORS[0] }} />
+                  <span className="text-white font-black text-sm uppercase tracking-widest">Top Gifters</span>
+                </div>
+                <div className="p-4 space-y-2">
+                  {[
+                    { name: "boogerbill01", amount: "$4,699", rank: 1 },
+                    { name: "TheBull963",   amount: "$3,710", rank: 2 },
+                    { name: "Maxroberts99", amount: "$2,905", rank: 3 },
+                  ].map((entry, i) => (
+                    <motion.div
+                      key={entry.rank}
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.4, delay: i * 0.1 }}
+                      className="flex items-center gap-3 p-4 rounded-xl border border-border bg-background card-game cursor-pointer"
+                    >
+                      <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black text-white flex-shrink-0"
+                        style={{ background: RANK_COLORS[i] }}
+                      >
+                        #{entry.rank}
+                      </div>
+                      <div
+                        className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-black text-white flex-shrink-0"
+                        style={{ background: "oklch(65.6% 0.241 354.308)" }}
+                      >
+                        {entry.name.slice(0, 2).toUpperCase()}
+                      </div>
+                      <span className="flex-1 text-sm font-bold text-foreground">{entry.name}</span>
+                      <span className="font-black text-sm" style={{ color: RANK_COLORS[i] }}>{entry.amount}</span>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             </motion.div>
             <motion.div
-              initial={{ opacity: 0, x: 50 }}
+              initial={{ opacity: 0, x: 40 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 0.7 }}
               className="order-1 md:order-2"
             >
               <div className="flex items-center gap-2 mb-6">
-                <Heart className="w-4 h-4 text-[#e8185d]" />
-                <span className="text-xs font-bold uppercase tracking-widest text-[#e8185d]">Community</span>
+                <Heart className="w-4 h-4" style={{ color: "oklch(65.6% 0.241 354.308)" }} />
+                <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "oklch(65.6% 0.241 354.308)" }}>Community</span>
               </div>
-              <h2 className="text-5xl font-black mb-6 leading-tight text-[#111111] tracking-tight">
+              <h2 className="text-5xl font-black mb-6 leading-tight text-foreground tracking-tight">
                 Your fans
                 <br />
                 compete to gift you.
               </h2>
-              <p className="text-lg text-[#6b6b6b] leading-relaxed">
+              <p className="text-lg text-muted-foreground leading-relaxed">
                 Public leaderboards turn gifting into a community moment. Your most dedicated supporters get recognized — and they love it.
               </p>
             </motion.div>
@@ -227,34 +287,42 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
         </div>
       </section>
 
-      {/* Final CTA Section */}
-      <section className="py-40 px-6 bg-white">
-        <div className="max-w-4xl mx-auto text-center">
+      {/* Final CTA */}
+      <section className="py-40 px-6 bg-[#0e0e0e] relative overflow-hidden">
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 50% at 50% 50%, oklch(65.6% 0.241 354.308 / 0.1) 0%, transparent 70%)",
+          }}
+        />
+        <div className="max-w-4xl mx-auto text-center relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <div className="text-xs font-bold uppercase tracking-widest text-[#999999] mb-6">Ready?</div>
-            <h2 className="text-7xl md:text-8xl font-black mb-8 leading-none tracking-tight text-[#111111]">
+            <div className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-6">Ready?</div>
+            <h2 className="text-7xl md:text-8xl font-black mb-8 leading-none tracking-tight text-white">
               Start your
               <br />
-              <span className="text-[#e8185d]">wishlist.</span>
+              <span style={{ color: "oklch(65.6% 0.241 354.308)" }}>wishlist.</span>
             </h2>
-            <p className="text-xl text-[#6b6b6b] mb-12 max-w-xl mx-auto">
+            <p className="text-xl text-white/50 mb-12 max-w-xl mx-auto">
               Join 10,000+ creators getting gifted exactly what they want.
             </p>
             <motion.button
               onClick={onNavigateToAuth}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-12 py-5 bg-[#e8185d] hover:bg-[#c9164f] text-white text-xl font-black uppercase tracking-widest transition-colors"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="px-12 py-5 rounded-md btn-cta text-white text-xl font-black uppercase tracking-widest"
             >
               Create Your Wishlist
             </motion.button>
 
-            <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-10 text-sm text-[#999999]">
+            <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-10 text-sm text-white/30">
               {["100% free for creators", "Set up in 2 minutes", "No credit card needed"].map((item) => (
                 <div key={item} className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#059669]" />
@@ -267,46 +335,36 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-[#e0e0e0] py-16 px-6 bg-white">
+      <footer className="border-t border-white/5 py-16 px-6 bg-[#0e0e0e]">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-5 gap-12 mb-12">
             <div className="md:col-span-2">
-              <div className="text-xl font-black text-[#111111] mb-4">TipFlow</div>
-              <p className="text-[#6b6b6b] mb-6 max-w-xs text-sm leading-relaxed">
+              <div className="text-xl font-black text-white mb-4">TipFlow</div>
+              <p className="text-white/40 mb-6 max-w-xs text-sm leading-relaxed">
                 The wishlist platform for creators. Get gifted what you actually want. Zero fees, ever.
               </p>
             </div>
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-widest text-[#999999] mb-4">Product</h3>
-              <ul className="space-y-3 text-sm text-[#6b6b6b]">
-                <li><a href="#" className="hover:text-[#111111] transition-colors">Features</a></li>
-                <li><a href="#" className="hover:text-[#111111] transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-[#111111] transition-colors">Security</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-widest text-[#999999] mb-4">Resources</h3>
-              <ul className="space-y-3 text-sm text-[#6b6b6b]">
-                <li><a href="#" className="hover:text-[#111111] transition-colors">Creator Stories</a></li>
-                <li><a href="#" className="hover:text-[#111111] transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-[#111111] transition-colors">Help Center</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-widest text-[#999999] mb-4">Company</h3>
-              <ul className="space-y-3 text-sm text-[#6b6b6b]">
-                <li><a href="#" className="hover:text-[#111111] transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-[#111111] transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-[#111111] transition-colors">Contact</a></li>
-              </ul>
-            </div>
+            {[
+              { heading: "Product", links: ["Features", "Pricing", "Security"] },
+              { heading: "Resources", links: ["Creator Stories", "Blog", "Help Center"] },
+              { heading: "Company", links: ["About", "Careers", "Contact"] },
+            ].map(({ heading, links }) => (
+              <div key={heading}>
+                <h3 className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-4">{heading}</h3>
+                <ul className="space-y-3 text-sm text-white/50">
+                  {links.map((l) => (
+                    <li key={l}><a href="#" className="hover:text-white transition-colors">{l}</a></li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
-          <div className="pt-8 border-t border-[#e0e0e0] flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-[#999999]">
+          <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-white/30">
             <p>© 2026 TipFlow. All rights reserved.</p>
             <div className="flex gap-6">
-              <a href="#" className="hover:text-[#111111] transition-colors">Privacy</a>
-              <a href="#" className="hover:text-[#111111] transition-colors">Terms</a>
-              <a href="#" className="hover:text-[#111111] transition-colors">Cookies</a>
+              {["Privacy", "Terms", "Cookies"].map((l) => (
+                <a key={l} href="#" className="hover:text-white/60 transition-colors">{l}</a>
+              ))}
             </div>
           </div>
         </div>

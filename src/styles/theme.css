@@ -1,88 +1,144 @@
+/* ─── Dark mode via .dark class on <html> ─────────────────────────────────── */
 @custom-variant dark (&:is(.dark *));
 
+/* ─── Light mode tokens ───────────────────────────────────────────────────── */
 :root {
   --font-size: 16px;
-  --background: #ffffff;
-  --foreground: #111111;
-  --card: #ffffff;
-  --card-foreground: #111111;
-  --popover: #ffffff;
-  --popover-foreground: #111111;
-  --primary: #e8185d;
-  --primary-foreground: #ffffff;
-  --secondary: #f5f5f5;
-  --secondary-foreground: #111111;
-  --muted: #f5f5f5;
-  --muted-foreground: #6b6b6b;
-  --accent: #e8185d;
-  --accent-foreground: #ffffff;
-  --destructive: #dc2626;
+
+  /* Surfaces */
+  --background:          #ffffff;
+  --foreground:          #111111;
+  --card:                #ffffff;
+  --card-foreground:     #111111;
+  --popover:             #ffffff;
+  --popover-foreground:  #111111;
+
+  /* Brand */
+  --accent:              oklch(65.6% 0.241 354.308);
+  --accent-foreground:   #ffffff;
+  --primary:             oklch(65.6% 0.241 354.308);
+  --primary-foreground:  #ffffff;
+
+  /* Neutral */
+  --secondary:           #ebebeb;
+  --secondary-foreground:#111111;
+  --muted:               #f5f5f5;
+  --muted-foreground:    #6b6b6b;
+  --subtle:              #999999;
+
+  /* State */
+  --destructive:         #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #e0e0e0;
-  --input: #ffffff;
-  --input-background: #f5f5f5;
-  --switch-background: #d4d4d4;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --ring: #e8185d;
-  --chart-1: #e8185d;
-  --chart-2: #1d4ed8;
-  --chart-3: #f59e0b;
-  --chart-4: #059669;
-  --chart-5: #7c3aed;
-  --radius: 0.25rem;
-  --nav-bg: #111111;
-  --sidebar: #f5f5f5;
-  --sidebar-foreground: #111111;
-  --sidebar-primary: #e8185d;
+  --border:              #e0e0e0;
+  --input:               #ffffff;
+  --input-background:    #f5f5f5;
+  --switch-background:   #d4d4d4;
+  --ring:                oklch(65.6% 0.241 354.308);
+
+  /* Chart palette */
+  --chart-1:  oklch(65.6% 0.241 354.308);
+  --chart-2:  #1d4ed8;
+  --chart-3:  #f59e0b;
+  --chart-4:  #059669;
+  --chart-5:  #7c3aed;
+
+  /* Layout */
+  --radius:              0.5rem;
+  --nav-bg:              #0e0e0e;
+
+  /* Gaming depth */
+  --shadow-card:         0 2px 16px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.05);
+  --shadow-card-hover:   0 6px 28px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.07);
+  --shadow-cta:          0 4px 20px oklch(65.6% 0.241 354.308 / 0.35);
+  --glow-accent:         0 0 0 3px oklch(65.6% 0.241 354.308 / 0.2);
+
+  /* Sidebar */
+  --sidebar:             #f5f5f5;
+  --sidebar-foreground:  #111111;
+  --sidebar-primary:     oklch(65.6% 0.241 354.308);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e0e0e0;
+  --sidebar-accent:      #e0e0e0;
   --sidebar-accent-foreground: #111111;
-  --sidebar-border: #e0e0e0;
-  --sidebar-ring: #e8185d;
+  --sidebar-border:      #e0e0e0;
+  --sidebar-ring:        oklch(65.6% 0.241 354.308);
 }
 
+/* ─── Dark mode overrides ─────────────────────────────────────────────────── */
+.dark {
+  --background:          #0d0d0d;
+  --foreground:          #f0f0f0;
+  --card:                #161616;
+  --card-foreground:     #f0f0f0;
+  --popover:             #161616;
+  --popover-foreground:  #f0f0f0;
+
+  --secondary:           #242424;
+  --secondary-foreground:#f0f0f0;
+  --muted:               #1e1e1e;
+  --muted-foreground:    #909090;
+  --subtle:              #686868;
+
+  --border:              #2c2c2c;
+  --input:               #161616;
+  --input-background:    #1e1e1e;
+  --switch-background:   #444444;
+
+  --sidebar:             #141414;
+  --sidebar-foreground:  #f0f0f0;
+  --sidebar-accent:      #2c2c2c;
+  --sidebar-accent-foreground: #f0f0f0;
+  --sidebar-border:      #2c2c2c;
+
+  /* Brand stays the same in dark mode */
+  /* Nav stays the same (#111111) in dark mode */
+}
+
+/* ─── Tailwind v4 theme mapping ───────────────────────────────────────────── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
+  --color-background:             var(--background);
+  --color-foreground:             var(--foreground);
+  --color-card:                   var(--card);
+  --color-card-foreground:        var(--card-foreground);
+  --color-popover:                var(--popover);
+  --color-popover-foreground:     var(--popover-foreground);
+  --color-primary:                var(--primary);
+  --color-primary-foreground:     var(--primary-foreground);
+  --color-secondary:              var(--secondary);
+  --color-secondary-foreground:   var(--secondary-foreground);
+  --color-muted:                  var(--muted);
+  --color-muted-foreground:       var(--muted-foreground);
+  --color-subtle:                 var(--subtle);
+  --color-accent:                 var(--accent);
+  --color-accent-foreground:      var(--accent-foreground);
+  --color-destructive:            var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-input-background: var(--input-background);
-  --color-switch-background: var(--switch-background);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
+  --color-border:                 var(--border);
+  --color-input:                  var(--input);
+  --color-input-background:       var(--input-background);
+  --color-switch-background:      var(--switch-background);
+  --color-ring:                   var(--ring);
+  --color-chart-1:                var(--chart-1);
+  --color-chart-2:                var(--chart-2);
+  --color-chart-3:                var(--chart-3);
+  --color-chart-4:                var(--chart-4);
+  --color-chart-5:                var(--chart-5);
+  --color-nav:                    var(--nav-bg);
+  --color-sidebar:                var(--sidebar);
+  --color-sidebar-foreground:     var(--sidebar-foreground);
+  --color-sidebar-primary:        var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent:         var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border:         var(--sidebar-border);
+  --color-sidebar-ring:           var(--sidebar-ring);
+
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 2px);
   --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* ─── Base layer ──────────────────────────────────────────────────────────── */
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -90,6 +146,30 @@
 
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  /* ── Gaming feel: CTA glow + card depth ──────────────────────────────────── */
+  .btn-cta {
+    background: linear-gradient(135deg, oklch(65.6% 0.241 354.308), oklch(58% 0.241 354.308));
+    box-shadow: var(--shadow-cta);
+    transition: box-shadow 0.2s ease, transform 0.15s ease;
+  }
+  .btn-cta:hover {
+    box-shadow: 0 6px 28px oklch(65.6% 0.241 354.308 / 0.45);
+  }
+  .card-game {
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 0.2s ease, transform 0.15s ease;
+  }
+  .card-game:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+  .dark .card-game {
+    box-shadow: 0 2px 16px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.3);
+  }
+  .dark .card-game:hover {
+    box-shadow: 0 6px 28px rgba(0,0,0,0.55);
   }
 
   html {
@@ -118,25 +198,25 @@
 
   h4 {
     font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
+    font-weight: 500;
     line-height: 1.5;
   }
 
   label {
     font-size: var(--text-sm);
-    font-weight: var(--font-weight-medium);
+    font-weight: 500;
     line-height: 1.5;
   }
 
   button {
     font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
+    font-weight: 500;
     line-height: 1.5;
   }
 
-  input {
+  input, textarea {
     font-size: var(--text-base);
-    font-weight: var(--font-weight-normal);
+    font-weight: 400;
     line-height: 1.5;
   }
 }
