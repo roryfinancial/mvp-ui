@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
-import { Plus, Search, User, LogOut, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, LayoutDashboard, BarChart3, Settings as SettingsIcon, ChevronDown, List, DollarSign } from "lucide-react";
+import { Plus, Search, User, LogOut, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, LayoutDashboard, BarChart3, Settings as SettingsIcon, ChevronDown, List, DollarSign, Link2 } from "lucide-react";
 
 interface CreatorDashboardProps {
   username?: string;
@@ -11,6 +11,7 @@ interface CreatorDashboardProps {
   onAddItem?: () => void;
   onViewProject?: () => void;
   onViewAnalytics?: () => void;
+  onViewReferrals?: () => void;
   onViewSettings?: () => void;
   onViewBalance?: () => void;
 }
@@ -40,7 +41,7 @@ interface Wishlist {
   items: WishlistItem[];
 }
 
-export default function CreatorDashboard({ username = "Username", initialWishlistId = null, creditBalance = 0, onLogout, onCreateWishlist, onAddItem, onViewProject, onViewAnalytics, onViewSettings, onViewBalance }: CreatorDashboardProps) {
+export default function CreatorDashboard({ username = "Username", initialWishlistId = null, creditBalance = 0, onLogout, onCreateWishlist, onAddItem, onViewProject, onViewAnalytics, onViewReferrals, onViewSettings, onViewBalance }: CreatorDashboardProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [selectedWishlistId, setSelectedWishlistId] = useState<number | null>(initialWishlistId);
@@ -127,6 +128,13 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
               >
                 <BarChart3 className="w-4 h-4" />
                 Analytics
+              </button>
+              <button
+                onClick={onViewReferrals}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 font-medium text-sm transition-all"
+              >
+                <Link2 className="w-4 h-4" />
+                Referrals
               </button>
               <button
                 onClick={onViewSettings}

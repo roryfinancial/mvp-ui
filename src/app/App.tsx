@@ -9,9 +9,10 @@ import ProjectOverview from "./components/ProjectOverview";
 import CreatorProfile from "./components/CreatorProfile";
 import Settings from "./components/Settings";
 import Analytics from "./components/Analytics";
+import Referrals from "./components/Referrals";
 import { useState } from "react";
 
-type AppView = "home" | "auth" | "onboarding" | "creatorDashboard" | "supporterDashboard" | "createProject" | "createWishlist" | "projectOverview" | "creatorProfile" | "settings" | "analytics";
+type AppView = "home" | "auth" | "onboarding" | "creatorDashboard" | "supporterDashboard" | "createProject" | "createWishlist" | "projectOverview" | "creatorProfile" | "settings" | "analytics" | "referrals";
 type UserType = "creator" | "supporter";
 
 export default function App() {
@@ -71,6 +72,7 @@ export default function App() {
         onAddItem={() => setCurrentView("createProject")}
         onViewProject={() => setCurrentView("projectOverview")}
         onViewAnalytics={() => setCurrentView("analytics")}
+        onViewReferrals={() => setCurrentView("referrals")}
         onViewSettings={() => goToSettings()}
         onViewBalance={() => goToSettings("balance")}
       />
@@ -158,6 +160,18 @@ export default function App() {
       <Analytics
         onNavigateDashboard={() => setCurrentView("creatorDashboard")}
         onNavigateSettings={() => setCurrentView("settings")}
+        onNavigateReferrals={() => setCurrentView("referrals")}
+        onLogout={() => setCurrentView("home")}
+      />
+    );
+  }
+
+  if (currentView === "referrals") {
+    return (
+      <Referrals
+        onNavigateDashboard={() => setCurrentView("creatorDashboard")}
+        onNavigateAnalytics={() => setCurrentView("analytics")}
+        onNavigateSettings={() => goToSettings()}
         onLogout={() => setCurrentView("home")}
       />
     );

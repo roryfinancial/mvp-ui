@@ -1,35 +1,42 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
-import { Search, TrendingUp, DollarSign, Users, Gift, LayoutDashboard, BarChart3, Settings as SettingsIcon, LogOut } from "lucide-react";
+import { Search, TrendingUp, DollarSign, Users, Gift, LayoutDashboard, BarChart3, Settings as SettingsIcon, LogOut, Link2, ArrowRight } from "lucide-react";
 
 interface AnalyticsProps {
   onNavigateDashboard?: () => void;
   onNavigateSettings?: () => void;
+  onNavigateReferrals?: () => void;
   onLogout?: () => void;
 }
 
-type Metric = "revenue" | "supporters" | "gifts" | "avgContribution";
+type Metric = "revenue" | "supporters" | "gifts" | "avgContribution" | "referralEarnings" | "commissionEarned";
 type TimePeriod = "week" | "month" | "year";
 
 // ── Chart data per metric × time period ────────────────────────────────────
 const chartData: Record<TimePeriod, Record<Metric, { values: number[]; labels: string[]; format: (n: number) => string }>> = {
   week: {
-    revenue:         { values: [85, 120, 95, 180, 145, 210, 175],  labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], format: n => `$${n}` },
-    supporters:      { values: [2, 3, 1, 4, 3, 5, 4],             labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], format: n => `${n}` },
-    gifts:           { values: [1, 2, 1, 3, 2, 4, 3],             labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], format: n => `${n}` },
-    avgContribution: { values: [42, 40, 95, 45, 48, 42, 44],       labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], format: n => `$${n}` },
+    revenue:          { values: [85, 120, 95, 180, 145, 210, 175],  labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], format: n => `$${n}` },
+    supporters:       { values: [2, 3, 1, 4, 3, 5, 4],             labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], format: n => `${n}` },
+    gifts:            { values: [1, 2, 1, 3, 2, 4, 3],             labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], format: n => `${n}` },
+    avgContribution:  { values: [42, 40, 95, 45, 48, 42, 44],       labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], format: n => `$${n}` },
+    referralEarnings: { values: [12, 18, 14, 22, 19, 28, 24],       labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], format: n => `$${n}` },
+    commissionEarned: { values: [6, 9, 7, 11, 9, 14, 12],           labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], format: n => `$${n}` },
   },
   month: {
-    revenue:         { values: [420, 580, 710, 700],               labels: ["Week 1","Week 2","Week 3","Week 4"], format: n => `$${n}` },
-    supporters:      { values: [8, 12, 15, 12],                    labels: ["Week 1","Week 2","Week 3","Week 4"], format: n => `${n}` },
-    gifts:           { values: [4, 7, 8, 4],                       labels: ["Week 1","Week 2","Week 3","Week 4"], format: n => `${n}` },
-    avgContribution: { values: [52, 48, 47, 58],                   labels: ["Week 1","Week 2","Week 3","Week 4"], format: n => `$${n}` },
+    revenue:          { values: [420, 580, 710, 700],               labels: ["Week 1","Week 2","Week 3","Week 4"], format: n => `$${n}` },
+    supporters:       { values: [8, 12, 15, 12],                    labels: ["Week 1","Week 2","Week 3","Week 4"], format: n => `${n}` },
+    gifts:            { values: [4, 7, 8, 4],                       labels: ["Week 1","Week 2","Week 3","Week 4"], format: n => `${n}` },
+    avgContribution:  { values: [52, 48, 47, 58],                   labels: ["Week 1","Week 2","Week 3","Week 4"], format: n => `$${n}` },
+    referralEarnings: { values: [62, 94, 118, 106],                  labels: ["Week 1","Week 2","Week 3","Week 4"], format: n => `$${n}` },
+    commissionEarned: { values: [31, 47, 59, 53],                    labels: ["Week 1","Week 2","Week 3","Week 4"], format: n => `$${n}` },
   },
   year: {
-    revenue:         { values: [180, 240, 310, 280, 420, 380, 510, 490, 620, 580, 710, 850], labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], format: n => `$${n}` },
-    supporters:      { values: [5, 8, 10, 9, 14, 12, 16, 15, 19, 18, 22, 25],               labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], format: n => `${n}` },
-    gifts:           { values: [3, 4, 6, 5, 8, 7, 9, 9, 11, 10, 13, 15],                    labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], format: n => `${n}` },
-    avgContribution: { values: [36, 30, 31, 31, 30, 32, 32, 33, 33, 32, 32, 34],             labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], format: n => `$${n}` },
+    revenue:          { values: [180, 240, 310, 280, 420, 380, 510, 490, 620, 580, 710, 850], labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], format: n => `$${n}` },
+    supporters:       { values: [5, 8, 10, 9, 14, 12, 16, 15, 19, 18, 22, 25],               labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], format: n => `${n}` },
+    gifts:            { values: [3, 4, 6, 5, 8, 7, 9, 9, 11, 10, 13, 15],                    labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], format: n => `${n}` },
+    avgContribution:  { values: [36, 30, 31, 31, 30, 32, 32, 33, 33, 32, 32, 34],             labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], format: n => `$${n}` },
+    referralEarnings: { values: [0, 0, 42, 68, 95, 112, 148, 162, 198, 220, 264, 310],        labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], format: n => `$${n}` },
+    commissionEarned: { values: [0, 0, 21, 34, 47, 56, 74, 81, 99, 110, 132, 155],            labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], format: n => `$${n}` },
   },
 };
 
@@ -39,17 +46,21 @@ const periodStats: Record<TimePeriod, {
   supporters: number; supportersChange: string;
   gifts: number; giftsChange: string;
   avg: string; avgChange: string;
+  referralEarnings: string; referralEarningsChange: string;
+  commissionEarned: string; commissionEarnedChange: string;
 }> = {
-  week:  { revenue: "$1,010", revenueChange: "+8%",  supporters: 22,  supportersChange: "+5",  gifts: 16,  giftsChange: "+3",  avg: "$45.91", avgChange: "+2%" },
-  month: { revenue: "$2,410", revenueChange: "+12%", supporters: 47,  supportersChange: "+8",  gifts: 23,  giftsChange: "+5",  avg: "$51.28", avgChange: "+3%" },
-  year:  { revenue: "$18,240",revenueChange: "+34%", supporters: 173, supportersChange: "+89", gifts: 100, giftsChange: "+52", avg: "$105.43",avgChange: "+18%"},
+  week:  { revenue: "$1,010", revenueChange: "+8%",  supporters: 22,  supportersChange: "+5",  gifts: 16,  giftsChange: "+3",  avg: "$45.91", avgChange: "+2%",  referralEarnings: "$137",    referralEarningsChange: "+14%", commissionEarned: "$68",     commissionEarnedChange: "+14%" },
+  month: { revenue: "$2,410", revenueChange: "+12%", supporters: 47,  supportersChange: "+8",  gifts: 23,  giftsChange: "+5",  avg: "$51.28", avgChange: "+3%",  referralEarnings: "$380",    referralEarningsChange: "+21%", commissionEarned: "$190",    commissionEarnedChange: "+21%" },
+  year:  { revenue: "$18,240",revenueChange: "+34%", supporters: 173, supportersChange: "+89", gifts: 100, giftsChange: "+52", avg: "$105.43",avgChange: "+18%", referralEarnings: "$1,619",  referralEarningsChange: "+68%", commissionEarned: "$809",    commissionEarnedChange: "+68%" },
 };
 
 const metricConfig: Record<Metric, { label: string; color: string; accentClass: string; borderClass: string; badgeClass: string; iconColor: string }> = {
-  revenue:         { label: "Revenue Over Time",          color: "from-purple-500 to-pink-500",   accentClass: "from-purple-600/10 to-purple-600/5", borderClass: "border-purple-500/20", badgeClass: "text-purple-400 bg-purple-600/20", iconColor: "text-purple-400" },
-  supporters:      { label: "Supporter Growth",           color: "from-pink-500 to-rose-500",     accentClass: "from-pink-600/10 to-pink-600/5",     borderClass: "border-pink-500/20",   badgeClass: "text-pink-400 bg-pink-600/20",     iconColor: "text-pink-400" },
-  gifts:           { label: "Gifts Over Time",            color: "from-blue-500 to-cyan-500",     accentClass: "from-blue-600/10 to-blue-600/5",     borderClass: "border-blue-500/20",   badgeClass: "text-blue-400 bg-blue-600/20",     iconColor: "text-blue-400" },
-  avgContribution: { label: "Avg. Contribution Over Time",color: "from-green-500 to-emerald-500", accentClass: "from-green-600/10 to-green-600/5",   borderClass: "border-green-500/20",  badgeClass: "text-green-400 bg-green-600/20",   iconColor: "text-green-400" },
+  revenue:          { label: "Revenue Over Time",             color: "from-purple-500 to-pink-500",   accentClass: "from-purple-600/10 to-purple-600/5",   borderClass: "border-purple-500/20", badgeClass: "text-purple-400 bg-purple-600/20", iconColor: "text-purple-400" },
+  supporters:       { label: "Supporter Growth",              color: "from-pink-500 to-rose-500",     accentClass: "from-pink-600/10 to-pink-600/5",       borderClass: "border-pink-500/20",   badgeClass: "text-pink-400 bg-pink-600/20",     iconColor: "text-pink-400" },
+  gifts:            { label: "Gifts Over Time",               color: "from-blue-500 to-cyan-500",     accentClass: "from-blue-600/10 to-blue-600/5",       borderClass: "border-blue-500/20",   badgeClass: "text-blue-400 bg-blue-600/20",     iconColor: "text-blue-400" },
+  avgContribution:  { label: "Avg. Contribution Over Time",   color: "from-green-500 to-emerald-500", accentClass: "from-green-600/10 to-green-600/5",     borderClass: "border-green-500/20",  badgeClass: "text-green-400 bg-green-600/20",   iconColor: "text-green-400" },
+  referralEarnings: { label: "Referral Earnings Over Time",   color: "from-amber-500 to-orange-500",  accentClass: "from-amber-600/10 to-amber-600/5",     borderClass: "border-amber-500/20",  badgeClass: "text-amber-400 bg-amber-600/20",   iconColor: "text-amber-400" },
+  commissionEarned: { label: "Commission Earned Over Time",   color: "from-teal-500 to-cyan-400",     accentClass: "from-teal-600/10 to-teal-600/5",       borderClass: "border-teal-500/20",   badgeClass: "text-teal-400 bg-teal-600/20",     iconColor: "text-teal-400" },
 };
 
 const recentActivity = [
@@ -60,7 +71,7 @@ const recentActivity = [
   { supporter: "Jordan Lee",    amount: "$75",  project: "Art Supplies Collection",timeAgo: "3d ago",  initials: "JL" },
 ];
 
-export default function Analytics({ onNavigateDashboard, onNavigateSettings, onLogout }: AnalyticsProps) {
+export default function Analytics({ onNavigateDashboard, onNavigateSettings, onNavigateReferrals, onLogout }: AnalyticsProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("month");
   const [selectedMetric, setSelectedMetric] = useState<Metric>("revenue");
@@ -75,10 +86,15 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
   const chartKey = `${selectedMetric}-${timePeriod}`;
 
   const statCards: { metric: Metric; icon: React.ReactNode; label: string; value: string; change: string }[] = [
-    { metric: "revenue",         icon: <DollarSign className="w-10 h-10 text-purple-400" />, label: "Total Revenue",      value: stats.revenue,               change: stats.revenueChange },
-    { metric: "supporters",      icon: <Users className="w-10 h-10 text-pink-400" />,        label: "Total Supporters",   value: String(stats.supporters),     change: stats.supportersChange },
-    { metric: "gifts",           icon: <Gift className="w-10 h-10 text-blue-400" />,         label: "Gifts Received",     value: String(stats.gifts),          change: stats.giftsChange },
-    { metric: "avgContribution", icon: <TrendingUp className="w-10 h-10 text-green-400" />,  label: "Avg. Contribution",  value: stats.avg,                    change: stats.avgChange },
+    { metric: "revenue",          icon: <DollarSign className="w-10 h-10 text-purple-400" />, label: "Total Revenue",        value: stats.revenue,                    change: stats.revenueChange },
+    { metric: "supporters",       icon: <Users className="w-10 h-10 text-pink-400" />,        label: "Total Supporters",     value: String(stats.supporters),         change: stats.supportersChange },
+    { metric: "gifts",            icon: <Gift className="w-10 h-10 text-blue-400" />,         label: "Gifts Received",       value: String(stats.gifts),              change: stats.giftsChange },
+    { metric: "avgContribution",  icon: <TrendingUp className="w-10 h-10 text-green-400" />,  label: "Avg. Contribution",    value: stats.avg,                        change: stats.avgChange },
+  ];
+
+  const referralStatCards: { metric: Metric; icon: React.ReactNode; label: string; value: string; change: string }[] = [
+    { metric: "referralEarnings", icon: <Link2 className="w-10 h-10 text-amber-400" />,       label: "Referral Earnings",    value: stats.referralEarnings,           change: stats.referralEarningsChange },
+    { metric: "commissionEarned", icon: <TrendingUp className="w-10 h-10 text-teal-400" />,   label: "Commission Earned",    value: stats.commissionEarned,           change: stats.commissionEarnedChange },
   ];
 
   return (
@@ -101,6 +117,13 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
               <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-white font-medium text-sm transition-all">
                 <BarChart3 className="w-4 h-4" />
                 Analytics
+              </button>
+              <button
+                onClick={onNavigateReferrals}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 font-medium text-sm transition-all"
+              >
+                <Link2 className="w-4 h-4" />
+                Referrals
               </button>
               <button
                 onClick={onNavigateSettings}
@@ -171,7 +194,7 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
           </motion.div>
 
           {/* Stats Grid — clickable */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             {statCards.map(({ metric, icon, label, value, change }, i) => {
               const c = metricConfig[metric];
               const isActive = selectedMetric === metric;
@@ -201,6 +224,41 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
                       animate={{ opacity: 1 }}
                       className="text-xs mt-2 text-gray-500"
                     >
+                      Viewing in chart ↓
+                    </motion.p>
+                  )}
+                </motion.button>
+              );
+            })}
+          </div>
+
+          {/* Referral KPI Cards — clickable, same dynamic pattern */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
+            {referralStatCards.map(({ metric, icon, label, value, change }, i) => {
+              const c = metricConfig[metric];
+              const isActive = selectedMetric === metric;
+              return (
+                <motion.button
+                  key={metric}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.42 + i * 0.08 }}
+                  whileHover={{ scale: 1.03, y: -4 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setSelectedMetric(metric)}
+                  className={`rounded-3xl p-6 text-left w-full transition-all duration-200 bg-gradient-to-br ${c.accentClass} border-2 ${
+                    isActive ? `${c.borderClass} ring-1 ring-offset-0 shadow-lg` : "border-white/10 hover:border-white/20"
+                  }`}
+                  style={isActive ? { boxShadow: "0 8px 32px rgba(251,191,36,0.12)" } : {}}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    {icon}
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${c.badgeClass}`}>{change}</span>
+                  </div>
+                  <p className="text-gray-400 text-sm mb-1">{label}</p>
+                  <p className="text-3xl font-bold text-white">{value}</p>
+                  {isActive && (
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs mt-2 text-gray-500">
                       Viewing in chart ↓
                     </motion.p>
                   )}
@@ -414,6 +472,71 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onL
                       </AnimatePresence>
                     </div>
                   </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Referral Overview Panel */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.45 }}
+            className="mt-8 rounded-3xl p-8 bg-gradient-to-br from-amber-600/10 to-teal-600/10 border border-amber-500/20"
+          >
+            <div className="flex items-start justify-between flex-wrap gap-4 mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-white">Referral Overview</h2>
+                <p className="text-gray-400 text-sm mt-1">Earnings from creators you've referred to TipFlow</p>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={onNavigateReferrals}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-600/20 to-amber-600/10 border border-amber-500/30 text-amber-400 font-medium text-sm hover:from-amber-600/30 hover:to-amber-600/20 transition-all"
+              >
+                Manage Referrals
+                <ArrowRight className="w-4 h-4" />
+              </motion.button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+              {[
+                { label: "Active Referred Creators", value: "3", sub: "of 5 total", color: "text-amber-400" },
+                {
+                  label: "Referral Earnings",
+                  value: periodStats[timePeriod].referralEarnings,
+                  sub: `${periodStats[timePeriod].referralEarningsChange} vs prior ${timePeriod}`,
+                  color: "text-amber-400",
+                },
+                {
+                  label: "Commission Earned",
+                  value: periodStats[timePeriod].commissionEarned,
+                  sub: "5% rate · Starter tier",
+                  color: "text-teal-400",
+                },
+              ].map((item, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.55 + i * 0.08 }}
+                  className="p-5 rounded-2xl bg-[#0a0a0a]/60 border border-white/10"
+                >
+                  <p className="text-gray-400 text-sm mb-2">{item.label}</p>
+                  <AnimatePresence mode="wait">
+                    <motion.p
+                      key={timePeriod + item.label}
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 4 }}
+                      transition={{ duration: 0.2 }}
+                      className={`text-3xl font-bold ${item.color}`}
+                    >
+                      {item.value}
+                    </motion.p>
+                  </AnimatePresence>
+                  <p className="text-gray-500 text-xs mt-1">{item.sub}</p>
                 </motion.div>
               ))}
             </div>
