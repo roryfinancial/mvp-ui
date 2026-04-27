@@ -1,124 +1,144 @@
+/* ─── Dark mode via .dark class on <html> ─────────────────────────────────── */
 @custom-variant dark (&:is(.dark *));
 
+/* ─── Light mode tokens ───────────────────────────────────────────────────── */
 :root {
   --font-size: 16px;
-  --background: #ffffff;
-  --foreground: oklch(0.145 0 0);
-  --card: #ffffff;
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: #030213;
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.95 0.0058 264.53);
-  --secondary-foreground: #030213;
-  --muted: #ececf0;
-  --muted-foreground: #717182;
-  --accent: #e9ebef;
-  --accent-foreground: #030213;
-  --destructive: #d4183d;
+
+  /* Surfaces */
+  --background:          #ffffff;
+  --foreground:          #111111;
+  --card:                #ffffff;
+  --card-foreground:     #111111;
+  --popover:             #ffffff;
+  --popover-foreground:  #111111;
+
+  /* Brand */
+  --accent:              oklch(65.6% 0.241 354.308);
+  --accent-foreground:   #ffffff;
+  --primary:             oklch(65.6% 0.241 354.308);
+  --primary-foreground:  #ffffff;
+
+  /* Neutral */
+  --secondary:           #ebebeb;
+  --secondary-foreground:#111111;
+  --muted:               #f5f5f5;
+  --muted-foreground:    #6b6b6b;
+  --subtle:              #999999;
+
+  /* State */
+  --destructive:         #dc2626;
   --destructive-foreground: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
-  --input: transparent;
-  --input-background: #f3f3f5;
-  --switch-background: #cbced4;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #030213;
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --border:              #e0e0e0;
+  --input:               #ffffff;
+  --input-background:    #f5f5f5;
+  --switch-background:   #d4d4d4;
+  --ring:                oklch(65.6% 0.241 354.308);
+
+  /* Chart palette */
+  --chart-1:  oklch(65.6% 0.241 354.308);
+  --chart-2:  #1d4ed8;
+  --chart-3:  #f59e0b;
+  --chart-4:  #059669;
+  --chart-5:  #7c3aed;
+
+  /* Layout */
+  --radius:              0.5rem;
+  --nav-bg:              #0e0e0e;
+
+  /* Gaming depth */
+  --shadow-card:         0 2px 16px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.05);
+  --shadow-card-hover:   0 6px 28px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.07);
+  --shadow-cta:          0 4px 20px oklch(65.6% 0.241 354.308 / 0.35);
+  --glow-accent:         0 0 0 3px oklch(65.6% 0.241 354.308 / 0.2);
+
+  /* Sidebar */
+  --sidebar:             #f5f5f5;
+  --sidebar-foreground:  #111111;
+  --sidebar-primary:     oklch(65.6% 0.241 354.308);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent:      #e0e0e0;
+  --sidebar-accent-foreground: #111111;
+  --sidebar-border:      #e0e0e0;
+  --sidebar-ring:        oklch(65.6% 0.241 354.308);
 }
 
+/* ─── Dark mode overrides ─────────────────────────────────────────────────── */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  --background:          #0d0d0d;
+  --foreground:          #f0f0f0;
+  --card:                #161616;
+  --card-foreground:     #f0f0f0;
+  --popover:             #161616;
+  --popover-foreground:  #f0f0f0;
+
+  --secondary:           #242424;
+  --secondary-foreground:#f0f0f0;
+  --muted:               #1e1e1e;
+  --muted-foreground:    #909090;
+  --subtle:              #686868;
+
+  --border:              #2c2c2c;
+  --input:               #161616;
+  --input-background:    #1e1e1e;
+  --switch-background:   #444444;
+
+  --sidebar:             #141414;
+  --sidebar-foreground:  #f0f0f0;
+  --sidebar-accent:      #2c2c2c;
+  --sidebar-accent-foreground: #f0f0f0;
+  --sidebar-border:      #2c2c2c;
+
+  /* Brand stays the same in dark mode */
+  /* Nav stays the same (#111111) in dark mode */
 }
 
+/* ─── Tailwind v4 theme mapping ───────────────────────────────────────────── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
+  --color-background:             var(--background);
+  --color-foreground:             var(--foreground);
+  --color-card:                   var(--card);
+  --color-card-foreground:        var(--card-foreground);
+  --color-popover:                var(--popover);
+  --color-popover-foreground:     var(--popover-foreground);
+  --color-primary:                var(--primary);
+  --color-primary-foreground:     var(--primary-foreground);
+  --color-secondary:              var(--secondary);
+  --color-secondary-foreground:   var(--secondary-foreground);
+  --color-muted:                  var(--muted);
+  --color-muted-foreground:       var(--muted-foreground);
+  --color-subtle:                 var(--subtle);
+  --color-accent:                 var(--accent);
+  --color-accent-foreground:      var(--accent-foreground);
+  --color-destructive:            var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-input-background: var(--input-background);
-  --color-switch-background: var(--switch-background);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
+  --color-border:                 var(--border);
+  --color-input:                  var(--input);
+  --color-input-background:       var(--input-background);
+  --color-switch-background:      var(--switch-background);
+  --color-ring:                   var(--ring);
+  --color-chart-1:                var(--chart-1);
+  --color-chart-2:                var(--chart-2);
+  --color-chart-3:                var(--chart-3);
+  --color-chart-4:                var(--chart-4);
+  --color-chart-5:                var(--chart-5);
+  --color-nav:                    var(--nav-bg);
+  --color-sidebar:                var(--sidebar);
+  --color-sidebar-foreground:     var(--sidebar-foreground);
+  --color-sidebar-primary:        var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent:         var(--sidebar-accent);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border:         var(--sidebar-border);
+  --color-sidebar-ring:           var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* ─── Base layer ──────────────────────────────────────────────────────────── */
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -126,12 +146,31 @@
 
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
-  /**
-  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
-  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
-  */
+  /* ── Gaming feel: CTA glow + card depth ──────────────────────────────────── */
+  .btn-cta {
+    background: linear-gradient(135deg, oklch(65.6% 0.241 354.308), oklch(58% 0.241 354.308));
+    box-shadow: var(--shadow-cta);
+    transition: box-shadow 0.2s ease, transform 0.15s ease;
+  }
+  .btn-cta:hover {
+    box-shadow: 0 6px 28px oklch(65.6% 0.241 354.308 / 0.45);
+  }
+  .card-game {
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 0.2s ease, transform 0.15s ease;
+  }
+  .card-game:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+  .dark .card-game {
+    box-shadow: 0 2px 16px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.3);
+  }
+  .dark .card-game:hover {
+    box-shadow: 0 6px 28px rgba(0,0,0,0.55);
+  }
 
   html {
     font-size: var(--font-size);
@@ -139,43 +178,45 @@
 
   h1 {
     font-size: var(--text-2xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
   }
 
   h2 {
     font-size: var(--text-xl);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
   }
 
   h3 {
     font-size: var(--text-lg);
-    font-weight: var(--font-weight-medium);
-    line-height: 1.5;
+    font-weight: 600;
+    line-height: 1.3;
   }
 
   h4 {
     font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
+    font-weight: 500;
     line-height: 1.5;
   }
 
   label {
-    font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
+    font-size: var(--text-sm);
+    font-weight: 500;
     line-height: 1.5;
   }
 
   button {
     font-size: var(--text-base);
-    font-weight: var(--font-weight-medium);
+    font-weight: 500;
     line-height: 1.5;
   }
 
-  input {
+  input, textarea {
     font-size: var(--text-base);
-    font-weight: var(--font-weight-normal);
+    font-weight: 400;
     line-height: 1.5;
   }
 }

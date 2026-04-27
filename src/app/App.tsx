@@ -1,3 +1,8 @@
+import { Routes, Route, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+import { useState } from "react";
+import ThemeToggle from "./components/ThemeToggle";
+
 import Home from "./pages/Home";
 import Auth from "./components/Auth";
 import OnboardingChoice from "./components/OnboardingChoice";
@@ -9,52 +14,275 @@ import ProjectOverview from "./components/ProjectOverview";
 import CreatorProfile from "./components/CreatorProfile";
 import Settings from "./components/Settings";
 import Analytics from "./components/Analytics";
+<<<<<<< HEAD
 import Referrals from "./components/Referrals";
 import { useState } from "react";
 
 type AppView = "home" | "auth" | "onboarding" | "creatorDashboard" | "supporterDashboard" | "createProject" | "createWishlist" | "projectOverview" | "creatorProfile" | "settings" | "analytics" | "referrals";
+=======
+
+>>>>>>> e1f731d0d1fb3099cb6020529e7ff1fcb8dae7c7
 type UserType = "creator" | "supporter";
 
+// ─── Route wrappers inject navigation via useNavigate ────────────────────────
+
+function HomeRoute() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>TipFlow — Fan Gifts. Zero Fees.</title>
+        <meta name="description" content="TipFlow lets fans fund the gear, software, and essentials creators actually need — with zero platform fees." />
+        <link rel="canonical" href="https://tipflow.com/" />
+      </Helmet>
+      <Home onNavigateToAuth={() => navigate("/auth")} />
+    </>
+  );
+}
+
+function AuthRoute({ onAuth }: { onAuth: (t: UserType) => void }) {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>Sign In — TipFlow</title>
+        <meta name="description" content="Sign in or create your TipFlow account to start gifting or building your wishlist." />
+      </Helmet>
+      <Auth
+        onBack={() => navigate("/")}
+        onAuthComplete={(type) => {
+          onAuth(type);
+          navigate("/onboarding");
+        }}
+      />
+    </>
+  );
+}
+
+function OnboardingRoute({ userType }: { userType: UserType }) {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>Get Started — TipFlow</title>
+      </Helmet>
+      <OnboardingChoice
+        userType={userType}
+        onBack={() => navigate("/auth")}
+        onComplete={() => navigate(userType === "creator" ? "/dashboard" : "/supporter")}
+        onViewCreator={() => navigate("/creator/username")}
+        onMakeProject={() => navigate("/dashboard/new-item")}
+      />
+    </>
+  );
+}
+
+function CreatorDashboardRoute({
+  creditBalance,
+  onViewBalance,
+}: {
+  creditBalance: number;
+  onViewBalance: () => void;
+}) {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>Dashboard — TipFlow</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
+      <CreatorDashboard
+        creditBalance={creditBalance}
+        onLogout={() => navigate("/")}
+        onCreateWishlist={() => navigate("/dashboard/new-list")}
+        onAddItem={() => navigate("/dashboard/new-item")}
+        onViewProject={() => navigate("/project/1")}
+        onViewAnalytics={() => navigate("/analytics")}
+        onViewSettings={() => navigate("/settings")}
+        onViewBalance={onViewBalance}
+      />
+    </>
+  );
+}
+
+function SupporterDashboardRoute({
+  creditBalance,
+  onViewBalance,
+}: {
+  creditBalance: number;
+  onViewBalance: () => void;
+}) {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>My Dashboard — TipFlow</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
+      <SupporterDashboard
+        creditBalance={creditBalance}
+        onLogout={() => navigate("/")}
+        onViewProject={() => navigate("/project/1")}
+        onViewCreator={() => navigate("/creator/username")}
+        onViewSettings={() => navigate("/settings")}
+        onViewBalance={onViewBalance}
+      />
+    </>
+  );
+}
+
+function CreateWishlistRoute() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>New Wishlist — TipFlow</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
+      <CreateWishlist
+        onBack={() => navigate("/dashboard")}
+        onCreateWishlist={() => navigate("/dashboard")}
+      />
+    </>
+  );
+}
+
+function CreateProjectRoute() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>Add Item — TipFlow</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
+      <CreateProject
+        onBack={() => navigate("/dashboard")}
+        onCreateProject={() => navigate("/dashboard")}
+      />
+    </>
+  );
+}
+
+function ProjectOverviewRoute({ userType }: { userType: UserType }) {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>Project — TipFlow</title>
+        <meta name="description" content="Support this creator's wishlist item on TipFlow." />
+      </Helmet>
+      <ProjectOverview
+        isCreator={userType === "creator"}
+        onBack={() => navigate(-1 as never)}
+        onBackToWishlist={() => navigate("/dashboard")}
+        onNavigateDashboard={() => navigate("/dashboard")}
+        onNavigateAnalytics={() => navigate("/analytics")}
+        onNavigateSettings={() => navigate("/settings")}
+        onLogout={() => navigate("/")}
+        onViewCreator={() => navigate("/creator/username")}
+      />
+    </>
+  );
+}
+
+function CreatorProfileRoute({
+  userType,
+  creditBalance,
+}: {
+  userType: UserType;
+  creditBalance: number;
+}) {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>Creator Profile — TipFlow</title>
+        <meta name="description" content="Support this creator on TipFlow — gift items from their wishlist." />
+      </Helmet>
+      <CreatorProfile
+        creditBalance={creditBalance}
+        onBack={() => navigate(userType === "creator" ? "/dashboard" : "/supporter")}
+        onViewProject={() => navigate("/project/1")}
+        onViewSettings={() => navigate("/settings")}
+      />
+    </>
+  );
+}
+
+function SettingsRoute({
+  creditBalance,
+  onUpdateBalance,
+  initialSection,
+}: {
+  creditBalance: number;
+  onUpdateBalance: (n: number) => void;
+  initialSection: "profile" | "account" | "notifications" | "privacy" | "balance";
+}) {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>Settings — TipFlow</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
+      <Settings
+        creditBalance={creditBalance}
+        onUpdateBalance={onUpdateBalance}
+        initialSection={initialSection}
+        onNavigateDashboard={() => navigate("/dashboard")}
+        onNavigateAnalytics={() => navigate("/analytics")}
+        onLogout={() => navigate("/")}
+      />
+    </>
+  );
+}
+
+function AnalyticsRoute() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>Analytics — TipFlow</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
+      <Analytics
+        onNavigateDashboard={() => navigate("/dashboard")}
+        onNavigateSettings={() => navigate("/settings")}
+        onLogout={() => navigate("/")}
+      />
+    </>
+  );
+}
+
+// ─── Root App ────────────────────────────────────────────────────────────────
+
 export default function App() {
-  const [currentView, setCurrentView] = useState<AppView>("home");
+  const navigate = useNavigate();
   const [userType, setUserType] = useState<UserType>("creator");
-  const [returnWishlistId, setReturnWishlistId] = useState<number | null>(null);
   const [creditBalance, setCreditBalance] = useState<number>(1240);
   const [settingsSection, setSettingsSection] = useState<"profile" | "account" | "notifications" | "privacy" | "balance">("profile");
 
   const goToSettings = (section: "profile" | "account" | "notifications" | "privacy" | "balance" = "profile") => {
     setSettingsSection(section);
-    setCurrentView("settings");
+    navigate("/settings");
   };
 
-  const goToDashboard = (wishlistId: number | null = null) => {
-    setReturnWishlistId(wishlistId);
-    setCurrentView("creatorDashboard");
-  };
-
-  if (currentView === "auth") {
-    return (
-      <Auth
-        onBack={() => setCurrentView("home")}
-        onAuthComplete={(type) => {
-          setUserType(type);
-          setCurrentView("onboarding");
-        }}
-      />
-    );
-  }
-
-  if (currentView === "onboarding") {
-    return (
-      <OnboardingChoice
-        userType={userType}
-        onBack={() => setCurrentView("auth")}
-        onComplete={() => {
-          if (userType === "creator") {
-            setCurrentView("creatorDashboard");
-          } else {
-            setCurrentView("supporterDashboard");
+  return (
+    <>
+      <ThemeToggle />
+      <Routes>
+        <Route path="/" element={<HomeRoute />} />
+        <Route path="/auth" element={<AuthRoute onAuth={setUserType} />} />
+        <Route path="/onboarding" element={<OnboardingRoute userType={userType} />} />
+        <Route
+          path="/dashboard"
+          element={
+            <CreatorDashboardRoute
+              creditBalance={creditBalance}
+              onViewBalance={() => goToSettings("balance")}
+            />
           }
+<<<<<<< HEAD
         }}
         onViewCreator={() => setCurrentView("creatorProfile")}
         onMakeProject={() => setCurrentView("createProject")}
@@ -178,4 +406,38 @@ export default function App() {
   }
 
   return <Home onNavigateToAuth={() => setCurrentView("auth")} />;
+=======
+        />
+        <Route path="/dashboard/new-list" element={<CreateWishlistRoute />} />
+        <Route path="/dashboard/new-item" element={<CreateProjectRoute />} />
+        <Route
+          path="/supporter"
+          element={
+            <SupporterDashboardRoute
+              creditBalance={creditBalance}
+              onViewBalance={() => goToSettings("balance")}
+            />
+          }
+        />
+        <Route path="/project/:id" element={<ProjectOverviewRoute userType={userType} />} />
+        <Route
+          path="/creator/:username"
+          element={<CreatorProfileRoute userType={userType} creditBalance={creditBalance} />}
+        />
+        <Route
+          path="/settings"
+          element={
+            <SettingsRoute
+              creditBalance={creditBalance}
+              onUpdateBalance={setCreditBalance}
+              initialSection={settingsSection}
+            />
+          }
+        />
+        <Route path="/analytics" element={<AnalyticsRoute />} />
+        <Route path="*" element={<HomeRoute />} />
+      </Routes>
+    </>
+  );
+>>>>>>> e1f731d0d1fb3099cb6020529e7ff1fcb8dae7c7
 }

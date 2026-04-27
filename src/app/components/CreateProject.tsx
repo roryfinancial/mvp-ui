@@ -44,45 +44,30 @@ export default function CreateProject({ onBack, onCreateProject }: CreateProject
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleCreateProject = () => {
-    onCreateProject?.();
-  };
-
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg" style={{ borderBottomWidth: "1px", borderColor: "rgba(255, 255, 255, 0.05)" }}>
-        <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-          <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-            TipFlow
-          </div>
-          <div className="flex items-center gap-6">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e0e] border-b border-accent/40">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="text-xl font-black text-white tracking-tight">TipFlow</div>
+          <div className="flex items-center gap-4">
             <div className="relative hidden sm:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
               <input
                 type="text"
                 placeholder="Search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 rounded-xl bg-[#1a1a1a] text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all w-64"
-                style={{
-                  borderWidth: "1px",
-                  borderColor: "rgba(255, 255, 255, 0.1)",
-                }}
+                className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-accent transition-all w-48"
               />
             </div>
             {onBack && (
               <button
                 onClick={onBack}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-gray-300 hover:text-white transition-colors"
-                style={{
-                  backgroundColor: "rgba(255, 255, 255, 0.05)",
-                  borderWidth: "1px",
-                  borderColor: "rgba(255, 255, 255, 0.1)",
-                }}
+                className="flex items-center gap-2 px-4 py-2 border border-white/20 text-white hover:bg-white/10 text-sm font-medium transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span className="text-sm font-medium hidden sm:inline">Back</span>
+                <span className="hidden sm:inline">Back</span>
               </button>
             )}
           </div>
@@ -90,24 +75,20 @@ export default function CreateProject({ onBack, onCreateProject }: CreateProject
       </nav>
 
       {/* Main Content */}
-      <section className="relative pt-32 pb-20 px-6">
-        <div className="max-w-5xl mx-auto relative z-10">
-          {/* Page Title */}
+      <section className="pt-28 pb-20 px-6">
+        <div className="max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="mb-12"
           >
-            <h1 className="text-5xl font-bold mb-2">
-              <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                Add to Wishlist
-              </span>
-            </h1>
-            <p className="text-xl text-gray-400">Add a new item to your wishlist for supporters to fund</p>
+            <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">Wishlist</div>
+            <h1 className="text-5xl font-black text-foreground mb-2 tracking-tight">Add an Item</h1>
+            <p className="text-lg text-muted-foreground">Add a new item to your wishlist for fans to fund.</p>
           </motion.div>
 
-          {/* Project Details Grid */}
+          {/* Details Grid */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -116,168 +97,130 @@ export default function CreateProject({ onBack, onCreateProject }: CreateProject
           >
             {/* Image Upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Item Thumbnail <span className="text-gray-500 font-normal">(optional)</span>
+              <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                Thumbnail <span className="text-subtle font-normal normal-case tracking-normal">optional</span>
               </label>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleThumbnailSelect}
-              />
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailSelect} />
               <motion.div
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.01 }}
                 onClick={() => fileInputRef.current?.click()}
-                className="relative h-64 rounded-2xl overflow-hidden cursor-pointer border-2 border-dashed transition-all group"
-                style={{
-                  backgroundColor: "rgba(255, 255, 255, 0.05)",
-                  borderColor: thumbnail ? "rgba(139, 92, 246, 0.5)" : "rgba(139, 92, 246, 0.3)",
-                }}
+                className="relative h-64 overflow-hidden cursor-pointer border-2 border-dashed transition-all group"
+                style={{ borderColor: thumbnail ? "#e8185d" : "#e0e0e0", backgroundColor: "#f5f5f5" }}
               >
                 {thumbnail ? (
                   <>
-                    <img
-                      src={thumbnail}
-                      alt="Item thumbnail preview"
-                      className="w-full h-full object-cover"
-                    />
-                    {/* Hover overlay */}
+                    <img src={thumbnail} alt="Preview" className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <div className="flex items-center gap-2 text-white font-medium">
-                        <Upload className="w-5 h-5" />
-                        <span>Change Image</span>
+                      <div className="flex items-center gap-2 text-white font-bold text-sm">
+                        <Upload className="w-4 h-4" />
+                        Change Image
                       </div>
                     </div>
-                    {/* Remove button */}
-                    <button
-                      onClick={removeThumbnail}
-                      className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 border border-white/20 flex items-center justify-center text-white hover:bg-red-500/80 transition-colors z-10"
-                    >
-                      <X className="w-4 h-4" />
+                    <button onClick={removeThumbnail} className="absolute top-3 right-3 w-7 h-7 bg-background border border-border flex items-center justify-center text-foreground hover:bg-red-50 hover:text-red-500 transition-colors z-10">
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   </>
                 ) : (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 group-hover:opacity-80 transition-opacity">
-                    <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/20 transition-colors">
-                      <ImageIcon className="w-7 h-7 text-purple-400" />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 group-hover:opacity-70 transition-opacity">
+                    <div className="w-12 h-12 border border-border bg-background flex items-center justify-center">
+                      <ImageIcon className="w-6 h-6 text-subtle" />
                     </div>
                     <div className="text-center">
-                      <p className="text-gray-300 font-medium mb-1">Upload Item Thumbnail</p>
-                      <p className="text-sm text-gray-500">Click or drag image here</p>
+                      <p className="text-muted-foreground font-bold text-sm mb-0.5">Upload Thumbnail</p>
+                      <p className="text-xs text-subtle">Click or drag image here</p>
                     </div>
                   </div>
                 )}
               </motion.div>
             </div>
 
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Item Title</label>
-              <input
-                type="text"
-                placeholder="Enter item title..."
-                value={projectTitle}
-                onChange={(e) => setProjectTitle(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-[#1a1a1a] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all mb-4"
-                style={{
-                  borderWidth: "1px",
-                  borderColor: "rgba(255, 255, 255, 0.1)",
-                }}
-              />
-              <label className="block text-sm font-medium text-gray-300 mb-2">Description</label>
-              <textarea
-                placeholder="Describe this wishlist item..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={6}
-                className="w-full px-4 py-3 rounded-xl bg-[#1a1a1a] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all resize-none"
-                style={{
-                  borderWidth: "1px",
-                  borderColor: "rgba(255, 255, 255, 0.1)",
-                }}
-              />
+            {/* Fields */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Item Title</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Sony WH-1000XM5 Headphones"
+                  value={projectTitle}
+                  onChange={(e) => setProjectTitle(e.target.value)}
+                  className="w-full px-4 py-3 border border-border bg-background text-foreground placeholder-[#999999] focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Description</label>
+                <textarea
+                  placeholder="Tell fans why you want this item..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={7}
+                  className="w-full px-4 py-3 border border-border bg-background text-foreground placeholder-[#999999] focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all resize-none text-sm"
+                />
+              </div>
             </div>
           </motion.div>
 
-          {/* Goals Section */}
+          {/* Funding Goals */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <h2 className="text-3xl font-bold mb-6 flex items-center gap-3">
-              <span className="w-2 h-8 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full"></span>
-              Funding Goals
-            </h2>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-3 h-5 bg-accent" />
+              <h2 className="text-2xl font-black text-foreground tracking-tight">Funding Goals</h2>
+            </div>
 
-            {/* Add New Goal */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row gap-3 mb-8">
               <input
                 type="text"
-                placeholder="Add a funding goal (e.g., 'New Monitor', 'Coffee Fund')"
+                placeholder="Add a funding goal (e.g. 'New Monitor', 'Coffee Fund')"
                 value={newGoal}
                 onChange={(e) => setNewGoal(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && addGoal()}
-                className="flex-1 px-4 py-3 rounded-xl bg-[#1a1a1a] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                style={{
-                  borderWidth: "1px",
-                  borderColor: "rgba(255, 255, 255, 0.1)",
-                }}
+                className="flex-1 px-4 py-3 border border-border bg-background text-foreground placeholder-[#999999] focus:outline-none focus:ring-2 focus:ring-accent transition-all text-sm"
               />
               <motion.button
-                whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(168, 85, 247, 0.4)" }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
                 onClick={addGoal}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl text-white font-semibold transition-all shadow-lg shadow-purple-500/25"
+                className="flex items-center justify-center gap-2 px-6 py-3 btn-cta text-white font-black text-xs uppercase tracking-widest"
               >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-4 h-4" />
                 Add Goal
               </motion.button>
             </div>
 
-            {/* Goals List */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               {goals.map((goal, index) => (
                 <motion.div
                   key={goal.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="rounded-xl p-4 flex items-center gap-4"
-                  style={{
-                    backgroundColor: "rgba(255, 255, 255, 0.05)",
-                    borderWidth: "1px",
-                    borderColor: "rgba(255, 255, 255, 0.1)",
-                  }}
+                  className="p-4 border border-border bg-muted flex items-center gap-4"
                 >
-                  <div
-                    className="w-16 h-14 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{
-                      backgroundColor: "rgba(255, 255, 255, 0.05)",
-                    }}
-                  >
-                    <Upload className="w-6 h-6 text-gray-500" />
+                  <div className="w-14 h-12 bg-background border border-border flex items-center justify-center flex-shrink-0">
+                    <Upload className="w-5 h-5 text-[#d0d0d0]" />
                   </div>
                   <div className="flex-1">
-                    <div className="text-white font-medium mb-1">{goal.name}</div>
-                    <div className="text-gray-400 text-sm">{goal.price}</div>
+                    <div className="text-foreground font-bold text-sm mb-0.5">{goal.name}</div>
+                    <div className="text-subtle text-xs">{goal.price}</div>
                   </div>
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => removeGoal(goal.id)}
-                    className="text-gray-500 hover:text-red-400 transition-colors"
+                    className="text-[#d0d0d0] hover:text-red-500 transition-colors"
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-4 h-4" />
                   </motion.button>
                 </motion.div>
               ))}
 
               {goals.length === 0 && (
-                <div className="text-center py-12 text-gray-500">
-                  <p className="mb-2">No funding goals added yet</p>
-                  <p className="text-sm">Add goals for this wishlist item above</p>
+                <div className="text-center py-12 text-subtle text-sm">
+                  <p className="mb-1">No goals added yet.</p>
+                  <p className="text-xs">Add goals for this wishlist item above.</p>
                 </div>
               )}
             </div>
@@ -288,26 +231,21 @@ export default function CreateProject({ onBack, onCreateProject }: CreateProject
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
-            className="flex justify-end gap-4 mt-12"
+            className="flex justify-end gap-3 mt-12"
           >
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
               onClick={onBack}
-              className="px-8 py-3 rounded-xl text-white font-semibold transition-all"
-              style={{
-                backgroundColor: "rgba(255, 255, 255, 0.05)",
-                borderWidth: "1px",
-                borderColor: "rgba(255, 255, 255, 0.1)",
-              }}
+              className="px-8 py-3 border border-border text-foreground font-bold text-sm uppercase tracking-wide hover:bg-muted transition-colors"
             >
               Cancel
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(168, 85, 247, 0.4)" }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleCreateProject}
-              className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl text-white font-semibold transition-all shadow-lg shadow-purple-500/25"
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              onClick={onCreateProject}
+              className="px-8 py-3 bg-accent hover:bg-[#c9164f] text-white font-black text-sm uppercase tracking-widest transition-colors"
             >
               Add to Wishlist
             </motion.button>
@@ -315,9 +253,8 @@ export default function CreateProject({ onBack, onCreateProject }: CreateProject
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-16 px-6" style={{ borderTopWidth: "1px", borderColor: "rgba(255, 255, 255, 0.05)" }}>
-        <div className="max-w-7xl mx-auto text-center text-gray-400">
+      <footer className="py-10 px-6 border-t border-border">
+        <div className="max-w-7xl mx-auto text-center text-subtle text-sm">
           <p>© 2026 TipFlow. All rights reserved.</p>
         </div>
       </footer>
