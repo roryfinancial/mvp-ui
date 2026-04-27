@@ -171,7 +171,7 @@ export default function CreateProject({ onBack, onCreateProject }: CreateProject
                   className="p-4 border border-border bg-muted flex items-center gap-4"
                 >
                   <div className="w-14 h-12 bg-background border border-border flex items-center justify-center flex-shrink-0">
-                    <Upload className="w-5 h-5 text-[#d0d0d0]" />
+                    <Upload className="w-5 h-5 text-subtle" />
                   </div>
                   <div className="flex-1">
                     <div className="text-foreground font-bold text-sm mb-0.5">{goal.name}</div>
@@ -181,7 +181,7 @@ export default function CreateProject({ onBack, onCreateProject }: CreateProject
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => removeGoal(goal.id)}
-                    className="text-[#d0d0d0] hover:text-red-500 transition-colors"
+                    className="text-subtle hover:text-red-500 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                   </motion.button>

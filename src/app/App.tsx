@@ -1,7 +1,6 @@
 import { Routes, Route, useNavigate, useSearchParams, Outlet } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useState } from "react";
-import ThemeToggle from "./components/ThemeToggle";
 import Navbar from "./components/Navbar";
 
 import Home from "./pages/Home";
@@ -302,7 +301,6 @@ export default function App() {
   const [creditBalance, setCreditBalance] = useState(0);
   return (
     <>
-      <ThemeToggle />
       <Routes>
         {/* Public routes — no navbar */}
         <Route path="/" element={<HomeRoute />} />

@@ -99,7 +99,7 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
       </section>
 
       {/* Stats strip */}
-      <div className="bg-foreground py-8 px-6 border-y border-white/5">
+      <div className="bg-foreground py-8 px-6 border-y border-background/10">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-16">
           {[
             { stat: "10,000+", label: "Creators" },
@@ -120,7 +120,7 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
               >
                 {item.stat}
               </div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-white/40">{item.label}</div>
+              <div className="text-[10px] font-black uppercase tracking-widest text-background/40">{item.label}</div>
             </motion.div>
           ))}
         </div>

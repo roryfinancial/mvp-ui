@@ -163,7 +163,7 @@ export default function PublicWishlist({
                   {item.thumbnail ? (
                     <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                   ) : (
-                    <User className="w-14 h-14 text-[#d0d0d0]" />
+                    <User className="w-14 h-14 text-subtle" />
                   )}
 
                   {/* Status Badge */}

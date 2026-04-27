@@ -83,7 +83,7 @@ export default function SupporterDashboard({ username = "Username", onViewProjec
             transition={{ duration: 0.5 }}
             className="flex items-center gap-4 mb-8 pb-8 border-b border-border"
           >
-            <div className="w-14 h-14 bg-[#e0e0e0] border border-[#d0d0d0] flex items-center justify-center flex-shrink-0">
+            <div className="w-14 h-14 bg-secondary border border-border flex items-center justify-center flex-shrink-0">
               <User className="w-6 h-6 text-muted-foreground" />
             </div>
             <div className="flex-1 min-w-0">
@@ -213,7 +213,7 @@ export default function SupporterDashboard({ username = "Username", onViewProjec
                     <div className="w-14 h-14 bg-muted border border-border flex items-center justify-center text-muted-foreground font-black text-lg">
                       {creator.initials}
                     </div>
-                    <User className="w-5 h-5 text-[#d0d0d0] ml-auto group-hover:text-accent transition-colors" />
+                    <User className="w-5 h-5 text-subtle ml-auto group-hover:text-accent transition-colors" />
                   </div>
                   <h3 className="text-lg font-black text-foreground mb-0.5 group-hover:text-accent transition-colors">{creator.name}</h3>
                   <p className="text-subtle text-sm mb-6">{creator.username}</p>
@@ -250,7 +250,7 @@ export default function SupporterDashboard({ username = "Username", onViewProjec
                       onClick={onViewCreator}
                       className="p-5 border border-border bg-background flex items-center gap-6 cursor-pointer hover:shadow-sm transition-shadow"
                     >
-                      <span className="text-xl font-black text-[#d0d0d0] w-6">{index + 1}</span>
+                      <span className="text-xl font-black text-subtle w-6">{index + 1}</span>
                       <div className="w-12 h-12 bg-muted border border-border flex items-center justify-center text-muted-foreground font-black">
                         {creator.initials}
                       </div>
@@ -297,7 +297,7 @@ export default function SupporterDashboard({ username = "Username", onViewProjec
                           <span className="text-[10px] font-bold uppercase tracking-wide text-subtle">Progress</span>
                           <span className="text-foreground font-black text-xs">{project.progress}%</span>
                         </div>
-                        <div className="w-full h-1.5 bg-[#e0e0e0] overflow-hidden">
+                        <div className="w-full h-1.5 bg-secondary overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${project.progress}%` }}

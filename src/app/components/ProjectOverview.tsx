@@ -62,9 +62,9 @@ export default function ProjectOverview({
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 mb-8 text-sm">
             <button onClick={onBack} className="text-subtle hover:text-foreground transition-colors font-medium">My Wishlists</button>
-            <span className="text-[#d0d0d0]">/</span>
+            <span className="text-subtle">/</span>
             <button onClick={() => onBackToWishlist?.(wishlistId)} className="text-subtle hover:text-foreground transition-colors font-medium">{wishlistName}</button>
-            <span className="text-[#d0d0d0]">/</span>
+            <span className="text-subtle">/</span>
             <span className="text-foreground font-bold truncate max-w-[200px]">{projectTitle}</span>
           </div>
 
@@ -76,7 +76,7 @@ export default function ProjectOverview({
             className="flex flex-col sm:flex-row items-start gap-8 mb-16 pb-16 border-b border-border"
           >
             <div className="w-32 h-32 sm:w-40 sm:h-40 bg-muted border border-border flex items-center justify-center flex-shrink-0">
-              <User className="w-16 h-16 text-[#d0d0d0]" />
+              <User className="w-16 h-16 text-subtle" />
             </div>
 
             <div className="flex-1">
@@ -176,7 +176,7 @@ export default function ProjectOverview({
                       >
                         <span className="text-foreground text-sm font-medium">{goal.name}</span>
                         <div className="flex items-center gap-3">
-                          <div className="w-24 h-1.5 bg-[#e0e0e0] overflow-hidden">
+                          <div className="w-24 h-1.5 bg-secondary overflow-hidden">
                             <div className="h-full bg-accent transition-all duration-500" style={{ width: `${goal.progress}%` }} />
                           </div>
                           <span className="text-foreground font-bold text-xs w-10 text-right">{goal.progress}%</span>
@@ -210,7 +210,7 @@ export default function ProjectOverview({
                     whileHover={{ x: 4 }}
                     className="p-4 border border-border bg-background flex items-center gap-4 cursor-pointer hover:shadow-sm transition-shadow"
                   >
-                    <div className="w-4 text-center text-xs font-black text-[#d0d0d0]">
+                    <div className="w-4 text-center text-xs font-black text-subtle">
                       {index + 1}
                     </div>
                     <div className="w-10 h-10 bg-muted border border-border flex items-center justify-center flex-shrink-0 font-bold text-xs text-muted-foreground">

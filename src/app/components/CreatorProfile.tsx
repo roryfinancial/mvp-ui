@@ -5,8 +5,6 @@ import { User, Check, Zap, X, DollarSign, ArrowUp, Twitter, Youtube, Twitch, Pla
 interface WishlistItem {
   id: string;
   title: string;
-  status: "active" | "gifted";
-  giftedBy?: string;
   thumbnail?: string;
 }
 
@@ -64,27 +62,27 @@ const platformConfig = {
 
 const platformBrandIcons: Record<string, React.ReactNode> = {
   youtube: (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
       <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
     </svg>
   ),
   twitch: (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
       <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0 1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z" />
     </svg>
   ),
   twitter: (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
     </svg>
   ),
   instagram: (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
       <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" />
     </svg>
   ),
   tiktok: (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
       <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
     </svg>
   ),
@@ -125,9 +123,9 @@ export default function CreatorProfile({
       name: "Studio Gear",
       description: "Everything I need to level up my recording setup",
       items: [
-        { id: "1", title: "Ableton Push 3", status: "active" as const },
-        { id: "2", title: "Universal Audio Apollo X4", status: "active" as const },
-        { id: "3", title: "Bose Solo Soundbar", status: "gifted" as const, giftedBy: "Anonymous" },
+        { id: "1", title: "Ableton Push 3" },
+        { id: "2", title: "Universal Audio Apollo X4" },
+        { id: "3", title: "Bose Solo Soundbar" },
       ],
     },
     {
@@ -135,18 +133,18 @@ export default function CreatorProfile({
       name: "Dream Items",
       description: "Big ticket items on my bucket list",
       items: [
-        { id: "4", title: "Cybertruck", status: "active" as const },
-        { id: "5", title: "Rolex Submariner", status: "active" as const },
+        { id: "4", title: "Cybertruck" },
+        { id: "5", title: "Rolex Submariner" },
       ],
     },
     {
       id: "fitness",
       name: "Fitness & Health",
       items: [
-        { id: "6", title: "Pull-up Bar Station", status: "active" as const },
-        { id: "7", title: "Theragun Pro", status: "gifted" as const, giftedBy: "boogerbill01" },
-        { id: "8", title: "Adjustable Dumbbell Set", status: "active" as const },
-        { id: "9", title: "Yoga Mat Pro", status: "gifted" as const, giftedBy: "Anonymous" },
+        { id: "6", title: "Pull-up Bar Station" },
+        { id: "7", title: "Theragun Pro" },
+        { id: "8", title: "Adjustable Dumbbell Set" },
+        { id: "9", title: "Yoga Mat Pro" },
       ],
     },
   ],
@@ -163,7 +161,7 @@ export default function CreatorProfile({
   const filteredFeed = feedFilter === "all" ? feedItems : feedItems.filter(item => item.platform === feedFilter);
 
   const selectedWishlist = wishlists.find(w => w.id === selectedWishlistId);
-  const activeItemsInSelected = selectedWishlist?.items.filter(i => i.status === "active") ?? [];
+  const itemsInSelected = selectedWishlist?.items ?? [];
 
   const handleConfirmTip = () => {
     const amount = selectedTipAmount ?? (customTipAmount ? parseFloat(customTipAmount) : 0);
@@ -314,7 +312,6 @@ export default function CreatorProfile({
             </button>
             {(Object.keys(platformConfig) as Array<keyof typeof platformConfig>).map((platform) => {
               const config = platformConfig[platform];
-              const Icon = config.icon;
               return (
                 <button
                   key={platform}
@@ -326,7 +323,7 @@ export default function CreatorProfile({
                   }`}
                   style={feedFilter === platform ? { backgroundColor: config.color } : undefined}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <span className="w-3.5 h-3.5 flex items-center justify-center">{platformBrandIcons[platform]}</span>
                   {config.label}
                 </button>
               );
@@ -337,7 +334,7 @@ export default function CreatorProfile({
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredFeed.map((item, index) => {
               const config = platformConfig[item.platform];
-              const Icon = config.icon;
+              const brandIcon = platformBrandIcons[item.platform];
               return (
                 <motion.div
                   key={index}
@@ -351,14 +348,14 @@ export default function CreatorProfile({
                       <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-muted to-secondary flex items-center justify-center">
-                        <Icon className="w-10 h-10" style={{ color: config.color, opacity: 0.4 }} />
+                        <span className="w-10 h-10 opacity-40" style={{ color: config.color }}>{brandIcon}</span>
                       </div>
                     )}
                     <div
                       className="absolute top-2 left-2 px-2 py-0.5 flex items-center gap-1 text-white text-[9px] font-black uppercase"
                       style={{ backgroundColor: config.color }}
                     >
-                      <Icon className="w-3 h-3" />
+                      <span className="w-3 h-3 flex items-center justify-center">{brandIcon}</span>
                       {config.label}
                     </div>
                     {item.isLive && (
@@ -412,8 +409,6 @@ export default function CreatorProfile({
 
         {/* Wishlists */}
         {wishlists.map((wishlist, wIndex) => {
-          const activeCount = wishlist.items.filter(i => i.status === "active").length;
-          const giftedCount = wishlist.items.filter(i => i.status === "gifted").length;
           return (
             <motion.section
               key={wishlist.id}
@@ -426,8 +421,6 @@ export default function CreatorProfile({
                   <h2 className="text-xs font-black uppercase tracking-widest text-subtle mb-1">{wishlist.name}</h2>
                   <div className="flex items-center gap-3 text-[11px] text-subtle">
                     <span>{wishlist.items.length} items</span>
-                    <span>{activeCount} active</span>
-                    {giftedCount > 0 && <span className="text-[#22c55e]">{giftedCount} gifted</span>}
                   </div>
                 </div>
                 <button
@@ -452,12 +445,7 @@ export default function CreatorProfile({
                       {item.thumbnail ? (
                         <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                       ) : (
-                        <User className="w-10 h-10 text-[#d0d0d0]" />
-                      )}
-                      {item.status === "gifted" && (
-                        <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-[#22c55e] text-white text-[9px] font-black uppercase flex items-center gap-1">
-                          <Check className="w-2.5 h-2.5" /> Gifted
-                        </div>
+                        <User className="w-10 h-10 text-subtle" />
                       )}
                     </div>
                     <div className="p-3">
@@ -529,8 +517,7 @@ export default function CreatorProfile({
                   </div>
                   <div className="space-y-2 max-h-36 overflow-y-auto">
                     {wishlists.map((wishlist) => {
-                      const activeCount = wishlist.items.filter(i => i.status === "active").length;
-                      if (activeCount === 0) return null;
+                      if (wishlist.items.length === 0) return null;
                       return (
                         <button
                           key={wishlist.id}
@@ -546,7 +533,7 @@ export default function CreatorProfile({
                           </div>
                           <div className="flex-1 min-w-0">
                             <span className="text-sm font-bold text-foreground block truncate">{wishlist.name}</span>
-                            <span className="text-[11px] text-subtle">{activeCount} active items</span>
+                            <span className="text-[11px] text-subtle">{wishlist.items.length} items</span>
                           </div>
                           {selectedWishlistId === wishlist.id && (
                             <Check className="w-4 h-4 text-accent flex-shrink-0" />
@@ -563,8 +550,8 @@ export default function CreatorProfile({
                     2. Choose an item
                   </div>
                   <div className="space-y-2 max-h-36 overflow-y-auto">
-                    {activeItemsInSelected.length > 0 ? (
-                      activeItemsInSelected.map((item) => (
+                    {itemsInSelected.length > 0 ? (
+                      itemsInSelected.map((item) => (
                         <button
                           key={item.id}
                           onClick={() => setSelectedTipItem(item.id)}
@@ -585,7 +572,7 @@ export default function CreatorProfile({
                       ))
                     ) : (
                       <p className="text-subtle text-sm text-center py-4">
-                        {selectedWishlistId ? "No active items in this wishlist." : "Select a wishlist first."}
+                        {selectedWishlistId ? "No items in this wishlist." : "Select a wishlist first."}
                       </p>
                     )}
                   </div>

@@ -114,7 +114,7 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
                   key={p}
                   onClick={() => setTimePeriod(p)}
                   className={`px-5 py-2 text-xs font-black uppercase tracking-widest capitalize transition-colors ${
-                    timePeriod === p ? "bg-foreground text-white" : "text-muted-foreground hover:bg-secondary"
+                    timePeriod === p ? "bg-foreground text-background" : "text-muted-foreground hover:bg-secondary"
                   }`}
                 >
                   {p}
@@ -138,7 +138,7 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setSelectedMetric(metric)}
                   className={`p-6 text-left w-full transition-all duration-200 ${c.accentClass} border-2 ${
-                    isActive ? `${c.borderClass} ring-1 ring-offset-0 shadow-lg` : "border-white/10 hover:border-white/20"
+                    isActive ? `${c.borderClass} ring-1 ring-offset-0 shadow-lg` : "border-border hover:border-border"
                   }`}
                   style={isActive ? { boxShadow: "0 8px 32px rgba(139,92,246,0.15)" } : {}}
                 >
@@ -146,13 +146,13 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
                     {icon}
                     <span className={`text-xs font-medium px-2 py-1 ${c.badgeClass}`}>{change}</span>
                   </div>
-                  <p className="text-gray-400 text-sm mb-1">{label}</p>
-                  <p className="text-3xl font-bold text-white">{value}</p>
+                  <p className="text-muted-foreground text-sm mb-1">{label}</p>
+                  <p className="text-3xl font-bold text-foreground">{value}</p>
                   {isActive && (
                     <motion.p
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="text-xs mt-2 text-gray-500"
+                      className="text-xs mt-2 text-subtle"
                     >
                       Viewing in chart ↓
                     </motion.p>
@@ -177,7 +177,7 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setSelectedMetric(metric)}
                   className={`p-6 text-left w-full transition-all duration-200 ${c.accentClass} border-2 ${
-                    isActive ? `${c.borderClass} ring-1 ring-offset-0 shadow-lg` : "border-white/10 hover:border-white/20"
+                    isActive ? `${c.borderClass} ring-1 ring-offset-0 shadow-lg` : "border-border hover:border-border"
                   }`}
                   style={isActive ? { boxShadow: "0 8px 32px rgba(251,191,36,0.12)" } : {}}
                 >
@@ -185,10 +185,10 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
                     {icon}
                     <span className={`text-xs font-medium px-2 py-1 ${c.badgeClass}`}>{change}</span>
                   </div>
-                  <p className="text-gray-400 text-sm mb-1">{label}</p>
-                  <p className="text-3xl font-bold text-white">{value}</p>
+                  <p className="text-muted-foreground text-sm mb-1">{label}</p>
+                  <p className="text-3xl font-bold text-foreground">{value}</p>
                   {isActive && (
-                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs mt-2 text-gray-500">
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-xs mt-2 text-subtle">
                       Viewing in chart ↓
                     </motion.p>
                   )}
@@ -416,8 +416,8 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
           >
             <div className="flex items-start justify-between flex-wrap gap-4 mb-6">
               <div>
-                <h2 className="text-2xl font-bold text-white">Referral Overview</h2>
-                <p className="text-gray-400 text-sm mt-1">Earnings from creators you've referred to TipFlow</p>
+                <h2 className="text-2xl font-bold text-foreground">Referral Overview</h2>
+                <p className="text-muted-foreground text-sm mt-1">Earnings from creators you've referred to TipFlow</p>
               </div>
               <motion.button
                 whileHover={{ scale: 1.04 }}
@@ -451,9 +451,9 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.55 + i * 0.08 }}
-                  className="p-5 bg-[#0a0a0a]/60 border border-white/10"
+                  className="p-5 bg-muted border border-border"
                 >
-                  <p className="text-gray-400 text-sm mb-2">{item.label}</p>
+                  <p className="text-muted-foreground text-sm mb-2">{item.label}</p>
                   <AnimatePresence mode="wait">
                     <motion.p
                       key={timePeriod + item.label}
@@ -466,7 +466,7 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
                       {item.value}
                     </motion.p>
                   </AnimatePresence>
-                  <p className="text-gray-500 text-xs mt-1">{item.sub}</p>
+                  <p className="text-subtle text-xs mt-1">{item.sub}</p>
                 </motion.div>
               ))}
             </div>

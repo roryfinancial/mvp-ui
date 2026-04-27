@@ -145,7 +145,7 @@ export default function OnboardingChoice({ userType, onBack, onComplete, onViewC
                       <span className="text-foreground font-medium text-sm">{project.name}</span>
                       <span className="text-accent font-black text-sm">{project.amount}</span>
                     </div>
-                    <div className="w-full h-1.5 bg-[#e0e0e0] overflow-hidden">
+                    <div className="w-full h-1.5 bg-secondary overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${project.progress}%` }}

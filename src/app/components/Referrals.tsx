@@ -95,7 +95,7 @@ const REFERRAL_LINK = "tipflow.app/ref/yourcreator";
 
 const statusStyle: Record<ReferredCreator["status"], string> = {
   active:   "text-emerald-400 bg-emerald-500/15 border border-emerald-500/30",
-  inactive: "text-gray-400  bg-gray-500/15  border border-gray-500/30",
+  inactive: "text-muted-foreground  bg-muted  border border-border",
   pending:  "text-amber-400  bg-amber-500/15  border border-amber-500/30",
 };
 
@@ -135,7 +135,7 @@ export default function Referrals(_: ReferralsProps) {
               <h1 className="text-5xl font-black text-foreground tracking-tight mb-2">
                 Referrals
               </h1>
-              <p className="text-gray-400 text-lg">Earn commission by inviting other creators to TipFlow</p>
+              <p className="text-muted-foreground text-lg">Earn commission by inviting other creators to TipFlow</p>
             </div>
 
             {/* Share CTA */}
@@ -158,15 +158,15 @@ export default function Referrals(_: ReferralsProps) {
           >
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
               <div>
-                <p className="text-gray-400 text-xs mb-1 uppercase tracking-wider font-medium">Your Referral Link</p>
-                <p className="text-white font-mono text-base">{REFERRAL_LINK}</p>
+                <p className="text-muted-foreground text-xs mb-1 uppercase tracking-wider font-medium">Your Referral Link</p>
+                <p className="text-foreground font-mono text-base">{REFERRAL_LINK}</p>
               </div>
               <div className="flex gap-3">
                 <motion.button
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={handleCopy}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-white/10 border border-white/15 text-white text-sm font-medium hover:bg-white/15 transition-all"
+                  className="flex items-center gap-2 px-4 py-2.5 bg-muted border border-border text-foreground text-sm font-medium hover:bg-secondary transition-all"
                 >
                   <AnimatePresence mode="wait">
                     {copied ? (
@@ -254,8 +254,8 @@ export default function Referrals(_: ReferralsProps) {
                   {card.icon}
                   <span className={`text-xs font-medium px-2 py-1 rounded-full ${card.badgeClass}`}>{card.change}</span>
                 </div>
-                <p className="text-gray-400 text-sm mb-1">{card.label}</p>
-                <p className="text-3xl font-bold text-white">{card.value}</p>
+                <p className="text-muted-foreground text-sm mb-1">{card.label}</p>
+                <p className="text-3xl font-bold text-foreground">{card.value}</p>
               </motion.div>
             ))}
           </div>
@@ -265,19 +265,19 @@ export default function Referrals(_: ReferralsProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="bg-[#1a1a1a] border border-white/10 overflow-hidden mb-10"
+            className="bg-card border border-border overflow-hidden mb-10"
           >
-            <div className="p-6 border-b border-white/10 flex items-center justify-between">
+            <div className="p-6 border-b border-border flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-white">Referred Creators</h2>
-                <p className="text-gray-400 text-sm mt-0.5">Creators who joined via your link</p>
+                <h2 className="text-xl font-bold text-foreground">Referred Creators</h2>
+                <p className="text-muted-foreground text-sm mt-0.5">Creators who joined via your link</p>
               </div>
 
               {/* Sort dropdown */}
               <div className="relative">
                 <button
                   onClick={() => setShowSortMenu(!showSortMenu)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-gray-300 hover:text-white text-sm font-medium transition-all"
+                  className="flex items-center gap-2 px-4 py-2 bg-muted border border-border text-muted-foreground hover:text-foreground text-sm font-medium transition-all"
                 >
                   Sort: {sortBy === "commission" ? "Commission" : sortBy === "tips" ? "Total Tips" : "Joined"}
                   <ChevronDown className={`w-3 h-3 transition-transform ${showSortMenu ? "rotate-180" : ""}`} />
@@ -289,13 +289,13 @@ export default function Referrals(_: ReferralsProps) {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -6, scale: 0.97 }}
                       transition={{ duration: 0.12 }}
-                      className="absolute right-0 mt-2 w-40 bg-[#111] border border-white/15 shadow-xl z-10 overflow-hidden"
+                      className="absolute right-0 mt-2 w-40 bg-card border border-border shadow-xl z-10 overflow-hidden"
                     >
                       {(["commission", "tips", "joined"] as const).map((opt) => (
                         <button
                           key={opt}
                           onClick={() => { setSortBy(opt); setShowSortMenu(false); }}
-                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors hover:bg-white/5 ${sortBy === opt ? "text-purple-400 font-medium" : "text-gray-300"}`}
+                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors hover:bg-muted ${sortBy === opt ? "text-purple-400 font-medium" : "text-muted-foreground"}`}
                         >
                           {opt === "commission" ? "Commission" : opt === "tips" ? "Total Tips" : "Date Joined"}
                         </button>
@@ -307,7 +307,7 @@ export default function Referrals(_: ReferralsProps) {
             </div>
 
             {/* Table header */}
-            <div className="hidden sm:grid grid-cols-[2fr_1fr_1fr_1fr_1fr] px-6 py-3 text-xs uppercase tracking-wider text-gray-500 font-medium border-b border-white/5">
+            <div className="hidden sm:grid grid-cols-[2fr_1fr_1fr_1fr_1fr] px-6 py-3 text-xs uppercase tracking-wider text-subtle font-medium border-b border-border">
               <span>Creator</span>
               <span>Joined</span>
               <span>Total Tips</span>
@@ -316,7 +316,7 @@ export default function Referrals(_: ReferralsProps) {
             </div>
 
             {/* Rows */}
-            <div className="divide-y divide-white/5">
+            <div className="divide-y divide-border">
               {sorted.map((creator, i) => (
                 <motion.div
                   key={creator.username}
@@ -332,16 +332,16 @@ export default function Referrals(_: ReferralsProps) {
                       {creator.initials}
                     </div>
                     <div>
-                      <p className="text-white font-medium text-sm">{creator.name}</p>
-                      <p className="text-gray-500 text-xs">{creator.username}</p>
+                      <p className="text-foreground font-medium text-sm">{creator.name}</p>
+                      <p className="text-subtle text-xs">{creator.username}</p>
                     </div>
                   </div>
 
-                  <p className="text-gray-400 text-sm">{creator.joinedDate}</p>
+                  <p className="text-muted-foreground text-sm">{creator.joinedDate}</p>
 
                   <div>
-                    <p className="text-white font-semibold text-sm">{creator.totalTips}</p>
-                    <p className="text-gray-500 text-xs">{creator.tipsThisMonth} this mo.</p>
+                    <p className="text-foreground font-semibold text-sm">{creator.totalTips}</p>
+                    <p className="text-subtle text-xs">{creator.tipsThisMonth} this mo.</p>
                   </div>
 
                   <div className="flex items-center gap-1.5">
@@ -357,8 +357,8 @@ export default function Referrals(_: ReferralsProps) {
             </div>
 
             {/* Footer summary */}
-            <div className="px-6 py-4 border-t border-white/10 bg-white/2 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-gray-500 text-sm">{referredCreators.length} referred creators · ${totalReferralVolume.toLocaleString()} total volume</p>
+            <div className="px-6 py-4 border-t border-border bg-muted flex flex-wrap items-center justify-between gap-3">
+              <p className="text-subtle text-sm">{referredCreators.length} referred creators · ${totalReferralVolume.toLocaleString()} total volume</p>
               <p className="text-emerald-400 font-semibold text-sm">Total earned: ${totalCommission.toFixed(2)}</p>
             </div>
           </motion.div>
@@ -368,11 +368,11 @@ export default function Referrals(_: ReferralsProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.55 }}
-            className="p-8 bg-[#1a1a1a] border border-white/10"
+            className="p-8 bg-card border border-border"
           >
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-white">Commission Tiers</h2>
-              <p className="text-gray-400 text-sm mt-1">Earn a higher rate as your referral network grows. You are currently on the <span className="text-purple-400 font-medium">Starter</span> tier.</p>
+              <h2 className="text-xl font-bold text-foreground">Commission Tiers</h2>
+              <p className="text-muted-foreground text-sm mt-1">Earn a higher rate as your referral network grows. You are currently on the <span className="text-purple-400 font-medium">Starter</span> tier.</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -385,13 +385,13 @@ export default function Referrals(_: ReferralsProps) {
                   className={`p-5 ${tier.color} border ${tier.border} ${i === 0 ? "ring-1 ring-purple-500/40" : ""}`}
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-white font-bold">{tier.label}</p>
+                    <p className="text-foreground font-bold">{tier.label}</p>
                     {i === 0 && (
                       <span className="text-xs px-2 py-0.5 rounded-full text-purple-400 bg-purple-500/20 font-medium">Current</span>
                     )}
                   </div>
                   <p className={`text-3xl font-extrabold mb-1 ${tier.badge.split(" ")[0]}`}>{tier.rate}</p>
-                  <p className="text-gray-400 text-xs">{tier.range}</p>
+                  <p className="text-muted-foreground text-xs">{tier.range}</p>
                 </motion.div>
               ))}
             </div>
@@ -399,8 +399,8 @@ export default function Referrals(_: ReferralsProps) {
         </div>
       </section>
 
-      <footer className="py-16 px-6 border-t border-white/5">
-        <div className="max-w-7xl mx-auto text-center text-gray-400">
+      <footer className="py-16 px-6 border-t border-border">
+        <div className="max-w-7xl mx-auto text-center text-subtle">
           <p>© 2026 TipFlow. All rights reserved.</p>
         </div>
       </footer>

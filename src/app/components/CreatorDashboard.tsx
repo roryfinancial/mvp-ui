@@ -99,7 +99,7 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
             transition={{ duration: 0.5 }}
             className="flex items-center gap-4 mb-8 pb-8 border-b border-border"
           >
-            <div className="w-14 h-14 rounded-full bg-[#e0e0e0] border border-[#d0d0d0] flex items-center justify-center flex-shrink-0">
+            <div className="w-14 h-14 rounded-full bg-secondary border border-border flex items-center justify-center flex-shrink-0">
               <User className="w-6 h-6 text-muted-foreground" />
             </div>
             <div className="flex-1 min-w-0">
@@ -195,7 +195,7 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
                   transition={{ duration: 0.3, delay: 0.3 + index * 0.05 }}
                   className="flex items-center gap-3 py-2"
                 >
-                  <div className="w-8 h-8 bg-[#e0e0e0] flex items-center justify-center text-foreground font-bold text-xs flex-shrink-0">
+                  <div className="w-8 h-8 bg-secondary flex items-center justify-center text-foreground font-bold text-xs flex-shrink-0">
                     {supporter.initials}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -289,7 +289,7 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
                             <div className="w-full h-full flex items-center justify-center gap-3">
                               {[...Array(3)].map((_, i) => (
                                 <div key={i} className="w-12 h-12 border border-border bg-background flex items-center justify-center">
-                                  <Gift className="w-6 h-6 text-[#d0d0d0]" />
+                                  <Gift className="w-6 h-6 text-subtle" />
                                 </div>
                               ))}
                             </div>
@@ -322,7 +322,7 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
                             const pct = totalGoal > 0 ? Math.min(100, Math.round((totalRaisedAmt / totalGoal) * 100)) : 0;
                             return (
                               <div>
-                                <div className="w-full h-1 bg-[#e0e0e0] overflow-hidden">
+                                <div className="w-full h-1 bg-secondary overflow-hidden">
                                   <motion.div
                                     initial={{ width: 0 }}
                                     animate={{ width: `${pct}%` }}
@@ -386,7 +386,7 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
                             {supporter.rank}
                           </div>
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-8 h-8 bg-[#e0e0e0] flex items-center justify-center text-foreground font-bold text-xs flex-shrink-0">
+                            <div className="w-8 h-8 bg-secondary flex items-center justify-center text-foreground font-bold text-xs flex-shrink-0">
                               {supporter.initials}
                             </div>
                             <span className="text-sm font-bold text-foreground truncate">{supporter.name}</span>
@@ -413,9 +413,9 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
                   >
                     <div className="flex items-center gap-2 mb-8 text-sm">
                       <button onClick={() => setSelectedWishlistId(null)} className="text-subtle hover:text-foreground transition-colors font-medium">My Wishlists</button>
-                      <span className="text-[#d0d0d0]">/</span>
+                      <span className="text-subtle">/</span>
                       <button onClick={() => setSelectedItemIndex(null)} className="text-subtle hover:text-foreground transition-colors font-medium">{wishlist.name}</button>
-                      <span className="text-[#d0d0d0]">/</span>
+                      <span className="text-subtle">/</span>
                       <span className="text-foreground font-bold truncate max-w-[200px]">{item.title}</span>
                     </div>
 
@@ -424,7 +424,7 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
                         {item.thumbnail ? (
                           <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
                         ) : (
-                          <Gift className="w-16 h-16 text-[#d0d0d0]" />
+                          <Gift className="w-16 h-16 text-subtle" />
                         )}
                       </div>
                       <div className="flex-1">
@@ -487,7 +487,7 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
                             transition={{ duration: 0.3, delay: i * 0.06 }}
                             className="flex items-center gap-3 p-4 border border-border bg-background"
                           >
-                            <div className="w-8 h-8 bg-[#e0e0e0] flex items-center justify-center text-foreground font-bold text-xs flex-shrink-0">{s.initials}</div>
+                            <div className="w-8 h-8 bg-secondary flex items-center justify-center text-foreground font-bold text-xs flex-shrink-0">{s.initials}</div>
                             <div className="flex-1">
                               <p className="text-foreground font-medium text-sm">{s.name}</p>
                               <p className="text-subtle text-xs">{s.timeAgo}</p>
@@ -525,7 +525,7 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
                           <ChevronDown className="w-4 h-4 rotate-90" />
                           My Wishlists
                         </button>
-                        <span className="text-[#d0d0d0]">/</span>
+                        <span className="text-subtle">/</span>
                         <span className="text-foreground font-bold text-sm truncate">{wishlist.name}</span>
                       </div>
                       <motion.button
@@ -576,7 +576,7 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
                             className="bg-background border border-border rounded-xl overflow-hidden cursor-pointer group card-game"
                           >
                             <div className="relative w-full h-36 flex items-center justify-center bg-muted">
-                              <Gift className="w-12 h-12 text-[#d0d0d0]" />
+                              <Gift className="w-12 h-12 text-subtle" />
                               <div className={`absolute top-2 right-2 px-2 py-1 flex items-center gap-1 border text-[10px] font-black uppercase tracking-widest ${
                                 item.status === "completed"
                                   ? "bg-[#f0faf5] border-[#22c55e] text-[#16a34a]"

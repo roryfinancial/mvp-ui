@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Search, LogOut, LayoutDashboard, BarChart3, Settings as SettingsIcon, DollarSign, Link2, Trophy } from "lucide-react";
+import ThemeToggle from "./ThemeToggle";
 
 interface NavbarProps {
   creditBalance: number;
@@ -136,6 +137,7 @@ export default function Navbar({ creditBalance, userType }: NavbarProps) {
               </motion.div>
             )}
           </div>
+          <ThemeToggle />
           <button
             onClick={() => navigate("/")}
             className="flex items-center gap-2 px-4 py-2 border border-white/20 text-white hover:bg-white/10 text-sm font-medium transition-colors"
