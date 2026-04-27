@@ -19,6 +19,7 @@ import Analytics from "./components/Analytics";
 import Referrals from "./components/Referrals";
 import Leaderboard from "./components/Leaderboard";
 import PublicWishlist from "./components/PublicWishlist";
+import SupporterProfile from "./components/SupporterProfile";
 
 type UserType = "creator" | "supporter";
 
@@ -281,6 +282,21 @@ function LeaderboardRoute() {
   );
 }
 
+function SupporterProfileRoute() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>Supporter Profile — TipFlow</title>
+        <meta name="description" content="See what this supporter is following and contributing to on TipFlow." />
+      </Helmet>
+      <SupporterProfile
+        onViewCreator={(creatorId) => navigate(`/creator/${creatorId}`)}
+      />
+    </>
+  );
+}
+
 export default function App() {
   const [userType, setUserType] = useState<UserType>("creator");
   const [creditBalance, setCreditBalance] = useState(0);
@@ -303,6 +319,7 @@ export default function App() {
           <Route path="/project/:id" element={<ProjectOverviewRoute userType={userType} />} />
           <Route path="/creator/:username" element={<CreatorProfileRoute />} />
           <Route path="/creator/:username/wishlist/:wishlistId" element={<PublicWishlistRoute />} />
+          <Route path="/supporter/:username" element={<SupporterProfileRoute />} />
           <Route path="/settings" element={<SettingsRoute creditBalance={creditBalance} onUpdateBalance={setCreditBalance} />} />
           <Route path="/analytics" element={<AnalyticsRoute />} />
           <Route path="/referrals" element={<ReferralsRoute />} />

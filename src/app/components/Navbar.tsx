@@ -116,7 +116,11 @@ export default function Navbar({ creditBalance, userType }: NavbarProps) {
                   <div className="p-3 border-t border-border">
                     <h3 className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2 px-2">Supporters</h3>
                     {searchResults.supporters.map((supporter, index) => (
-                      <div key={index} className="flex items-center gap-3 p-2 hover:bg-muted cursor-pointer transition-colors">
+                      <div
+                        key={index}
+                        onClick={() => { navigate(`/supporter/${supporter.username.replace("@", "")}`); setSearchQuery(""); setShowSearchDropdown(false); }}
+                        className="flex items-center gap-3 p-2 hover:bg-muted cursor-pointer transition-colors"
+                      >
                         <div className="w-8 h-8 bg-muted border border-border flex items-center justify-center text-foreground font-bold text-xs">{supporter.initials}</div>
                         <div className="flex-1">
                           <p className="text-foreground font-medium text-sm">{supporter.name}</p>

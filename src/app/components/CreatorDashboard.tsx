@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
-import { Plus, User, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, ChevronDown, List, ShoppingBag } from "lucide-react";
+import { Plus, User, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, ChevronDown, List, ShoppingBag, Trophy } from "lucide-react";
 
 interface CreatorDashboardProps {
   username?: string;
@@ -67,6 +67,19 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
         { title: "Coffee Fund", description: "Fuel the creative process", goal: "$200", raised: "$340", progress: 170, status: "completed" },
       ],
     },
+  ];
+
+  const topSupportersLeaderboard = [
+    { rank: 1, name: "Sarah Johnson", initials: "SJ", totalAmount: "$1,250", contributions: 8 },
+    { rank: 2, name: "Mike Chen", initials: "MC", totalAmount: "$980", contributions: 12 },
+    { rank: 3, name: "Emily Rodriguez", initials: "ER", totalAmount: "$720", contributions: 5 },
+    { rank: 4, name: "Alex Thompson", initials: "AT", totalAmount: "$495", contributions: 6 },
+    { rank: 5, name: "Jordan Lee", initials: "JL", totalAmount: "$375", contributions: 4 },
+    { rank: 6, name: "Taylor Kim", initials: "TK", totalAmount: "$310", contributions: 3 },
+    { rank: 7, name: "Casey Nguyen", initials: "CN", totalAmount: "$245", contributions: 7 },
+    { rank: 8, name: "Morgan Davis", initials: "MD", totalAmount: "$190", contributions: 2 },
+    { rank: 9, name: "Riley Parker", initials: "RP", totalAmount: "$150", contributions: 3 },
+    { rank: 10, name: "Quinn Foster", initials: "QF", totalAmount: "$120", contributions: 1 },
   ];
 
   const totalRaised = "$2,410";
@@ -326,6 +339,65 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
                     );
                   })}
                 </div>
+
+                {/* My Top Supporters Leaderboard */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="mt-10"
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <Trophy className="w-5 h-5 text-accent" />
+                      <h2 className="text-2xl font-black text-foreground tracking-tight">My Top Supporters</h2>
+                    </div>
+                  </div>
+
+                  <div className="border border-border overflow-hidden">
+                    {/* Header */}
+                    <div className="grid grid-cols-[48px_1fr_100px_100px] sm:grid-cols-[48px_1fr_120px_120px] gap-3 px-5 py-3 bg-muted border-b border-border">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-subtle">#</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-subtle">Supporter</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-subtle text-right">Tips</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-subtle text-right">Total</span>
+                    </div>
+
+                    {/* Rows */}
+                    {topSupportersLeaderboard.map((supporter, index) => {
+                      const rankColors: Record<number, string> = {
+                        1: "bg-[#FFD700] text-black",
+                        2: "bg-[#C0C0C0] text-black",
+                        3: "bg-[#CD7F32] text-white",
+                      };
+                      const rankClass = rankColors[supporter.rank] || "bg-muted text-subtle";
+
+                      return (
+                        <motion.div
+                          key={supporter.rank}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3, delay: 0.25 + index * 0.04 }}
+                          className={`grid grid-cols-[48px_1fr_100px_100px] sm:grid-cols-[48px_1fr_120px_120px] gap-3 px-5 py-3 items-center border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors ${
+                            supporter.rank <= 3 ? "bg-accent/[0.03]" : ""
+                          }`}
+                        >
+                          <div className={`w-7 h-7 flex items-center justify-center text-xs font-black ${rankClass}`}>
+                            {supporter.rank}
+                          </div>
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-8 h-8 bg-[#e0e0e0] flex items-center justify-center text-foreground font-bold text-xs flex-shrink-0">
+                              {supporter.initials}
+                            </div>
+                            <span className="text-sm font-bold text-foreground truncate">{supporter.name}</span>
+                          </div>
+                          <span className="text-sm text-subtle text-right">{supporter.contributions}</span>
+                          <span className="text-sm font-black text-accent text-right">{supporter.totalAmount}</span>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
               </motion.div>
             ) : selectedItemIndex !== null ? (
               (() => {
