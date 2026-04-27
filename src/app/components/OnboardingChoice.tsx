@@ -50,8 +50,8 @@ export default function OnboardingChoice({ userType, onBack, onComplete, onViewC
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mb-8"
         >
-          <div className="text-xs font-bold uppercase tracking-widest text-subtle mb-2">Welcome</div>
-          <h1 className="text-3xl font-black text-foreground mb-2 tracking-tight">
+          <div className="text-xs font-bold uppercase tracking-widest text-subtle mb-2">Step 2 of 2</div>
+          <h1 className="text-5xl font-black text-foreground tracking-tight mb-2">
             {userType === "creator" ? "Set up your profile." : "Find creators to support."}
           </h1>
           <p className="text-muted-foreground text-sm">

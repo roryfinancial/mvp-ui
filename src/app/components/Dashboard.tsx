@@ -66,7 +66,7 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
       {/* Header */}
       <div className="border-b border-white/10 bg-[#0a0a0a]/80 backdrop-blur-lg">
         <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-          <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+          <div className="text-2xl font-bold text-purple-400">
             TipFlow
           </div>
           <div className="flex items-center gap-4">
@@ -88,7 +88,7 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
           transition={{ duration: 0.6 }}
           className="mb-12"
         >
-          <h1 className="text-5xl font-bold mb-4">
+          <h1 className="text-5xl font-black text-foreground tracking-tight mb-4">
             Welcome back!
           </h1>
           <p className="text-xl text-gray-400">
@@ -110,9 +110,9 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
               // Creator: Make a Project Button
               <motion.div
                 whileHover={{ scale: 1.01 }}
-                className="bg-gradient-to-br from-purple-600/20 to-pink-600/20 border border-purple-500/30 rounded-3xl p-12 mb-8 cursor-pointer group relative overflow-hidden"
+                className="bg-purple-600/15 border border-purple-500/30 p-12 mb-8 cursor-pointer group relative overflow-hidden"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-600/0 to-pink-600/0 group-hover:from-purple-600/10 group-hover:to-pink-600/10 transition-all duration-300"></div>
+                <div className="absolute inset-0 group-hover:bg-purple-600/10 transition-all duration-300"></div>
                 <div className="relative z-10 flex items-center justify-between">
                   <div>
                     <h2 className="text-4xl font-bold mb-3">Create a New Project</h2>
@@ -130,7 +130,7 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
               </motion.div>
             ) : (
               // Supporter: Search for Creators
-              <div className="bg-[#1a1a1a] border border-white/10 rounded-3xl p-8 mb-8">
+              <div className="bg-[#1a1a1a] border border-white/10 p-8 mb-8">
                 <h2 className="text-3xl font-bold mb-6">Find Creators</h2>
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -143,7 +143,7 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
                       setSearchOpen(e.target.value.length > 0);
                     }}
                     onFocus={() => setSearchOpen(true)}
-                    className="w-full pl-12 pr-4 py-4 rounded-xl bg-[#0a0a0a] border border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-500 transition-all"
+                    className="w-full pl-12 pr-4 py-4 bg-[#0a0a0a] border border-white/10 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-gray-500 transition-all"
                   />
 
                   {/* Search Dropdown */}
@@ -151,7 +151,7 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="absolute top-full mt-2 w-full bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[60]"
+                      className="absolute top-full mt-2 w-full bg-[#1a1a1a] border border-white/10 shadow-2xl overflow-hidden z-[60]"
                     >
                       {searchResults.length > 0 ? (
                         searchResults.map((creator, index) => (
@@ -164,7 +164,7 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
                             className="p-4 cursor-pointer border-b border-white/5 last:border-b-0 flex items-center gap-4"
                             style={{ backgroundColor: "rgba(0, 0, 0, 0)" }}
                           >
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center font-bold">
+                            <div className="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center font-bold">
                               {creator.avatar}
                             </div>
                             <div className="flex-1">
@@ -190,7 +190,7 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full mt-6 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white py-4 rounded-xl font-semibold text-lg transition-all shadow-lg shadow-purple-500/25"
+                  className="w-full mt-6 bg-purple-600 hover:bg-purple-500 text-white py-4 font-semibold text-lg transition-all shadow-lg shadow-purple-500/25"
                 >
                   Start Supporting
                 </motion.button>
@@ -202,7 +202,7 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="bg-[#1a1a1a] border border-white/10 rounded-3xl p-8"
+              className="bg-[#1a1a1a] border border-white/10 p-8"
             >
               <div className="flex items-center gap-3 mb-6">
                 <TrendingUp className="w-6 h-6 text-purple-400" />
@@ -221,12 +221,12 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
                       whileHover={{ scale: 1.02, backgroundColor: "rgba(139, 92, 246, 0.05)" }}
-                      className="p-5 rounded-2xl border border-white/5 hover:border-purple-500/30 transition-all cursor-pointer"
+                      className="p-5 border border-white/5 hover:border-purple-500/30 transition-all cursor-pointer"
                       style={{ backgroundColor: "rgba(0, 0, 0, 0)" }}
                     >
                       <div className="flex items-center gap-4">
                         <div className="relative">
-                          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center font-bold text-lg">
+                          <div className="w-14 h-14 rounded-full bg-purple-600 flex items-center justify-center font-bold text-lg">
                             {creator.avatar}
                           </div>
                           <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-[#0a0a0a] border-2 border-yellow-500 flex items-center justify-center text-xs">
@@ -258,7 +258,7 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
                       whileHover={{ scale: 1.02, backgroundColor: "rgba(139, 92, 246, 0.05)" }}
-                      className="p-5 rounded-2xl border border-white/5 hover:border-purple-500/30 transition-all cursor-pointer"
+                      className="p-5 border border-white/5 hover:border-purple-500/30 transition-all cursor-pointer"
                       style={{ backgroundColor: "rgba(0, 0, 0, 0)" }}
                     >
                       <div className="flex items-start justify-between mb-3">
@@ -278,7 +278,7 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
                           initial={{ width: 0 }}
                           animate={{ width: `${project.progress}%` }}
                           transition={{ duration: 1, delay: 0.5 + index * 0.1 }}
-                          className="absolute top-0 left-0 h-full bg-gradient-to-r from-purple-600 to-pink-600 rounded-full"
+                          className="absolute top-0 left-0 h-full bg-purple-600 rounded-full"
                         ></motion.div>
                       </div>
 
@@ -303,10 +303,10 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
             {/* Stats Cards */}
             <motion.div
               whileHover={{ scale: 1.02 }}
-              className="bg-gradient-to-br from-purple-600/20 to-purple-600/10 border border-purple-500/30 rounded-2xl p-6"
+              className="bg-purple-600/15 border border-purple-500/30 p-6"
             >
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-xl bg-purple-600/30 flex items-center justify-center">
+                <div className="w-10 h-10 bg-purple-600/30 flex items-center justify-center">
                   <DollarSign className="w-5 h-5 text-purple-400" />
                 </div>
                 <div className="text-sm text-gray-400">
@@ -319,10 +319,10 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
 
             <motion.div
               whileHover={{ scale: 1.02 }}
-              className="bg-gradient-to-br from-pink-600/20 to-pink-600/10 border border-pink-500/30 rounded-2xl p-6"
+              className="bg-pink-600/15 border border-pink-500/30 p-6"
             >
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-xl bg-pink-600/30 flex items-center justify-center">
+                <div className="w-10 h-10 bg-pink-600/30 flex items-center justify-center">
                   <Users className="w-5 h-5 text-pink-400" />
                 </div>
                 <div className="text-sm text-gray-400">
@@ -335,10 +335,10 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
 
             <motion.div
               whileHover={{ scale: 1.02 }}
-              className="bg-gradient-to-br from-blue-600/20 to-blue-600/10 border border-blue-500/30 rounded-2xl p-6"
+              className="bg-blue-600/15 border border-blue-500/30 p-6"
             >
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-xl bg-blue-600/30 flex items-center justify-center">
+                <div className="w-10 h-10 bg-blue-600/30 flex items-center justify-center">
                   <Heart className="w-5 h-5 text-blue-400" />
                 </div>
                 <div className="text-sm text-gray-400">
@@ -350,7 +350,7 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
             </motion.div>
 
             {/* Quick Tips */}
-            <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6">
+            <div className="bg-[#1a1a1a] border border-white/10 p-6">
               <h3 className="font-bold text-white mb-4">Quick Tips</h3>
               <div className="space-y-3 text-sm text-gray-400">
                 <div className="flex items-start gap-2">

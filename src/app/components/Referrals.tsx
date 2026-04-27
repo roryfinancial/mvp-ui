@@ -1,11 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
 import {
-  LayoutDashboard,
-  BarChart3,
-  Settings as SettingsIcon,
-  LogOut,
-  Link2,
   Copy,
   Check,
   Users,
@@ -17,12 +12,7 @@ import {
   Share2,
 } from "lucide-react";
 
-interface ReferralsProps {
-  onNavigateDashboard?: () => void;
-  onNavigateAnalytics?: () => void;
-  onNavigateSettings?: () => void;
-  onLogout?: () => void;
-}
+interface ReferralsProps {}
 
 interface ReferredCreator {
   name: string;
@@ -95,10 +85,10 @@ const referredCreators: ReferredCreator[] = [
 ];
 
 const commissionTiers = [
-  { label: "Starter", range: "0–5 referrals", rate: "5%", color: "from-purple-600/20 to-purple-600/10", border: "border-purple-500/30", badge: "text-purple-400 bg-purple-500/20", active: false },
-  { label: "Builder", range: "6–15 referrals", rate: "7%", color: "from-pink-600/20 to-pink-600/10", border: "border-pink-500/30", badge: "text-pink-400 bg-pink-500/20", active: false },
-  { label: "Pro", range: "16–30 referrals", rate: "9%", color: "from-amber-600/20 to-amber-600/10", border: "border-amber-500/30", badge: "text-amber-400 bg-amber-500/20", active: false },
-  { label: "Elite", range: "31+ referrals", rate: "12%", color: "from-emerald-600/20 to-emerald-600/10", border: "border-emerald-500/30", badge: "text-emerald-400 bg-emerald-500/20", active: false },
+  { label: "Starter", range: "0–5 referrals", rate: "5%", color: "bg-purple-600/15", border: "border-purple-500/30", badge: "text-purple-400 bg-purple-500/20", active: false },
+  { label: "Builder", range: "6–15 referrals", rate: "7%", color: "bg-pink-600/15", border: "border-pink-500/30", badge: "text-pink-400 bg-pink-500/20", active: false },
+  { label: "Pro", range: "16–30 referrals", rate: "9%", color: "bg-amber-600/15", border: "border-amber-500/30", badge: "text-amber-400 bg-amber-500/20", active: false },
+  { label: "Elite", range: "31+ referrals", rate: "12%", color: "bg-emerald-600/15", border: "border-emerald-500/30", badge: "text-emerald-400 bg-emerald-500/20", active: false },
 ];
 
 const REFERRAL_LINK = "tipflow.app/ref/yourcreator";
@@ -109,7 +99,7 @@ const statusStyle: Record<ReferredCreator["status"], string> = {
   pending:  "text-amber-400  bg-amber-500/15  border border-amber-500/30",
 };
 
-export default function Referrals({ onNavigateDashboard, onNavigateAnalytics, onNavigateSettings, onLogout }: ReferralsProps) {
+export default function Referrals(_: ReferralsProps) {
   const [copied, setCopied] = useState(false);
   const [sortBy, setSortBy] = useState<"commission" | "tips" | "joined">("commission");
   const [showSortMenu, setShowSortMenu] = useState(false);
@@ -130,56 +120,7 @@ export default function Referrals({ onNavigateDashboard, onNavigateAnalytics, on
   const activeCount = referredCreators.filter(c => c.status === "active").length;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-lg border-b border-white/5">
-        <div className="max-w-full mx-auto px-6 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              TipFlow
-            </div>
-            <div className="hidden md:flex items-center gap-1">
-              <button
-                onClick={onNavigateDashboard}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 font-medium text-sm transition-all"
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                Dashboard
-              </button>
-              <button
-                onClick={onNavigateAnalytics}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 font-medium text-sm transition-all"
-              >
-                <BarChart3 className="w-4 h-4" />
-                Analytics
-              </button>
-              <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-white font-medium text-sm transition-all">
-                <Link2 className="w-4 h-4" />
-                Referrals
-              </button>
-              <button
-                onClick={onNavigateSettings}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 font-medium text-sm transition-all"
-              >
-                <SettingsIcon className="w-4 h-4" />
-                Settings
-              </button>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            {onLogout && (
-              <button
-                onClick={onLogout}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition-all"
-              >
-                <LogOut className="w-4 h-4" />
-                <span className="text-sm font-medium hidden sm:inline">Logout</span>
-              </button>
-            )}
-          </div>
-        </div>
-      </nav>
-
+    <div className="min-h-screen bg-background text-foreground">
       <section className="relative pt-32 pb-20 px-6">
         <div className="max-w-6xl mx-auto">
 
@@ -191,7 +132,7 @@ export default function Referrals({ onNavigateDashboard, onNavigateAnalytics, on
             className="mb-12 flex items-start justify-between flex-wrap gap-4"
           >
             <div>
-              <h1 className="text-5xl font-bold mb-2 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+              <h1 className="text-5xl font-black text-foreground tracking-tight mb-2">
                 Referrals
               </h1>
               <p className="text-gray-400 text-lg">Earn commission by inviting other creators to TipFlow</p>
@@ -201,7 +142,7 @@ export default function Referrals({ onNavigateDashboard, onNavigateAnalytics, on
             <motion.button
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
-              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold text-sm shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all"
+              className="flex items-center gap-2 px-5 py-3 bg-purple-600 hover:bg-purple-500 text-white font-semibold text-sm shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all"
             >
               <Share2 className="w-4 h-4" />
               Share Your Link
@@ -213,7 +154,7 @@ export default function Referrals({ onNavigateDashboard, onNavigateAnalytics, on
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="mb-10 rounded-3xl p-6 bg-gradient-to-br from-purple-600/10 to-pink-600/10 border border-purple-500/20"
+            className="mb-10 p-6 bg-purple-600/10 border border-purple-500/20"
           >
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
               <div>
@@ -225,7 +166,7 @@ export default function Referrals({ onNavigateDashboard, onNavigateAnalytics, on
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.97 }}
                   onClick={handleCopy}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 border border-white/15 text-white text-sm font-medium hover:bg-white/15 transition-all"
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white/10 border border-white/15 text-white text-sm font-medium hover:bg-white/15 transition-all"
                 >
                   <AnimatePresence mode="wait">
                     {copied ? (
@@ -267,7 +208,7 @@ export default function Referrals({ onNavigateDashboard, onNavigateAnalytics, on
                 change: "+18%",
                 badgeClass: "text-purple-400 bg-purple-500/20",
                 border: "border-purple-500/20",
-                bg: "from-purple-600/10 to-purple-600/5",
+                bg: "bg-purple-600/10",
                 delay: 0.1,
               },
               {
@@ -277,7 +218,7 @@ export default function Referrals({ onNavigateDashboard, onNavigateAnalytics, on
                 change: "+2 this month",
                 badgeClass: "text-pink-400 bg-pink-500/20",
                 border: "border-pink-500/20",
-                bg: "from-pink-600/10 to-pink-600/5",
+                bg: "bg-pink-600/10",
                 delay: 0.18,
               },
               {
@@ -287,7 +228,7 @@ export default function Referrals({ onNavigateDashboard, onNavigateAnalytics, on
                 change: `${activeCount} of ${referredCreators.length}`,
                 badgeClass: "text-amber-400 bg-amber-500/20",
                 border: "border-amber-500/20",
-                bg: "from-amber-600/10 to-amber-600/5",
+                bg: "bg-amber-600/10",
                 delay: 0.26,
               },
               {
@@ -297,7 +238,7 @@ export default function Referrals({ onNavigateDashboard, onNavigateAnalytics, on
                 change: "+5% rate",
                 badgeClass: "text-emerald-400 bg-emerald-500/20",
                 border: "border-emerald-500/20",
-                bg: "from-emerald-600/10 to-emerald-600/5",
+                bg: "bg-emerald-600/10",
                 delay: 0.34,
               },
             ].map((card, i) => (
@@ -307,7 +248,7 @@ export default function Referrals({ onNavigateDashboard, onNavigateAnalytics, on
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: card.delay }}
                 whileHover={{ scale: 1.03, y: -4 }}
-                className={`rounded-3xl p-6 bg-gradient-to-br ${card.bg} border ${card.border}`}
+                className={`p-6 ${card.bg} border ${card.border}`}
               >
                 <div className="flex items-center justify-between mb-4">
                   {card.icon}
@@ -324,7 +265,7 @@ export default function Referrals({ onNavigateDashboard, onNavigateAnalytics, on
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="rounded-3xl bg-[#1a1a1a] border border-white/10 overflow-hidden mb-10"
+            className="bg-[#1a1a1a] border border-white/10 overflow-hidden mb-10"
           >
             <div className="p-6 border-b border-white/10 flex items-center justify-between">
               <div>
@@ -336,7 +277,7 @@ export default function Referrals({ onNavigateDashboard, onNavigateAnalytics, on
               <div className="relative">
                 <button
                   onClick={() => setShowSortMenu(!showSortMenu)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:text-white text-sm font-medium transition-all"
+                  className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 text-gray-300 hover:text-white text-sm font-medium transition-all"
                 >
                   Sort: {sortBy === "commission" ? "Commission" : sortBy === "tips" ? "Total Tips" : "Joined"}
                   <ChevronDown className={`w-3 h-3 transition-transform ${showSortMenu ? "rotate-180" : ""}`} />
@@ -348,7 +289,7 @@ export default function Referrals({ onNavigateDashboard, onNavigateAnalytics, on
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -6, scale: 0.97 }}
                       transition={{ duration: 0.12 }}
-                      className="absolute right-0 mt-2 w-40 rounded-xl bg-[#111] border border-white/15 shadow-xl z-10 overflow-hidden"
+                      className="absolute right-0 mt-2 w-40 bg-[#111] border border-white/15 shadow-xl z-10 overflow-hidden"
                     >
                       {(["commission", "tips", "joined"] as const).map((opt) => (
                         <button
@@ -387,7 +328,7 @@ export default function Referrals({ onNavigateDashboard, onNavigateAnalytics, on
                 >
                   {/* Creator info */}
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-purple-600/30 to-pink-600/30 border border-purple-500/20 text-purple-400 font-bold text-sm flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center bg-purple-600/25 border border-purple-500/20 text-purple-400 font-bold text-sm flex-shrink-0">
                       {creator.initials}
                     </div>
                     <div>
@@ -427,7 +368,7 @@ export default function Referrals({ onNavigateDashboard, onNavigateAnalytics, on
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.55 }}
-            className="rounded-3xl p-8 bg-[#1a1a1a] border border-white/10"
+            className="p-8 bg-[#1a1a1a] border border-white/10"
           >
             <div className="mb-6">
               <h2 className="text-xl font-bold text-white">Commission Tiers</h2>
@@ -441,7 +382,7 @@ export default function Referrals({ onNavigateDashboard, onNavigateAnalytics, on
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.65 + i * 0.08 }}
-                  className={`rounded-2xl p-5 bg-gradient-to-br ${tier.color} border ${tier.border} ${i === 0 ? "ring-1 ring-purple-500/40" : ""}`}
+                  className={`p-5 ${tier.color} border ${tier.border} ${i === 0 ? "ring-1 ring-purple-500/40" : ""}`}
                 >
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-white font-bold">{tier.label}</p>

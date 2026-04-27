@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { useState, useRef } from "react";
-import { ArrowLeft, Search, Upload, X, ImageIcon } from "lucide-react";
+import { Upload, X, ImageIcon } from "lucide-react";
 
 interface CreateWishlistProps {
   onBack?: () => void;
@@ -10,7 +10,6 @@ interface CreateWishlistProps {
 export default function CreateWishlist({ onBack, onCreateWishlist }: CreateWishlistProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
   const [coverImage, setCoverImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -30,36 +29,8 @@ export default function CreateWishlist({ onBack, onCreateWishlist }: CreateWishl
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e0e] border-b border-accent/40">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="text-xl font-black text-white tracking-tight">TipFlow</div>
-          <div className="flex items-center gap-4">
-            <div className="relative hidden sm:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-              <input
-                type="text"
-                placeholder="Search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-accent transition-all w-48"
-              />
-            </div>
-            {onBack && (
-              <button
-                onClick={onBack}
-                className="flex items-center gap-2 px-4 py-2 border border-white/20 text-white hover:bg-white/10 text-sm font-medium transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="hidden sm:inline">Back</span>
-              </button>
-            )}
-          </div>
-        </div>
-      </nav>
-
       {/* Main Content */}
-      <section className="pt-28 pb-20 px-6">
+      <section className="pt-12 pb-20 px-6">
         <div className="max-w-2xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}

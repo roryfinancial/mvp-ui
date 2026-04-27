@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { useState } from "react";
-import { Search, User, ChevronDown, ChevronUp, Heart, DollarSign, LayoutDashboard, BarChart3, Settings as SettingsIcon, LogOut } from "lucide-react";
+import { User, ChevronDown, ChevronUp, Heart, DollarSign } from "lucide-react";
 
 interface Goal {
   name: string;
@@ -25,10 +25,6 @@ interface ProjectOverviewProps {
   isCreator?: boolean;
   onBack?: () => void;
   onBackToWishlist?: (wishlistId: number) => void;
-  onNavigateDashboard?: () => void;
-  onNavigateAnalytics?: () => void;
-  onNavigateSettings?: () => void;
-  onLogout?: () => void;
   onViewCreator?: () => void;
 }
 
@@ -53,67 +49,19 @@ export default function ProjectOverview({
   isCreator = false,
   onBack,
   onBackToWishlist,
-  onNavigateDashboard,
-  onNavigateAnalytics,
-  onNavigateSettings,
-  onLogout,
   onViewCreator,
 }: ProjectOverviewProps) {
-  const [searchQuery, setSearchQuery] = useState("");
   const [supportAmount, setSupportAmount] = useState("");
   const [goalsExpanded, setGoalsExpanded] = useState(false);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e0e] border-b border-accent/40">
-        <div className="max-w-full mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <div className="text-xl font-black text-white tracking-tight">TipFlow</div>
-            {isCreator && (
-              <div className="hidden md:flex items-center gap-1">
-                <button onClick={onNavigateDashboard} className="flex items-center gap-2 px-4 py-2 text-white/60 hover:text-white font-medium text-sm transition-colors">
-                  <LayoutDashboard className="w-4 h-4" />
-                  Dashboard
-                </button>
-                <button onClick={onNavigateAnalytics} className="flex items-center gap-2 px-4 py-2 text-white/60 hover:text-white font-medium text-sm transition-colors">
-                  <BarChart3 className="w-4 h-4" />
-                  Analytics
-                </button>
-                <button onClick={onNavigateSettings} className="flex items-center gap-2 px-4 py-2 text-white/60 hover:text-white font-medium text-sm transition-colors">
-                  <SettingsIcon className="w-4 h-4" />
-                  Settings
-                </button>
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="relative hidden sm:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-              <input
-                type="text"
-                placeholder="Search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-accent transition-all w-48"
-              />
-            </div>
-            {onLogout && (
-              <button onClick={onLogout} className="flex items-center gap-2 px-4 py-2 border border-white/20 text-white hover:bg-white/10 text-sm font-medium transition-colors">
-                <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Logout</span>
-              </button>
-            )}
-          </div>
-        </div>
-      </nav>
-
       {/* Main Content */}
       <section className="pt-28 pb-20 px-6">
         <div className="max-w-6xl mx-auto">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 mb-8 text-sm">
-            <button onClick={onNavigateDashboard} className="text-subtle hover:text-foreground transition-colors font-medium">My Wishlists</button>
+            <button onClick={onBack} className="text-subtle hover:text-foreground transition-colors font-medium">My Wishlists</button>
             <span className="text-[#d0d0d0]">/</span>
             <button onClick={() => onBackToWishlist?.(wishlistId)} className="text-subtle hover:text-foreground transition-colors font-medium">{wishlistName}</button>
             <span className="text-[#d0d0d0]">/</span>

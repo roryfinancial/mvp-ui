@@ -25,7 +25,7 @@ export default function Auth({ onBack, onAuthComplete }: AuthProps) {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
           onClick={onBack}
-          className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-background text-foreground hover:bg-muted transition-colors shadow-sm"
+          className="fixed top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 border border-border bg-background text-foreground hover:bg-muted transition-colors shadow-sm"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm font-medium">Back</span>
@@ -36,7 +36,7 @@ export default function Auth({ onBack, onAuthComplete }: AuthProps) {
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.4 }}
-        className="flex flex-col md:flex-row w-full max-w-5xl mx-auto bg-background overflow-hidden shadow-2xl rounded-2xl border border-border"
+        className="flex flex-col md:flex-row w-full max-w-5xl mx-auto bg-background overflow-hidden shadow-2xl border border-border"
       >
         {/* Left Side — Branding */}
         <motion.div
@@ -52,10 +52,7 @@ export default function Auth({ onBack, onAuthComplete }: AuthProps) {
           <div
             aria-hidden
             className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                "radial-gradient(ellipse 70% 60% at 50% 70%, oklch(65.6% 0.241 354.308 / 0.1) 0%, transparent 70%)",
-            }}
+            style={{}}
           />
           <div className="relative z-10">
             <div className="text-2xl font-black text-white mb-8 tracking-tight">TipFlow</div>
@@ -112,7 +109,7 @@ export default function Auth({ onBack, onAuthComplete }: AuthProps) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
-              className="flex mb-8 border border-border rounded-lg overflow-hidden"
+              className="flex mb-8 border border-border overflow-hidden"
             >
               {(["creator", "fan"] as const).map((tab, i) => (
                 <button
@@ -173,7 +170,7 @@ export default function Auth({ onBack, onAuthComplete }: AuthProps) {
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
                 onClick={handleAuthComplete}
-                className={`w-full flex items-center justify-center gap-3 px-5 py-3.5 rounded-lg border border-border bg-background hover:bg-muted transition-colors ${color} font-medium text-sm card-game`}
+                className={`w-full flex items-center justify-center gap-3 px-5 py-3.5 border border-border bg-background hover:bg-muted transition-colors ${color} font-medium text-sm card-game`}
               >
                 {icon}
                 {label}
@@ -205,7 +202,7 @@ export default function Auth({ onBack, onAuthComplete }: AuthProps) {
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="w-full pl-11 pr-4 py-4 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:border-transparent text-foreground placeholder-[#999999] transition-all text-sm"
+                className="w-full pl-11 pr-4 py-4 border border-border bg-background focus:outline-none focus:ring-2 focus:border-transparent text-foreground placeholder-[#999999] transition-all text-sm"
                 style={{ "--tw-ring-color": "oklch(65.6% 0.241 354.308 / 0.4)" } as React.CSSProperties}
               />
             </div>
@@ -219,7 +216,7 @@ export default function Auth({ onBack, onAuthComplete }: AuthProps) {
             whileHover={{ scale: 1.01 }}
             whileTap={{ scale: 0.99 }}
             onClick={handleAuthComplete}
-            className="w-full btn-cta rounded-lg text-white py-4 font-black text-sm uppercase tracking-widest mb-6"
+            className="w-full btn-cta text-white py-4 font-black text-sm uppercase tracking-widest mb-6"
           >
             Continue
           </motion.button>

@@ -1,11 +1,12 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
-import { Plus, Search, User, LogOut, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, LayoutDashboard, BarChart3, Settings as SettingsIcon, ChevronDown, List, DollarSign, Link2 } from "lucide-react";
+import { Plus, User, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, ChevronDown, List, ShoppingBag } from "lucide-react";
 
 interface CreatorDashboardProps {
   username?: string;
   initialWishlistId?: number | null;
   creditBalance?: number;
+  shopifyStore?: { name: string; url: string } | null;
   onLogout?: () => void;
   onCreateWishlist?: () => void;
   onAddItem?: () => void;
@@ -13,6 +14,7 @@ interface CreatorDashboardProps {
   onViewAnalytics?: () => void;
   onViewReferrals?: () => void;
   onViewSettings?: () => void;
+  onViewLeaderboard?: () => void;
   onViewBalance?: () => void;
 }
 
@@ -41,23 +43,10 @@ interface Wishlist {
   items: WishlistItem[];
 }
 
-export default function CreatorDashboard({ username = "Username", initialWishlistId = null, creditBalance = 0, onLogout, onCreateWishlist, onAddItem, onViewProject, onViewAnalytics, onViewReferrals, onViewSettings, onViewBalance }: CreatorDashboardProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+export default function CreatorDashboard({ username = "Username", initialWishlistId = null, shopifyStore = null, onCreateWishlist, onAddItem }: CreatorDashboardProps) {
   const [selectedWishlistId, setSelectedWishlistId] = useState<number | null>(initialWishlistId);
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
   const [itemTab, setItemTab] = useState<"active" | "completed" | "all">("active");
-
-  const searchResults = searchQuery.length > 0 ? {
-    creators: [
-      { name: "Alex Creative", username: "@alexcreative", initials: "AC" },
-      { name: "Sarah Designs", username: "@sarahdesigns", initials: "SD" },
-    ],
-    supporters: [
-      { name: "Mike Chen", username: "@mikechen", initials: "MC" },
-      { name: "Emily Rodriguez", username: "@emilyrodriguez", initials: "ER" },
-    ],
-  } : { creators: [], supporters: [] };
 
   const recentSupporters: Supporter[] = [
     { name: "Sarah Johnson", amount: "$250", initials: "SJ", timeAgo: "2h ago" },
@@ -75,7 +64,7 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
       items: [
         { title: "New Streaming Setup", description: "Upgrading for better quality streams", goal: "$2,500", raised: "$1,890", progress: 76, status: "active" },
         { title: "Art Supplies Collection", description: "Professional grade materials for commissions", goal: "$800", raised: "$520", progress: 65, status: "active" },
-        { title: "Coffee Fund", description: "Fuel the creative process", goal: "$200", raised: "$200", progress: 100, status: "completed" },
+        { title: "Coffee Fund", description: "Fuel the creative process", goal: "$200", raised: "$340", progress: 170, status: "completed" },
       ],
     },
   ];
@@ -86,111 +75,6 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e0e] border-b border-accent/40">
-        <div className="max-w-full mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <div className="text-xl font-black text-white tracking-tight">TipFlow</div>
-            <div className="hidden md:flex items-center gap-1">
-              <button className="flex items-center gap-2 px-4 py-2 text-white font-medium text-sm border-b-2 border-accent">
-                <LayoutDashboard className="w-4 h-4" />
-                Dashboard
-              </button>
-              <button
-                onClick={onViewAnalytics}
-                className="flex items-center gap-2 px-4 py-2 text-white/60 hover:text-white font-medium text-sm transition-colors"
-              >
-                <BarChart3 className="w-4 h-4" />
-                Analytics
-              </button>
-              <button
-                onClick={onViewReferrals}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 font-medium text-sm transition-all"
-              >
-                <Link2 className="w-4 h-4" />
-                Referrals
-              </button>
-              <button
-                onClick={onViewSettings}
-                className="flex items-center gap-2 px-4 py-2 text-white/60 hover:text-white font-medium text-sm transition-colors"
-              >
-                <SettingsIcon className="w-4 h-4" />
-                Settings
-              </button>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={onViewBalance}
-              className="flex items-center gap-2 px-3 py-2 rounded-md border border-white/20 text-white hover:bg-white/10 transition-colors text-sm font-medium"
-            >
-              <DollarSign className="w-4 h-4 text-accent" />
-              <span className="hidden sm:inline">${creditBalance?.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-            </button>
-            <div className="relative hidden sm:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 z-10" />
-              <input
-                type="text"
-                placeholder="Search creators & supporters"
-                value={searchQuery}
-                onChange={(e) => { setSearchQuery(e.target.value); setShowSearchDropdown(true); }}
-                onFocus={() => setShowSearchDropdown(true)}
-                onBlur={() => setTimeout(() => setShowSearchDropdown(false), 200)}
-                className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-accent transition-all w-56"
-              />
-              {showSearchDropdown && searchQuery.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="absolute top-full mt-2 left-0 w-72 bg-background border border-border shadow-lg overflow-hidden z-50"
-                >
-                  {searchResults.creators.length > 0 && (
-                    <div className="p-3">
-                      <h3 className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2 px-2">Creators</h3>
-                      {searchResults.creators.map((creator, index) => (
-                        <div key={index} className="flex items-center gap-3 p-2 hover:bg-muted cursor-pointer transition-colors">
-                          <div className="w-8 h-8 bg-muted border border-border flex items-center justify-center text-foreground font-bold text-xs">{creator.initials}</div>
-                          <div className="flex-1">
-                            <p className="text-foreground font-medium text-sm">{creator.name}</p>
-                            <p className="text-subtle text-xs">{creator.username}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {searchResults.supporters.length > 0 && (
-                    <div className="p-3 border-t border-border">
-                      <h3 className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2 px-2">Supporters</h3>
-                      {searchResults.supporters.map((supporter, index) => (
-                        <div key={index} className="flex items-center gap-3 p-2 hover:bg-muted cursor-pointer transition-colors">
-                          <div className="w-8 h-8 bg-muted border border-border flex items-center justify-center text-foreground font-bold text-xs">{supporter.initials}</div>
-                          <div className="flex-1">
-                            <p className="text-foreground font-medium text-sm">{supporter.name}</p>
-                            <p className="text-subtle text-xs">{supporter.username}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {searchResults.creators.length === 0 && searchResults.supporters.length === 0 && (
-                    <div className="p-6 text-center text-subtle text-sm">No results for "{searchQuery}"</div>
-                  )}
-                </motion.div>
-              )}
-            </div>
-            {onLogout && (
-              <button
-                onClick={onLogout}
-                className="flex items-center gap-2 px-4 py-2 border border-white/20 text-white hover:bg-white/10 text-sm font-medium transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Logout</span>
-              </button>
-            )}
-          </div>
-        </div>
-      </nav>
-
       {/* Main Layout */}
       <div className="flex flex-col lg:grid lg:grid-cols-[320px_1fr] gap-0 min-h-screen pt-[57px]">
         {/* Left Sidebar */}
@@ -222,6 +106,32 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
             </div>
           </motion.div>
 
+          {/* Linked Shopify Store */}
+          {shopifyStore && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.05 }}
+              className="mb-8 pb-8 border-b border-border"
+            >
+              <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">Linked Store</div>
+              <a
+                href={shopifyStore.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-3 bg-background border border-border hover:border-accent/50 transition-colors group"
+              >
+                <div className="w-8 h-8 bg-[#95BF47]/15 flex items-center justify-center flex-shrink-0">
+                  <ShoppingBag className="w-4 h-4 text-[#95BF47]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-foreground font-bold text-sm truncate group-hover:text-accent transition-colors">{shopifyStore.name}</p>
+                  <p className="text-subtle text-[10px] uppercase tracking-wide font-bold">Shopify</p>
+                </div>
+                <div className="w-2 h-2 rounded-full bg-[#22c55e] flex-shrink-0" title="Connected" />
+              </a>
+            </motion.div>
+          )}
           {/* Stats */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -231,21 +141,21 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
           >
             <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">Overview</div>
             <div className="space-y-2">
-              <div className="p-4 bg-background border border-border rounded-xl card-game">
+              <div className="p-4 bg-background border border-border card-game">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-subtle">Total Raised</span>
                   <TrendingUp className="w-4 h-4 text-accent" />
                 </div>
                 <p className="text-2xl font-black" style={{ color: "oklch(65.6% 0.241 354.308)" }}>{totalRaised}</p>
               </div>
-              <div className="p-4 bg-background border border-border rounded-xl card-game">
+              <div className="p-4 bg-background border border-border card-game">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-subtle">Active Items</span>
                   <Gift className="w-4 h-4 text-muted-foreground" />
                 </div>
                 <p className="text-2xl font-black text-foreground">{totalActiveItems}</p>
               </div>
-              <div className="p-4 bg-background border border-border rounded-xl card-game">
+              <div className="p-4 bg-background border border-border card-game">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-subtle">Supporters</span>
                   <User className="w-4 h-4 text-muted-foreground" />
@@ -294,7 +204,7 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
               onClick={onAddItem}
-              className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-md btn-cta text-white font-black text-xs uppercase tracking-widest"
+              className="w-full flex items-center justify-center gap-2 px-6 py-3 btn-cta text-white font-black text-xs uppercase tracking-widest"
             >
               <Plus className="w-4 h-4" />
               Add Item
@@ -306,7 +216,7 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
               onClick={onCreateWishlist}
-              className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-md border border-border bg-background hover:bg-muted text-foreground font-bold text-xs uppercase tracking-wide transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-border bg-background hover:bg-muted text-foreground font-bold text-xs uppercase tracking-wide transition-colors"
             >
               <List className="w-4 h-4" />
               New List
@@ -404,7 +314,7 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
                                     initial={{ width: 0 }}
                                     animate={{ width: `${pct}%` }}
                                     transition={{ duration: 1, delay: 0.3 + wIndex * 0.1 }}
-                                    style={{ background: "linear-gradient(90deg, oklch(65.6% 0.241 354.308), oklch(70% 0.2 320))" }}
+                                    style={{ background: "oklch(65.6% 0.241 354.308)" }}
                                   />
                                 </div>
                                 <p className="text-right text-[10px] text-subtle mt-1 font-bold">{pct}% funded</p>
@@ -462,15 +372,27 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
                             <span className="text-2xl font-black text-foreground">{item.raised}</span>
                             <span className="text-subtle text-sm">of {item.goal}</span>
                           </div>
-                          <div className="w-full h-2 bg-[#e0e0e0] overflow-hidden mb-2">
+                          <div
+                            className={`w-full overflow-hidden mb-2 ${item.progress > 100 ? "h-3 rounded-full" : "h-2"}`}
+                            style={item.progress > 100 ? { boxShadow: "0 0 12px oklch(65.6% 0.241 354.308 / 0.6), 0 0 30px oklch(65.6% 0.241 354.308 / 0.25)" } : {}}
+                          >
                             <motion.div
                               initial={{ width: 0 }}
-                              animate={{ width: `${item.progress}%` }}
+                              animate={{ width: `${Math.min(item.progress, 100)}%` }}
                               transition={{ duration: 1, ease: "easeOut" }}
-                              style={{ background: "linear-gradient(90deg, oklch(65.6% 0.241 354.308), oklch(70% 0.2 320))" }}
+                              className="h-full"
+                              style={{
+                                borderRadius: item.progress > 100 ? "9999px" : undefined,
+                                background: item.progress > 100
+                                  ? "linear-gradient(90deg, oklch(65.6% 0.241 354.308) 0%, oklch(70% 0.22 340) 40%, oklch(75% 0.28 350) 75%, #fff 100%)"
+                                  : "oklch(65.6% 0.241 354.308)",
+                                animation: item.progress > 100 ? "overfill-pulse 1.5s ease-in-out infinite" : undefined,
+                              }}
                             />
                           </div>
-                          <p className="text-right text-xs text-subtle font-bold">{item.progress}% funded</p>
+                          <p className={`text-right text-xs font-bold ${item.progress > 100 ? "text-accent" : "text-subtle"}`}>
+                            {item.progress}% funded{item.progress > 100 && " — Overfilled!"}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -538,7 +460,7 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
                         whileHover={{ scale: 1.01 }}
                         whileTap={{ scale: 0.99 }}
                         onClick={onAddItem}
-                        className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-md btn-cta text-white font-bold text-xs uppercase tracking-wide"
+                        className="hidden sm:flex items-center gap-2 px-4 py-2 btn-cta text-white font-bold text-xs uppercase tracking-wide"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         Add Item
@@ -601,15 +523,27 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
                                 <span className="text-foreground font-black text-sm">{item.raised}</span>
                                 <span className="text-subtle text-xs">of {item.goal}</span>
                               </div>
-                              <div className="w-full h-1 bg-[#e0e0e0] overflow-hidden">
+                              <div
+                                className={`w-full overflow-hidden ${item.progress > 100 ? "h-2 rounded-full" : "h-1"}`}
+                                style={item.progress > 100 ? { boxShadow: "0 0 10px oklch(65.6% 0.241 354.308 / 0.6), 0 0 24px oklch(65.6% 0.241 354.308 / 0.25)" } : {}}
+                              >
                                 <motion.div
                                   initial={{ width: 0 }}
-                                  animate={{ width: `${item.progress}%` }}
+                                  animate={{ width: `${Math.min(item.progress, 100)}%` }}
                                   transition={{ duration: 1, delay: 0.2 + index * 0.1 }}
-                                  style={{ background: "linear-gradient(90deg, oklch(65.6% 0.241 354.308), oklch(70% 0.2 320))" }}
+                                  className="h-full"
+                                  style={{
+                                    borderRadius: item.progress > 100 ? "9999px" : undefined,
+                                    background: item.progress > 100
+                                      ? "linear-gradient(90deg, oklch(65.6% 0.241 354.308) 0%, oklch(70% 0.22 340) 40%, oklch(75% 0.28 350) 75%, #fff 100%)"
+                                      : "oklch(65.6% 0.241 354.308)",
+                                    animation: item.progress > 100 ? "overfill-pulse 1.5s ease-in-out infinite" : undefined,
+                                  }}
                                 />
                               </div>
-                              <p className="text-right text-[10px] text-subtle mt-1 font-bold">{item.progress}%</p>
+                              <p className={`text-right text-[10px] mt-1 font-bold ${item.progress > 100 ? "text-accent" : "text-subtle"}`}>
+                                {item.progress}%{item.progress > 100 && " Overfilled!"}
+                              </p>
                             </div>
                           </motion.div>
                         ))}

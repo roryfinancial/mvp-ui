@@ -43,7 +43,7 @@
   --chart-5:  #7c3aed;
 
   /* Layout */
-  --radius:              0.5rem;
+  --radius:              0;
   --nav-bg:              #0e0e0e;
 
   /* Gaming depth */
@@ -132,10 +132,10 @@
   --color-sidebar-border:         var(--sidebar-border);
   --color-sidebar-ring:           var(--sidebar-ring);
 
-  --radius-sm: calc(var(--radius) - 2px);
-  --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) + 2px);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
 }
 
 /* ─── Base layer ──────────────────────────────────────────────────────────── */
@@ -151,7 +151,7 @@
 
   /* ── Gaming feel: CTA glow + card depth ──────────────────────────────────── */
   .btn-cta {
-    background: linear-gradient(135deg, oklch(65.6% 0.241 354.308), oklch(58% 0.241 354.308));
+    background: oklch(65.6% 0.241 354.308);
     box-shadow: var(--shadow-cta);
     transition: box-shadow 0.2s ease, transform 0.15s ease;
   }
@@ -219,4 +219,15 @@
     font-weight: 400;
     line-height: 1.5;
   }
+}
+
+/* ─── Overfill shimmer for 100%+ funded items ────────────────────────────── */
+@keyframes overfill-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes overfill-pulse {
+  0%, 100% { opacity: 0.7; }
+  50%      { opacity: 1; }
 }

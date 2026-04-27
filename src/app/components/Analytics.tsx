@@ -1,12 +1,9 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
-import { Search, TrendingUp, DollarSign, Users, Gift, LayoutDashboard, BarChart3, Settings as SettingsIcon, LogOut, Link2, ArrowRight } from "lucide-react";
+import { TrendingUp, DollarSign, Users, Gift, Link2, ArrowRight } from "lucide-react";
 
 interface AnalyticsProps {
-  onNavigateDashboard?: () => void;
-  onNavigateSettings?: () => void;
   onNavigateReferrals?: () => void;
-  onLogout?: () => void;
 }
 
 type Metric = "revenue" | "supporters" | "gifts" | "avgContribution" | "referralEarnings" | "commissionEarned";
@@ -54,12 +51,12 @@ const periodStats: Record<TimePeriod, {
 };
 
 const metricConfig: Record<Metric, { label: string; color: string; accentClass: string; borderClass: string; badgeClass: string; iconColor: string }> = {
-  revenue:          { label: "Revenue Over Time",             color: "from-purple-500 to-pink-500",   accentClass: "from-purple-600/10 to-purple-600/5",   borderClass: "border-purple-500/20", badgeClass: "text-purple-400 bg-purple-600/20", iconColor: "text-purple-400" },
-  supporters:       { label: "Supporter Growth",              color: "from-pink-500 to-rose-500",     accentClass: "from-pink-600/10 to-pink-600/5",       borderClass: "border-pink-500/20",   badgeClass: "text-pink-400 bg-pink-600/20",     iconColor: "text-pink-400" },
-  gifts:            { label: "Gifts Over Time",               color: "from-blue-500 to-cyan-500",     accentClass: "from-blue-600/10 to-blue-600/5",       borderClass: "border-blue-500/20",   badgeClass: "text-blue-400 bg-blue-600/20",     iconColor: "text-blue-400" },
-  avgContribution:  { label: "Avg. Contribution Over Time",   color: "from-green-500 to-emerald-500", accentClass: "from-green-600/10 to-green-600/5",     borderClass: "border-green-500/20",  badgeClass: "text-green-400 bg-green-600/20",   iconColor: "text-green-400" },
-  referralEarnings: { label: "Referral Earnings Over Time",   color: "from-amber-500 to-orange-500",  accentClass: "from-amber-600/10 to-amber-600/5",     borderClass: "border-amber-500/20",  badgeClass: "text-amber-400 bg-amber-600/20",   iconColor: "text-amber-400" },
-  commissionEarned: { label: "Commission Earned Over Time",   color: "from-teal-500 to-cyan-400",     accentClass: "from-teal-600/10 to-teal-600/5",       borderClass: "border-teal-500/20",   badgeClass: "text-teal-400 bg-teal-600/20",     iconColor: "text-teal-400" },
+  revenue:          { label: "Revenue Over Time",             color: "oklch(65.6% 0.241 354.308)",   accentClass: "bg-purple-600/10",   borderClass: "border-purple-500/20", badgeClass: "text-purple-400 bg-purple-600/20", iconColor: "text-purple-400" },
+  supporters:       { label: "Supporter Growth",              color: "oklch(72% 0.2 350)",            accentClass: "bg-pink-600/10",     borderClass: "border-pink-500/20",   badgeClass: "text-pink-400 bg-pink-600/20",     iconColor: "text-pink-400" },
+  gifts:            { label: "Gifts Over Time",               color: "oklch(60% 0.2 250)",            accentClass: "bg-blue-600/10",     borderClass: "border-blue-500/20",   badgeClass: "text-blue-400 bg-blue-600/20",     iconColor: "text-blue-400" },
+  avgContribution:  { label: "Avg. Contribution Over Time",   color: "oklch(65% 0.18 155)",           accentClass: "bg-green-600/10",    borderClass: "border-green-500/20",  badgeClass: "text-green-400 bg-green-600/20",   iconColor: "text-green-400" },
+  referralEarnings: { label: "Referral Earnings Over Time",   color: "oklch(72% 0.18 80)",            accentClass: "bg-amber-600/10",    borderClass: "border-amber-500/20",  badgeClass: "text-amber-400 bg-amber-600/20",   iconColor: "text-amber-400" },
+  commissionEarned: { label: "Commission Earned Over Time",   color: "oklch(68% 0.15 185)",           accentClass: "bg-teal-600/10",     borderClass: "border-teal-500/20",   badgeClass: "text-teal-400 bg-teal-600/20",     iconColor: "text-teal-400" },
 };
 
 const recentActivity = [
@@ -70,8 +67,7 @@ const recentActivity = [
   { supporter: "Jordan Lee",      amount: "$75",  project: "Art Supplies Collection", timeAgo: "3d ago",  initials: "JL" },
 ];
 
-export default function Analytics({ onNavigateDashboard, onNavigateSettings, onNavigateReferrals, onLogout }: AnalyticsProps) {
-  const [searchQuery, setSearchQuery] = useState("");
+export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("month");
   const [selectedMetric, setSelectedMetric] = useState<Metric>("revenue");
   const [hoveredBar, setHoveredBar] = useState<number | null>(null);
@@ -96,57 +92,6 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onN
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e0e] border-b border-accent/40">
-        <div className="max-w-full mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <div className="text-xl font-black text-white tracking-tight">TipFlow</div>
-            <div className="hidden md:flex items-center gap-1">
-              <button onClick={onNavigateDashboard} className="flex items-center gap-2 px-4 py-2 text-white/60 hover:text-white font-medium text-sm transition-colors">
-                <LayoutDashboard className="w-4 h-4" />
-                Dashboard
-              </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-accent text-white font-medium text-sm">
-                <BarChart3 className="w-4 h-4" />
-                Analytics
-              </button>
-              <button
-                onClick={onNavigateReferrals}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 font-medium text-sm transition-all"
-              >
-                <Link2 className="w-4 h-4" />
-                Referrals
-              </button>
-              <button
-                onClick={onNavigateSettings}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 font-medium text-sm transition-all"
-              >
-                <SettingsIcon className="w-4 h-4" />
-                Settings
-              </button>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="relative hidden sm:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-              <input
-                type="text"
-                placeholder="Search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-accent transition-all w-48"
-              />
-            </div>
-            {onLogout && (
-              <button onClick={onLogout} className="flex items-center gap-2 px-4 py-2 border border-white/20 text-white hover:bg-white/10 text-sm font-medium transition-colors">
-                <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Logout</span>
-              </button>
-            )}
-          </div>
-        </div>
-      </nav>
-
       {/* Main Content */}
       <section className="pt-28 pb-20 px-6">
         <div className="max-w-6xl mx-auto">
@@ -192,14 +137,14 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onN
                   whileHover={{ scale: 1.03, y: -4 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setSelectedMetric(metric)}
-                  className={`rounded-3xl p-6 text-left w-full transition-all duration-200 bg-gradient-to-br ${c.accentClass} border-2 ${
+                  className={`p-6 text-left w-full transition-all duration-200 ${c.accentClass} border-2 ${
                     isActive ? `${c.borderClass} ring-1 ring-offset-0 shadow-lg` : "border-white/10 hover:border-white/20"
                   }`}
                   style={isActive ? { boxShadow: "0 8px 32px rgba(139,92,246,0.15)" } : {}}
                 >
                   <div className="flex items-center justify-between mb-4">
                     {icon}
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${c.badgeClass}`}>{change}</span>
+                    <span className={`text-xs font-medium px-2 py-1 ${c.badgeClass}`}>{change}</span>
                   </div>
                   <p className="text-gray-400 text-sm mb-1">{label}</p>
                   <p className="text-3xl font-bold text-white">{value}</p>
@@ -231,14 +176,14 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onN
                   whileHover={{ scale: 1.03, y: -4 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setSelectedMetric(metric)}
-                  className={`rounded-3xl p-6 text-left w-full transition-all duration-200 bg-gradient-to-br ${c.accentClass} border-2 ${
+                  className={`p-6 text-left w-full transition-all duration-200 ${c.accentClass} border-2 ${
                     isActive ? `${c.borderClass} ring-1 ring-offset-0 shadow-lg` : "border-white/10 hover:border-white/20"
                   }`}
                   style={isActive ? { boxShadow: "0 8px 32px rgba(251,191,36,0.12)" } : {}}
                 >
                   <div className="flex items-center justify-between mb-4">
                     {icon}
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${c.badgeClass}`}>{change}</span>
+                    <span className={`text-xs font-medium px-2 py-1 ${c.badgeClass}`}>{change}</span>
                   </div>
                   <p className="text-gray-400 text-sm mb-1">{label}</p>
                   <p className="text-3xl font-bold text-white">{value}</p>
@@ -259,7 +204,7 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onN
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
-              className="border border-border bg-background p-8 rounded-2xl card-game"
+              className="border border-border bg-background p-8 card-game"
             >
               <div className="flex items-center justify-between mb-1">
                 <AnimatePresence mode="wait">
@@ -372,7 +317,7 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onN
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
-              className="border border-border bg-background p-8 rounded-2xl card-game"
+              className="border border-border bg-background p-8 card-game"
             >
               <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-5">Recent Activity</div>
               <div className="space-y-2 max-h-80 overflow-y-auto">
@@ -467,7 +412,7 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onN
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.45 }}
-            className="mt-8 rounded-3xl p-8 bg-gradient-to-br from-amber-600/10 to-teal-600/10 border border-amber-500/20"
+            className="mt-8 p-8 bg-amber-600/10 border border-amber-500/20"
           >
             <div className="flex items-start justify-between flex-wrap gap-4 mb-6">
               <div>
@@ -478,7 +423,7 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onN
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={onNavigateReferrals}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-600/20 to-amber-600/10 border border-amber-500/30 text-amber-400 font-medium text-sm hover:from-amber-600/30 hover:to-amber-600/20 transition-all"
+                className="flex items-center gap-2 px-5 py-2.5 bg-amber-600/15 border border-amber-500/30 text-amber-400 font-medium text-sm hover:bg-amber-600/25 transition-all"
               >
                 Manage Referrals
                 <ArrowRight className="w-4 h-4" />
@@ -506,7 +451,7 @@ export default function Analytics({ onNavigateDashboard, onNavigateSettings, onN
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.55 + i * 0.08 }}
-                  className="p-5 rounded-2xl bg-[#0a0a0a]/60 border border-white/10"
+                  className="p-5 bg-[#0a0a0a]/60 border border-white/10"
                 >
                   <p className="text-gray-400 text-sm mb-2">{item.label}</p>
                   <AnimatePresence mode="wait">

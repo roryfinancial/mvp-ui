@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { useState, useRef } from "react";
-import { Search, Upload, Plus, Trash2, ArrowLeft, X, ImageIcon } from "lucide-react";
+import { Upload, Plus, Trash2, X, ImageIcon } from "lucide-react";
 
 interface CreateProjectProps {
   onBack?: () => void;
@@ -8,7 +8,6 @@ interface CreateProjectProps {
 }
 
 export default function CreateProject({ onBack, onCreateProject }: CreateProjectProps) {
-  const [searchQuery, setSearchQuery] = useState("");
   const [projectTitle, setProjectTitle] = useState("");
   const [description, setDescription] = useState("");
   const [newGoal, setNewGoal] = useState("");
@@ -46,34 +45,6 @@ export default function CreateProject({ onBack, onCreateProject }: CreateProject
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e0e] border-b border-accent/40">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="text-xl font-black text-white tracking-tight">TipFlow</div>
-          <div className="flex items-center gap-4">
-            <div className="relative hidden sm:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-              <input
-                type="text"
-                placeholder="Search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-4 py-2 bg-white/10 border border-white/20 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-accent transition-all w-48"
-              />
-            </div>
-            {onBack && (
-              <button
-                onClick={onBack}
-                className="flex items-center gap-2 px-4 py-2 border border-white/20 text-white hover:bg-white/10 text-sm font-medium transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="hidden sm:inline">Back</span>
-              </button>
-            )}
-          </div>
-        </div>
-      </nav>
-
       {/* Main Content */}
       <section className="pt-28 pb-20 px-6">
         <div className="max-w-5xl mx-auto">

@@ -19,9 +19,10 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
             <a href="#features" className="text-white/50 hover:text-white transition-colors text-sm font-medium">Features</a>
             <a href="#pricing" className="text-white/50 hover:text-white transition-colors text-sm font-medium">Pricing</a>
             <a href="#creators" className="text-white/50 hover:text-white transition-colors text-sm font-medium">Creators</a>
+            <a href="/leaderboard" className="text-white/50 hover:text-white transition-colors text-sm font-medium">Leaderboard</a>
             <button
               onClick={onNavigateToAuth}
-              className="px-5 py-2 rounded-md btn-cta text-white text-sm font-bold uppercase tracking-widest"
+              className="px-5 py-2 btn-cta text-white text-sm font-bold uppercase tracking-widest"
             >
               Get Started
             </button>
@@ -35,10 +36,7 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
         <div
           aria-hidden
           className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 70% 55% at 50% 60%, oklch(65.6% 0.241 354.308 / 0.12) 0%, transparent 70%)",
-          }}
+          style={{}}
         />
         <div className="max-w-7xl mx-auto px-6 pt-40 pb-32 relative z-10">
           <motion.div
@@ -84,14 +82,14 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
                 onClick={onNavigateToAuth}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                className="px-10 py-4 rounded-md btn-cta text-white text-lg font-black uppercase tracking-widest"
+                className="px-10 py-4 btn-cta text-white text-lg font-black uppercase tracking-widest"
               >
                 Start Your Wishlist
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="px-10 py-4 rounded-md border border-white/20 text-white/70 text-lg font-bold uppercase tracking-widest hover:border-white/40 hover:text-white transition-colors"
+                className="px-10 py-4 border border-white/20 text-white/70 text-lg font-bold uppercase tracking-widest hover:border-white/40 hover:text-white transition-colors"
               >
                 How It Works
               </motion.button>
@@ -173,10 +171,10 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: i * 0.1 }}
-                    className="flex items-start gap-4 p-4 rounded-xl border border-border bg-background card-game"
+                    className="flex items-start gap-4 p-4 border border-border bg-background card-game"
                   >
                     <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-white"
+                      className="w-8 h-8 flex items-center justify-center flex-shrink-0 text-white"
                       style={{ background: "oklch(65.6% 0.241 354.308)" }}
                     >
                       {item.icon}
@@ -195,7 +193,7 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
               viewport={{ once: true }}
               transition={{ duration: 0.7, ease: "easeOut" }}
             >
-              <div className="rounded-2xl overflow-hidden shadow-xl border border-border">
+              <div className="overflow-hidden shadow-xl border border-border">
                 <ImageWithFallback
                   src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYXJrJTIwbW9kZSUyMGFuYWx5dGljcyUyMGRhc2hib2FyZCUyMHVpfGVufDF8fHx8MTc3NjA2MzE2Nnww&ixlib=rb-4.1.0&q=80&w=1080"
                   alt="Wishlist Dashboard"
@@ -224,7 +222,7 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
               transition={{ duration: 0.7 }}
               className="order-2 md:order-1"
             >
-              <div className="rounded-2xl overflow-hidden border border-border bg-background card-game">
+              <div className="overflow-hidden border border-border bg-background card-game">
                 {/* Card header */}
                 <div className="bg-[#0e0e0e] px-6 py-4 flex items-center gap-3">
                   <Trophy className="w-5 h-5" style={{ color: RANK_COLORS[0] }} />
@@ -242,10 +240,10 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.4, delay: i * 0.1 }}
-                      className="flex items-center gap-3 p-4 rounded-xl border border-border bg-background card-game cursor-pointer"
+                      className="flex items-center gap-3 p-4 border border-border bg-background card-game cursor-pointer"
                     >
                       <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black text-white flex-shrink-0"
+                        className="w-8 h-8 flex items-center justify-center text-xs font-black text-white flex-shrink-0"
                         style={{ background: RANK_COLORS[i] }}
                       >
                         #{entry.rank}
@@ -292,10 +290,7 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
         <div
           aria-hidden
           className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 60% 50% at 50% 50%, oklch(65.6% 0.241 354.308 / 0.1) 0%, transparent 70%)",
-          }}
+          style={{}}
         />
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <motion.div
@@ -317,7 +312,7 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
               onClick={onNavigateToAuth}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              className="px-12 py-5 rounded-md btn-cta text-white text-xl font-black uppercase tracking-widest"
+              className="px-12 py-5 btn-cta text-white text-xl font-black uppercase tracking-widest"
             >
               Create Your Wishlist
             </motion.button>
