@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Search, LogOut, LayoutDashboard, BarChart3, Settings as SettingsIcon, DollarSign, Link2, Trophy } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface NavbarProps {
   creditBalance: number;
@@ -14,6 +15,7 @@ export default function Navbar({ creditBalance, userType }: NavbarProps) {
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuth();
 
   const searchResults = searchQuery.length > 0 ? {
     creators: [
@@ -139,7 +141,7 @@ export default function Navbar({ creditBalance, userType }: NavbarProps) {
           </div>
           <ThemeToggle />
           <button
-            onClick={() => navigate("/")}
+            onClick={() => { logout(); navigate("/"); }}
             className="flex items-center gap-2 px-4 py-2 border border-white/20 text-white hover:bg-white/10 text-sm font-medium transition-colors"
           >
             <LogOut className="w-4 h-4" />

@@ -1,4 +1,5 @@
-import { Routes, Route, useNavigate, useSearchParams, Outlet } from "react-router-dom";
+import { type ReactNode } from "react";
+import { Routes, Route, useNavigate, useSearchParams, Outlet, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Navbar from "./components/Navbar";
 import { useAuth } from "../contexts/AuthContext";
@@ -22,8 +23,17 @@ import SupporterProfile from "./components/SupporterProfile";
 
 type UserType = "creator" | "supporter";
 
+// ─── Route guard — redirects unauthenticated users to /auth ──────────────────
+function RequireAuth({ children }: { children: ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/auth" replace />;
+  return <>{children}</>;
+}
+
 // ─── Layout with persistent Navbar ──────────────────────────────────────────
 function AuthenticatedLayout({ creditBalance, userType }: { creditBalance: number; userType: UserType }) {
+  const { isAuthenticated } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/auth" replace />;
   return (
     <>
       <Navbar creditBalance={creditBalance} userType={userType} />
