@@ -1,7 +1,7 @@
 import { Routes, Route, useNavigate, useSearchParams, Outlet } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { useState } from "react";
 import Navbar from "./components/Navbar";
+import { useAuth } from "../contexts/AuthContext";
 
 import Home from "./pages/Home";
 import Auth from "./components/Auth";
@@ -48,7 +48,7 @@ function HomeRoute() {
   );
 }
 
-function AuthRoute({ onAuth }: { onAuth: (t: UserType) => void }) {
+function AuthRoute() {
   const navigate = useNavigate();
   return (
     <>
@@ -58,10 +58,7 @@ function AuthRoute({ onAuth }: { onAuth: (t: UserType) => void }) {
       </Helmet>
       <Auth
         onBack={() => navigate("/")}
-        onAuthComplete={(type) => {
-          onAuth(type);
-          navigate("/connect-platforms");
-        }}
+        onAuthComplete={(type) => navigate(type === "creator" ? "/dashboard" : "/supporter")}
       />
     </>
   );
@@ -297,14 +294,16 @@ function SupporterProfileRoute() {
 }
 
 export default function App() {
-  const [userType, setUserType] = useState<UserType>("creator");
-  const [creditBalance, setCreditBalance] = useState(0);
+  const { user, isAuthenticated, logout, updateBalance } = useAuth();
+  const userType: UserType = user?.role ?? "creator";
+  const creditBalance = user?.creditBalance ?? 0;
+
   return (
     <>
       <Routes>
         {/* Public routes — no navbar */}
         <Route path="/" element={<HomeRoute />} />
-        <Route path="/auth" element={<AuthRoute onAuth={setUserType} />} />
+        <Route path="/auth" element={<AuthRoute />} />
         <Route path="/connect-platforms" element={<ConnectPlatformsRoute userType={userType} />} />
         <Route path="/onboarding" element={<OnboardingRoute userType={userType} />} />
 
@@ -318,7 +317,7 @@ export default function App() {
           <Route path="/creator/:username" element={<CreatorProfileRoute />} />
           <Route path="/creator/:username/wishlist/:wishlistId" element={<PublicWishlistRoute />} />
           <Route path="/supporter/:username" element={<SupporterProfileRoute />} />
-          <Route path="/settings" element={<SettingsRoute creditBalance={creditBalance} onUpdateBalance={setCreditBalance} />} />
+          <Route path="/settings" element={<SettingsRoute creditBalance={creditBalance} onUpdateBalance={updateBalance} />} />
           <Route path="/analytics" element={<AnalyticsRoute />} />
           <Route path="/referrals" element={<ReferralsRoute />} />
           <Route path="/leaderboard" element={<LeaderboardRoute />} />
