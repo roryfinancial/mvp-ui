@@ -1,6 +1,4 @@
 // ─── Domain types ─────────────────────────────────────────────────────────────
-// These mirror the shapes a real backend would return. When switching to a real
-// database, update the API layer (api.ts) — these types stay stable.
 
 export type UserRole = "creator" | "supporter";
 
@@ -16,17 +14,14 @@ export interface User {
   createdAt: string; // ISO 8601
 }
 
-export interface Session {
-  token: string;
-  userId: string;
-  role: UserRole;
-  expiresAt: string; // ISO 8601
-}
-
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 export type LoginResult =
-  | { ok: true; session: Session; user: User }
+  | { ok: true; user: User }
+  | { ok: false; error: string; field?: "email" | "password" | "general" };
+
+export type SignUpResult =
+  | { ok: true; user: User; confirmEmail: boolean }
   | { ok: false; error: string; field?: "email" | "password" | "general" };
 
 // ─── Wishlist ─────────────────────────────────────────────────────────────────

@@ -1,53 +1,77 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { AuthService } from "../lib/auth";
-import type { User, Session, LoginResult } from "../lib/types";
+import type { User, UserRole, LoginResult, SignUpResult } from "../lib/types";
 
-interface AuthState {
+interface AuthContextValue {
   user: User | null;
-  session: Session | null;
-}
-
-interface AuthContextValue extends AuthState {
-  login: (email: string, password: string) => Promise<LoginResult>;
-  logout: () => void;
   isAuthenticated: boolean;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<LoginResult>;
+  signUp: (email: string, password: string, role?: UserRole) => Promise<SignUpResult>;
+  signInWithProvider: (provider: "google" | "twitch" | "twitter") => Promise<void>;
+  logout: () => Promise<void>;
   updateBalance: (balance: number) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<AuthState>(() => ({
-    session: AuthService.getSession(),
-    user: AuthService.getUser(),
-  }));
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Listen for Supabase auth state changes (sign-in, sign-out, token refresh).
+  useEffect(() => {
+    // Load initial session.
+    AuthService.getUser().then((u) => {
+      setUser(u);
+      setLoading(false);
+    });
+
+    // Subscribe to future changes.
+    const { data: { subscription } } = AuthService.onAuthStateChange((u) => {
+      setUser(u);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const login = useCallback(async (email: string, password: string): Promise<LoginResult> => {
     const result = await AuthService.login(email, password);
-    if (result.ok) {
-      setState({ session: result.session, user: result.user });
-    }
+    if (result.ok) setUser(result.user);
     return result;
   }, []);
 
-  const logout = useCallback(() => {
-    AuthService.logout();
-    setState({ session: null, user: null });
+  const signUp = useCallback(async (email: string, password: string, role?: UserRole): Promise<SignUpResult> => {
+    const result = await AuthService.signUp(email, password, role);
+    if (result.ok && !result.confirmEmail) setUser(result.user);
+    return result;
+  }, []);
+
+  const signInWithProvider = useCallback(async (provider: "google" | "twitch" | "twitter") => {
+    await AuthService.signInWithProvider(provider);
+    // The redirect will trigger onAuthStateChange on return.
+  }, []);
+
+  const logout = useCallback(async () => {
+    await AuthService.logout();
+    setUser(null);
   }, []);
 
   const updateBalance = useCallback((balance: number) => {
-    setState((prev) =>
-      prev.user ? { ...prev, user: { ...prev.user, creditBalance: balance } } : prev
-    );
+    setUser((prev) => (prev ? { ...prev, creditBalance: balance } : prev));
   }, []);
 
   return (
     <AuthContext.Provider
       value={{
-        ...state,
+        user,
+        isAuthenticated: user !== null,
+        loading,
         login,
+        signUp,
+        signInWithProvider,
         logout,
-        isAuthenticated: state.session !== null,
         updateBalance,
       }}
     >

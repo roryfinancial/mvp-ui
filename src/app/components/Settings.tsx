@@ -1,13 +1,14 @@
 import { motion } from "motion/react";
 import { useState } from "react";
-import { User, Bell, Lock, Mail, Key, Shield, DollarSign } from "lucide-react";
+import { User, Bell, Lock, Mail, Key, Shield, DollarSign, Palette, Sun, Moon, Monitor } from "lucide-react";
+import { useTheme } from "next-themes";
 
 interface SettingsProps {
   username?: string;
   email?: string;
   creditBalance?: number;
   onUpdateBalance?: (newBalance: number) => void;
-  initialSection?: "profile" | "account" | "notifications" | "privacy" | "balance";
+  initialSection?: "profile" | "account" | "notifications" | "privacy" | "balance" | "customization";
 }
 
 export default function Settings({
@@ -16,7 +17,8 @@ export default function Settings({
   creditBalance,
   initialSection = "profile",
 }: SettingsProps) {
-  const [activeSection, setActiveSection] = useState<"profile" | "account" | "notifications" | "privacy" | "balance">(initialSection);
+  const [activeSection, setActiveSection] = useState<"profile" | "account" | "notifications" | "privacy" | "balance" | "customization">(initialSection);
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const spendingHistory = [
     { label: "Last week", amount: "$180.00" },
     { label: "Last month", amount: "$840.00" },
@@ -40,6 +42,7 @@ export default function Settings({
     { key: "profile" as const,       icon: <User className="w-4 h-4" />,        label: "Profile" },
     { key: "account" as const,       icon: <Mail className="w-4 h-4" />,        label: "Account" },
     { key: "balance" as const,       icon: <DollarSign className="w-4 h-4" />,  label: "Credit & Spending" },
+    { key: "customization" as const,  icon: <Palette className="w-4 h-4" />,     label: "Customization" },
     { key: "notifications" as const, icon: <Bell className="w-4 h-4" />,        label: "Notifications" },
     { key: "privacy" as const,       icon: <Shield className="w-4 h-4" />,      label: "Privacy & Security" },
   ];
@@ -217,6 +220,44 @@ export default function Settings({
                         <p className="text-3xl font-black text-foreground">{item.amount}</p>
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Customization */}
+              {activeSection === "customization" && (
+                <div className="space-y-6">
+                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-6">Customization</div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Theme</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {([
+                        { key: "light", label: "Light", icon: <Sun className="w-5 h-5" />, desc: "Clean & bright" },
+                        { key: "dark", label: "Dark", icon: <Moon className="w-5 h-5" />, desc: "Easy on the eyes" },
+                        { key: "system", label: "System", icon: <Monitor className="w-5 h-5" />, desc: "Match your device" },
+                      ] as const).map((option) => {
+                        const isActive = theme === option.key;
+                        return (
+                          <button
+                            key={option.key}
+                            onClick={() => setTheme(option.key)}
+                            className={`flex flex-col items-center gap-2 p-6 border text-center transition-all ${
+                              isActive
+                                ? "border-accent bg-accent/10 text-foreground"
+                                : "border-border bg-muted text-muted-foreground hover:text-foreground hover:bg-secondary"
+                            }`}
+                          >
+                            <div className={isActive ? "text-accent" : "text-subtle"}>{option.icon}</div>
+                            <p className="font-bold text-sm">{option.label}</p>
+                            <p className="text-xs text-subtle">{option.desc}</p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-subtle mt-3">
+                      Currently using <span className="font-bold text-foreground">{resolvedTheme === "dark" ? "dark" : "light"}</span> mode
+                    </p>
                   </div>
                 </div>
               )}

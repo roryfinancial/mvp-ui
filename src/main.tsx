@@ -12,7 +12,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <HelmetProvider>
       <ThemeProvider
         attribute="class"
-        defaultTheme="system"
+        defaultTheme="light"
         enableSystem
         storageKey="tipflow-theme"
         disableTransitionOnChange={false}

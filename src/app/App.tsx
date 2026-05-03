@@ -1,6 +1,7 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { Routes, Route, useNavigate, useSearchParams, Outlet, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import { Loader2 } from "lucide-react";
 import Navbar from "./components/Navbar";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -23,16 +24,27 @@ import SupporterProfile from "./components/SupporterProfile";
 
 type UserType = "creator" | "supporter";
 
+// ─── Loading screen while Supabase session initializes ───────────────────────
+function AuthLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-muted">
+      <Loader2 className="w-8 h-8 animate-spin text-accent" />
+    </div>
+  );
+}
+
 // ─── Route guard — redirects unauthenticated users to /auth ──────────────────
 function RequireAuth({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return <AuthLoading />;
   if (!isAuthenticated) return <Navigate to="/auth" replace />;
   return <>{children}</>;
 }
 
 // ─── Layout with persistent Navbar ──────────────────────────────────────────
 function AuthenticatedLayout({ creditBalance, userType }: { creditBalance: number; userType: UserType }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+  if (loading) return <AuthLoading />;
   if (!isAuthenticated) return <Navigate to="/auth" replace />;
   return (
     <>
@@ -40,6 +52,20 @@ function AuthenticatedLayout({ creditBalance, userType }: { creditBalance: numbe
       <Outlet />
     </>
   );
+}
+
+// ─── OAuth callback — Supabase redirects here after social login ─────────────
+function AuthCallbackRoute() {
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && user) {
+      navigate(user.role === "creator" ? "/dashboard" : "/supporter", { replace: true });
+    }
+  }, [loading, user, navigate]);
+
+  return <AuthLoading />;
 }
 
 // ─── Route wrappers inject navigation via useNavigate ────────────────────────
@@ -232,7 +258,7 @@ function SettingsRoute({
 }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const initialSection = (searchParams.get("section") as "profile" | "account" | "notifications" | "privacy" | "balance") ?? "profile";
+  const initialSection = (searchParams.get("section") as "profile" | "account" | "notifications" | "privacy" | "balance" | "customization") ?? "profile";
   return (
     <>
       <Helmet>
@@ -314,6 +340,7 @@ export default function App() {
         {/* Public routes — no navbar */}
         <Route path="/" element={<HomeRoute />} />
         <Route path="/auth" element={<AuthRoute />} />
+        <Route path="/auth/callback" element={<AuthCallbackRoute />} />
         <Route path="/connect-platforms" element={<ConnectPlatformsRoute userType={userType} />} />
         <Route path="/onboarding" element={<OnboardingRoute userType={userType} />} />
 

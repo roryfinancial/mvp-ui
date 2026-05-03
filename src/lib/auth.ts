@@ -1,76 +1,100 @@
-// ─── Auth service ─────────────────────────────────────────────────────────────
-// Encapsulates all authentication logic behind a stable interface.
-// Migration path: replace the method bodies with fetch() calls to your auth
-// API (Supabase, Auth.js, custom JWT endpoint) — the interface stays the same
-// so callers (AuthContext) don't change.
+// ─── Auth service (Supabase) ──────────────────────────────────────────────────
+// Wraps Supabase Auth so callers (AuthContext) interact with app-level types
+// instead of Supabase types directly.
 
-import { Store } from "./store";
-import { verifyPassword, generateToken, checkRateLimit, resetRateLimit } from "./security";
-import type { Session, User, LoginResult } from "./types";
+import { supabase } from "./supabase";
+import type { User, UserRole, LoginResult, SignUpResult } from "./types";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
-const SESSION_KEY = "tipflow_session";
-const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/** Maps a Supabase user + optional profile row into our app User. */
+export function mapSupabaseUser(su: SupabaseUser, profile?: Record<string, unknown> | null): User {
+  return {
+    id: su.id,
+    email: su.email ?? "",
+    username: (profile?.username as string) ?? su.email?.split("@")[0] ?? "",
+    displayName: (profile?.display_name as string) ?? su.user_metadata?.full_name ?? su.email?.split("@")[0] ?? "",
+    role: ((profile?.role as string) ?? su.user_metadata?.role ?? "creator") as UserRole,
+    bio: (profile?.bio as string) ?? "",
+    avatarUrl: (profile?.avatar_url as string) ?? su.user_metadata?.avatar_url ?? null,
+    creditBalance: (profile?.credit_balance as number) ?? 0,
+    createdAt: su.created_at,
+  };
+}
+
+/** Tries to load the user's profile row from the `profiles` table. */
+async function fetchProfile(userId: string): Promise<Record<string, unknown> | null> {
+  const { data } = await supabase.from("profiles").select("*").eq("id", userId).single();
+  return data;
+}
+
+// ─── Service ─────────────────────────────────────────────────────────────────
 
 export const AuthService = {
   async login(email: string, password: string): Promise<LoginResult> {
-    // Client-side rate limiting (server enforces this too in production).
-    const rate = checkRateLimit();
-    if (!rate.allowed) {
-      const secs = Math.ceil(rate.retryAfterMs / 1000);
-      return { ok: false, error: `Too many attempts. Try again in ${secs}s.`, field: "general" };
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      return { ok: false, error: error.message, field: "general" };
     }
 
-    // Simulate network round-trip (remove or reduce in production).
-    await new Promise((r) => setTimeout(r, 350));
+    const profile = await fetchProfile(data.user.id);
+    return { ok: true, user: mapSupabaseUser(data.user, profile) };
+  },
 
-    const record = Store.findUserByEmail(email);
-    if (!record || !verifyPassword(password, record.passwordHash)) {
-      // Intentionally vague message — don't reveal whether email exists.
-      return { ok: false, error: "Invalid email or password.", field: "general" };
+  async signUp(email: string, password: string, role: UserRole = "creator"): Promise<SignUpResult> {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { role } },
+    });
+
+    if (error) {
+      return { ok: false, error: error.message, field: "general" };
     }
 
-    resetRateLimit();
+    if (!data.user) {
+      return { ok: false, error: "Sign-up failed. Please try again.", field: "general" };
+    }
 
-    const session: Session = {
-      token: generateToken(),
-      userId: record.user.id,
-      role: record.user.role,
-      expiresAt: new Date(Date.now() + SESSION_TTL_MS).toISOString(),
+    const confirmEmail = !data.session;
+    const profile = data.session ? await fetchProfile(data.user.id) : null;
+
+    return {
+      ok: true,
+      user: mapSupabaseUser(data.user, profile),
+      confirmEmail,
     };
-
-    // sessionStorage: cleared when the tab closes (safer than localStorage for tokens).
-    // In production the server sets an HttpOnly cookie instead.
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
-
-    return { ok: true, session, user: record.user };
   },
 
-  logout(): void {
-    sessionStorage.removeItem(SESSION_KEY);
+  async signInWithProvider(provider: "google" | "twitch" | "twitter") {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+    if (error) throw error;
   },
 
-  getSession(): Session | null {
-    try {
-      const raw = sessionStorage.getItem(SESSION_KEY);
-      if (!raw) return null;
-      const session = JSON.parse(raw) as Session;
-      if (new Date(session.expiresAt) < new Date()) {
-        sessionStorage.removeItem(SESSION_KEY);
-        return null;
+  async logout(): Promise<void> {
+    await supabase.auth.signOut();
+  },
+
+  async getUser(): Promise<User | null> {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) return null;
+    const profile = await fetchProfile(session.user.id);
+    return mapSupabaseUser(session.user, profile);
+  },
+
+  onAuthStateChange(callback: (user: User | null) => void) {
+    return supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session?.user) {
+        const profile = await fetchProfile(session.user.id);
+        callback(mapSupabaseUser(session.user, profile));
+      } else {
+        callback(null);
       }
-      return session;
-    } catch {
-      return null;
-    }
-  },
-
-  getUser(): User | null {
-    const session = AuthService.getSession();
-    if (!session) return null;
-    return Store.getUserById(session.userId) ?? null;
-  },
-
-  isAuthenticated(): boolean {
-    return AuthService.getSession() !== null;
+    });
   },
 } as const;
