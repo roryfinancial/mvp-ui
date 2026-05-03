@@ -1,5 +1,5 @@
-import { type ReactNode, useEffect } from "react";
-import { Routes, Route, useNavigate, useSearchParams, Outlet, Navigate } from "react-router-dom";
+import { type ReactNode } from "react";
+import { Routes, Route, useNavigate, useParams, useSearchParams, Outlet, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Loader2 } from "lucide-react";
 import Navbar from "./components/Navbar";
@@ -41,7 +41,7 @@ function RequireAuth({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-// ─── Layout with persistent Navbar ──────────────────────────────────────────
+// ─── Layout: always requires auth, always shows Navbar ───────────────────────
 function AuthenticatedLayout({ creditBalance, userType }: { creditBalance: number; userType: UserType }) {
   const { isAuthenticated, loading } = useAuth();
   if (loading) return <AuthLoading />;
@@ -54,18 +54,15 @@ function AuthenticatedLayout({ creditBalance, userType }: { creditBalance: numbe
   );
 }
 
-// ─── OAuth callback — Supabase redirects here after social login ─────────────
-function AuthCallbackRoute() {
-  const navigate = useNavigate();
-  const { user, loading } = useAuth();
-
-  useEffect(() => {
-    if (!loading && user) {
-      navigate(user.role === "creator" ? "/dashboard" : "/supporter", { replace: true });
-    }
-  }, [loading, user, navigate]);
-
-  return <AuthLoading />;
+// ─── Layout: public pages that show the Navbar only when logged in ────────────
+function PublicLayout({ creditBalance, userType }: { creditBalance: number; userType: UserType }) {
+  const { isAuthenticated } = useAuth();
+  return (
+    <>
+      {isAuthenticated && <Navbar creditBalance={creditBalance} userType={userType} />}
+      <Outlet />
+    </>
+  );
 }
 
 // ─── Route wrappers inject navigation via useNavigate ────────────────────────
@@ -219,6 +216,7 @@ function ProjectOverviewRoute({ userType }: { userType: UserType }) {
 
 function CreatorProfileRoute() {
   const navigate = useNavigate();
+  const { username } = useParams<{ username: string }>();
   return (
     <>
       <Helmet>
@@ -226,7 +224,8 @@ function CreatorProfileRoute() {
         <meta name="description" content="Support this creator on TipFlow — gift items from their wishlist." />
       </Helmet>
       <CreatorProfile
-        onViewWishlist={(wishlistId) => navigate(`/creator/username/wishlist/${wishlistId}`)}
+        routeUsername={username ?? ""}
+        onViewWishlist={(wishlistId) => navigate(`/creator/${username}/wishlist/${wishlistId}`)}
       />
     </>
   );
@@ -337,27 +336,31 @@ export default function App() {
   return (
     <>
       <Routes>
-        {/* Public routes — no navbar */}
+        {/* Fully public — no navbar */}
         <Route path="/" element={<HomeRoute />} />
         <Route path="/auth" element={<AuthRoute />} />
         <Route path="/auth/callback" element={<AuthCallbackRoute />} />
         <Route path="/connect-platforms" element={<ConnectPlatformsRoute userType={userType} />} />
         <Route path="/onboarding" element={<OnboardingRoute userType={userType} />} />
 
-        {/* Authenticated routes — shared navbar with credit balance, search, logout */}
+        {/* Publicly browseable — navbar shown only when logged in */}
+        <Route element={<PublicLayout creditBalance={creditBalance} userType={userType} />}>
+          <Route path="/creator/:username" element={<CreatorProfileRoute />} />
+          <Route path="/creator/:username/wishlist/:wishlistId" element={<PublicWishlistRoute />} />
+          <Route path="/leaderboard" element={<LeaderboardRoute />} />
+          <Route path="/supporter/:username" element={<SupporterProfileRoute />} />
+        </Route>
+
+        {/* Authenticated only — navbar always visible */}
         <Route element={<AuthenticatedLayout creditBalance={creditBalance} userType={userType} />}>
           <Route path="/dashboard" element={<CreatorDashboardRoute />} />
           <Route path="/supporter" element={<SupporterDashboardRoute />} />
           <Route path="/dashboard/new-wishlist" element={<CreateWishlistRoute />} />
           <Route path="/dashboard/new-item" element={<CreateProjectRoute />} />
           <Route path="/project/:id" element={<ProjectOverviewRoute userType={userType} />} />
-          <Route path="/creator/:username" element={<CreatorProfileRoute />} />
-          <Route path="/creator/:username/wishlist/:wishlistId" element={<PublicWishlistRoute />} />
-          <Route path="/supporter/:username" element={<SupporterProfileRoute />} />
           <Route path="/settings" element={<SettingsRoute creditBalance={creditBalance} onUpdateBalance={updateBalance} />} />
           <Route path="/analytics" element={<AnalyticsRoute />} />
           <Route path="/referrals" element={<ReferralsRoute />} />
-          <Route path="/leaderboard" element={<LeaderboardRoute />} />
         </Route>
       </Routes>
     </>
