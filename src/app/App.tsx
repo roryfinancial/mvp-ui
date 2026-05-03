@@ -37,7 +37,7 @@ function AuthLoading() {
 function RequireAuth({ children }: { children: ReactNode }) {
   const { isAuthenticated, loading } = useAuth();
   if (loading) return <AuthLoading />;
-  if (!isAuthenticated) return <Navigate to="/auth" replace />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 
@@ -45,7 +45,7 @@ function RequireAuth({ children }: { children: ReactNode }) {
 function AuthenticatedLayout({ creditBalance, userType }: { creditBalance: number; userType: UserType }) {
   const { isAuthenticated, loading } = useAuth();
   if (loading) return <AuthLoading />;
-  if (!isAuthenticated) return <Navigate to="/auth" replace />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
   return (
     <>
       <Navbar creditBalance={creditBalance} userType={userType} />
@@ -76,22 +76,46 @@ function HomeRoute() {
         <meta name="description" content="TipFlow lets fans fund the gear, software, and essentials creators actually need — with zero platform fees." />
         <link rel="canonical" href="https://tipflow.com/" />
       </Helmet>
-      <Home onNavigateToAuth={() => navigate("/auth")} />
+      <Home
+        onNavigateToAuth={() => navigate("/login")}
+        onNavigateToLogin={() => navigate("/login")}
+        onNavigateToSignUp={() => navigate("/signup")}
+      />
     </>
   );
 }
 
-function AuthRoute() {
+function LoginRoute() {
   const navigate = useNavigate();
   return (
     <>
       <Helmet>
-        <title>Sign In — TipFlow</title>
-        <meta name="description" content="Sign in or create your TipFlow account to start gifting or building your wishlist." />
+        <title>Log In — TipFlow</title>
+        <meta name="description" content="Sign in to your TipFlow account." />
       </Helmet>
       <Auth
+        mode="login"
         onBack={() => navigate("/")}
         onAuthComplete={(type) => navigate(type === "creator" ? "/dashboard" : "/supporter")}
+        onSwitchMode={() => navigate("/signup")}
+      />
+    </>
+  );
+}
+
+function SignUpRoute() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>Sign Up — TipFlow</title>
+        <meta name="description" content="Create your TipFlow account to start gifting or building your wishlist." />
+      </Helmet>
+      <Auth
+        mode="signup"
+        onBack={() => navigate("/")}
+        onAuthComplete={(type) => navigate(type === "creator" ? "/dashboard" : "/supporter")}
+        onSwitchMode={() => navigate("/login")}
       />
     </>
   );
@@ -351,7 +375,9 @@ export default function App() {
       <Routes>
         {/* Fully public — no navbar */}
         <Route path="/" element={<HomeRoute />} />
-        <Route path="/auth" element={<AuthRoute />} />
+        <Route path="/auth" element={<Navigate to="/login" replace />} />
+        <Route path="/login" element={<LoginRoute />} />
+        <Route path="/signup" element={<SignUpRoute />} />
         <Route path="/auth/callback" element={<AuthCallbackRoute />} />
         <Route path="/connect-platforms" element={<ConnectPlatformsRoute userType={userType} />} />
         <Route path="/onboarding" element={<OnboardingRoute userType={userType} />} />

@@ -5,19 +5,23 @@ import { useAuth } from "../../contexts/AuthContext";
 import { validateEmail } from "../../lib/security";
 import { DEMO_CREDENTIALS } from "../../lib/store";
 import { AuthService } from "../../lib/auth";
+import type { UserRole } from "../../lib/types";
 
 type Step = "entry" | "code" | "password";
 type Channel = "email" | "phone";
+type AuthMode = "login" | "signup";
 
 const N = 6;
 
 interface AuthProps {
+  mode?: AuthMode;
   onBack?: () => void;
   onAuthComplete?: (userType: "creator" | "supporter") => void;
+  onSwitchMode?: () => void;
 }
 
-export default function Auth({ onBack, onAuthComplete }: AuthProps) {
-  const { login } = useAuth();
+export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchMode }: AuthProps) {
+  const { login, signUp } = useAuth();
   const [step, setStep] = useState<Step>("entry");
   const [channel, setChannel] = useState<Channel>("email");
   const [identifier, setIdentifier] = useState("");
@@ -27,6 +31,7 @@ export default function Auth({ onBack, onAuthComplete }: AuthProps) {
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [codeSent, setCodeSent] = useState(false);
+  const [role, setRole] = useState<UserRole>("creator");
   const codeInputs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -59,6 +64,13 @@ export default function Auth({ onBack, onAuthComplete }: AuthProps) {
         return;
       }
     }
+
+    // Signup → go straight to password (don't send OTP which would create the account)
+    if (mode === "signup") {
+      setStep("password");
+      return;
+    }
+
     setLoading(true);
     const res = channel === "email"
       ? await AuthService.sendOtp(identifier)
@@ -97,15 +109,23 @@ export default function Auth({ onBack, onAuthComplete }: AuthProps) {
     else await AuthService.sendPhoneOtp(identifier);
   }
 
-  // ── Password: sign in ────────────────────────────────────────────────────────
+  // ── Password: sign in or sign up ─────────────────────────────────────────────
 
   async function handlePassword() {
     setError(null);
     setLoading(true);
-    const res = await login(identifier, password);
-    setLoading(false);
-    if (!res.ok) { setError(res.error); return; }
-    done(res.user);
+    if (mode === "signup") {
+      const res = await signUp(identifier, password, role);
+      setLoading(false);
+      if (!res.ok) { setError(res.error); return; }
+      if (res.confirmEmail) { setError("Check your email to confirm your account."); return; }
+      done(res.user);
+    } else {
+      const res = await login(identifier, password);
+      setLoading(false);
+      if (!res.ok) { setError(res.error); return; }
+      done(res.user);
+    }
   }
 
   // ── Switch method (password → code) ─────────────────────────────────────────
@@ -219,40 +239,42 @@ export default function Auth({ onBack, onAuthComplete }: AuthProps) {
         {/* ── Right: form ── */}
         <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-background overflow-hidden">
 
-          {/* Demo banner */}
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.35 }}
-            className="mb-8 p-4 border border-accent/30 bg-accent/5"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[10px] font-black uppercase tracking-widest text-accent">Demo Account</span>
-              <span className="text-[10px] text-subtle uppercase tracking-widest">Investor preview</span>
-            </div>
-            <div className="space-y-1 mb-3 font-mono text-sm">
-              <div className="flex items-center gap-2">
-                <span className="text-subtle text-xs w-16">Email</span>
-                <span className="text-foreground">{DEMO_CREDENTIALS.creator.email}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-subtle text-xs w-16">Password</span>
-                <span className="text-foreground">{DEMO_CREDENTIALS.creator.password}</span>
-              </div>
-            </div>
-            <button
-              onClick={() => {
-                setIdentifier(DEMO_CREDENTIALS.creator.email);
-                setChannel("email");
-                setPassword(DEMO_CREDENTIALS.creator.password);
-                setError(null);
-                setStep("password");
-              }}
-              className="text-xs font-black uppercase tracking-widest text-accent hover:underline transition-colors"
+          {/* Demo banner — login only */}
+          {mode === "login" && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.35 }}
+              className="mb-8 p-4 border border-accent/30 bg-accent/5"
             >
-              Autofill &amp; sign in →
-            </button>
-          </motion.div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[10px] font-black uppercase tracking-widest text-accent">Demo Account</span>
+                <span className="text-[10px] text-subtle uppercase tracking-widest">Investor preview</span>
+              </div>
+              <div className="space-y-1 mb-3 font-mono text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="text-subtle text-xs w-16">Email</span>
+                  <span className="text-foreground">{DEMO_CREDENTIALS.creator.email}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-subtle text-xs w-16">Password</span>
+                  <span className="text-foreground">{DEMO_CREDENTIALS.creator.password}</span>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setIdentifier(DEMO_CREDENTIALS.creator.email);
+                  setChannel("email");
+                  setPassword(DEMO_CREDENTIALS.creator.password);
+                  setError(null);
+                  setStep("password");
+                }}
+                className="text-xs font-black uppercase tracking-widest text-accent hover:underline transition-colors"
+              >
+                Autofill &amp; sign in →
+              </button>
+            </motion.div>
+          )}
 
           {/* Step content */}
           <AnimatePresence mode="wait">
@@ -266,7 +288,26 @@ export default function Auth({ onBack, onAuthComplete }: AuthProps) {
                 exit={{ opacity: 0, x: -24 }}
                 transition={{ duration: 0.22 }}
               >
-                <h1 className="text-3xl font-black text-foreground mb-8 tracking-tight">Welcome.</h1>
+                <h1 className="text-3xl font-black text-foreground mb-2 tracking-tight">
+                  {mode === "signup" ? "Create your account." : "Welcome back."}
+                </h1>
+                <p className="text-sm text-subtle mb-8">
+                  {mode === "signup" ? "Sign up to get started with TipFlow." : "Sign in to your TipFlow account."}
+                </p>
+
+                {mode === "signup" && (
+                  <div className="flex mb-6 border border-border overflow-hidden">
+                    {(["creator", "supporter"] as UserRole[]).map((r, i) => (
+                      <button
+                        key={r}
+                        onClick={() => setRole(r)}
+                        className={`flex-1 py-3 px-4 text-sm font-bold uppercase tracking-wide transition-colors ${i > 0 ? "border-l border-border" : ""} ${role === r ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted"}`}
+                      >
+                        {r === "creator" ? "I'm a Creator" : "I'm a Supporter"}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 <div className="flex mb-6 border border-border overflow-hidden">
                   {(["email", "phone"] as Channel[]).map((ch, i) => (
@@ -316,7 +357,9 @@ export default function Auth({ onBack, onAuthComplete }: AuthProps) {
                   className="w-full btn-cta text-white py-4 font-black text-sm uppercase tracking-widest mb-6 flex items-center justify-center gap-2 disabled:opacity-70"
                 >
                   {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {loading ? "Sending code…" : "Continue"}
+                  {mode === "signup"
+                    ? "Continue"
+                    : (loading ? "Sending code…" : "Continue")}
                 </motion.button>
 
                 <div className="flex items-center mb-6">
@@ -348,6 +391,15 @@ export default function Auth({ onBack, onAuthComplete }: AuthProps) {
                   <a href="#" className="hover:underline font-medium text-accent">Terms</a>{" "}and{" "}
                   <a href="#" className="hover:underline font-medium text-accent">Privacy Policy</a>.
                 </p>
+
+                {onSwitchMode && (
+                  <p className="text-sm text-subtle text-center mt-4">
+                    {mode === "signup" ? "Already have an account?" : "Don't have an account?"}{" "}
+                    <button onClick={onSwitchMode} className="text-accent font-medium hover:underline">
+                      {mode === "signup" ? "Log in" : "Sign up"}
+                    </button>
+                  </p>
+                )}
               </motion.div>
             )}
 
@@ -437,10 +489,14 @@ export default function Auth({ onBack, onAuthComplete }: AuthProps) {
                 exit={{ opacity: 0, x: -24 }}
                 transition={{ duration: 0.22 }}
               >
-                <p className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">Password</p>
-                <h1 className="text-3xl font-black text-foreground mb-2 tracking-tight">Enter password.</h1>
+                <p className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">
+                  {mode === "signup" ? "Create Account" : "Password"}
+                </p>
+                <h1 className="text-3xl font-black text-foreground mb-2 tracking-tight">
+                  {mode === "signup" ? "Choose a password." : "Enter password."}
+                </h1>
                 <p className="text-sm text-subtle mb-8">
-                  Signing in as{" "}
+                  {mode === "signup" ? "Creating account for" : "Signing in as"}{" "}
                   <span className="text-foreground font-medium">{identifier}</span>.
                 </p>
 
@@ -476,16 +532,20 @@ export default function Auth({ onBack, onAuthComplete }: AuthProps) {
                   className="w-full btn-cta text-white py-4 font-black text-sm uppercase tracking-widest mb-5 flex items-center justify-center gap-2 disabled:opacity-70"
                 >
                   {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {loading ? "Signing in…" : "Sign in"}
+                  {loading
+                    ? (mode === "signup" ? "Creating account…" : "Signing in…")
+                    : (mode === "signup" ? "Create account" : "Sign in")}
                 </motion.button>
 
-                <button
-                  onClick={switchToCode}
-                  disabled={loading}
-                  className="w-full text-center text-sm text-subtle hover:text-foreground transition-colors disabled:opacity-40"
-                >
-                  {loading ? "Sending code…" : "Get a code instead →"}
-                </button>
+                {mode === "login" && (
+                  <button
+                    onClick={switchToCode}
+                    disabled={loading}
+                    className="w-full text-center text-sm text-subtle hover:text-foreground transition-colors disabled:opacity-40"
+                  >
+                    {loading ? "Sending code…" : "Get a code instead →"}
+                  </button>
+                )}
               </motion.div>
             )}
 

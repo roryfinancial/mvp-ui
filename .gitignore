@@ -2,3 +2,5 @@ node_modules
 .claude
 .envdist/
 tsconfig.tsbuildinfo
+.env
+.env.example

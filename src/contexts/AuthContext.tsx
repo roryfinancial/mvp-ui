@@ -19,15 +19,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Listen for Supabase auth state changes (sign-in, sign-out, token refresh).
+  // Listen for Supabase auth state changes (initial session, sign-in, sign-out, token refresh).
+  // We rely solely on onAuthStateChange so the INITIAL_SESSION event (which reads
+  // from localStorage) drives the first render — avoids a race with getSession().
   useEffect(() => {
-    // Load initial session.
-    AuthService.getUser().then((u) => {
-      setUser(u);
-      setLoading(false);
-    });
-
-    // Subscribe to future changes.
     const { data: { subscription } } = AuthService.onAuthStateChange((u) => {
       setUser(u);
       setLoading(false);

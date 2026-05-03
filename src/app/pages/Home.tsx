@@ -4,11 +4,13 @@ import { Gift, Heart, Zap, Shield, Trophy } from "lucide-react";
 
 interface HomeProps {
   onNavigateToAuth: () => void;
+  onNavigateToLogin?: () => void;
+  onNavigateToSignUp?: () => void;
 }
 
 const RANK_COLORS = ["#FFD700", "#C0C0C0", "#CD7F32"] as const;
 
-export default function Home({ onNavigateToAuth }: HomeProps) {
+export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateToSignUp }: HomeProps) {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Navigation */}
@@ -21,10 +23,16 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
             <a href="#creators" className="text-white/50 hover:text-white transition-colors text-sm font-medium">Creators</a>
             <a href="/leaderboard" className="text-white/50 hover:text-white transition-colors text-sm font-medium">Leaderboard</a>
             <button
-              onClick={onNavigateToAuth}
+              onClick={onNavigateToLogin ?? onNavigateToAuth}
+              className="px-5 py-2 border border-white/20 text-white text-sm font-bold uppercase tracking-widest hover:bg-white/10 transition-colors"
+            >
+              Log In
+            </button>
+            <button
+              onClick={onNavigateToSignUp ?? onNavigateToAuth}
               className="px-5 py-2 btn-cta text-white text-sm font-bold uppercase tracking-widest"
             >
-              Get Started
+              Sign Up
             </button>
           </div>
         </div>
@@ -79,7 +87,7 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
               <motion.button
-                onClick={onNavigateToAuth}
+                onClick={onNavigateToSignUp ?? onNavigateToAuth}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 className="px-10 py-4 btn-cta text-white text-lg font-black uppercase tracking-widest"
@@ -309,7 +317,7 @@ export default function Home({ onNavigateToAuth }: HomeProps) {
               Join 10,000+ creators getting gifted exactly what they want.
             </p>
             <motion.button
-              onClick={onNavigateToAuth}
+              onClick={onNavigateToSignUp ?? onNavigateToAuth}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               className="px-12 py-5 btn-cta text-white text-xl font-black uppercase tracking-widest"
