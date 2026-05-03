@@ -97,4 +97,31 @@ export const AuthService = {
       }
     });
   },
+
+  async sendOtp(email: string): Promise<{ ok: boolean; error?: string }> {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: true },
+    });
+    return error ? { ok: false, error: error.message } : { ok: true };
+  },
+
+  async verifyEmailOtp(email: string, token: string): Promise<LoginResult> {
+    const { data, error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
+    if (error || !data.user) return { ok: false, error: error?.message ?? "Invalid or expired code", field: "general" };
+    const profile = await fetchProfile(data.user.id);
+    return { ok: true, user: mapSupabaseUser(data.user, profile) };
+  },
+
+  async sendPhoneOtp(phone: string): Promise<{ ok: boolean; error?: string }> {
+    const { error } = await supabase.auth.signInWithOtp({ phone });
+    return error ? { ok: false, error: error.message } : { ok: true };
+  },
+
+  async verifyPhoneOtp(phone: string, token: string): Promise<LoginResult> {
+    const { data, error } = await supabase.auth.verifyOtp({ phone, token, type: "sms" });
+    if (error || !data.user) return { ok: false, error: error?.message ?? "Invalid or expired code", field: "general" };
+    const profile = await fetchProfile(data.user.id);
+    return { ok: true, user: mapSupabaseUser(data.user, profile) };
+  },
 } as const;

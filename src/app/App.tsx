@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 import { Routes, Route, useNavigate, useParams, useSearchParams, Outlet, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Loader2 } from "lucide-react";
@@ -311,6 +311,19 @@ function LeaderboardRoute() {
       />
     </>
   );
+}
+
+function AuthCallbackRoute() {
+  const navigate = useNavigate();
+  const { isAuthenticated, loading, user } = useAuth();
+
+  useEffect(() => {
+    if (!loading) {
+      navigate(isAuthenticated && user?.role === "supporter" ? "/supporter" : "/dashboard", { replace: true });
+    }
+  }, [loading, isAuthenticated, user, navigate]);
+
+  return <AuthLoading />;
 }
 
 function SupporterProfileRoute() {
