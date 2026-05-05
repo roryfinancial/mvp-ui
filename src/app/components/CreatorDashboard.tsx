@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Sounds } from "../../lib/sounds";
 import { Plus, User, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, ChevronDown, List, ShoppingBag, Trophy } from "lucide-react";
 
 interface CreatorDashboardProps {
@@ -47,6 +48,8 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
   const [selectedWishlistId, setSelectedWishlistId] = useState<number | null>(initialWishlistId);
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
   const [itemTab, setItemTab] = useState<"active" | "completed" | "all">("active");
+  const [confettiTitle, setConfettiTitle] = useState<string | null>(null);
+  const firedFunded = useRef(false);
 
   const recentSupporters: Supporter[] = [
     { name: "Sarah Johnson", amount: "$250", initials: "SJ", timeAgo: "2h ago" },
@@ -68,6 +71,19 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
       ],
     },
   ];
+
+  // Fire funded sound + confetti once on mount for any completed items
+  useEffect(() => {
+    if (firedFunded.current) return;
+    const funded = wishlists.flatMap((w) => w.items).find((i) => i.status === "completed");
+    if (funded) {
+      firedFunded.current = true;
+      Sounds.funded();
+      setConfettiTitle(funded.title);
+      setTimeout(() => setConfettiTitle(null), 3000);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const topSupportersLeaderboard = [
     { rank: 1, name: "Sarah Johnson", initials: "SJ", totalAmount: "$1,250", contributions: 8 },
@@ -573,8 +589,36 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
                             transition={{ duration: 0.3, delay: index * 0.05 }}
                             whileHover={{ y: -2 }}
                             onClick={() => setSelectedItemIndex(wishlist.items.indexOf(item))}
-                            className="bg-background border border-border rounded-xl overflow-hidden cursor-pointer group card-game"
+                            className="relative bg-background border border-border rounded-xl overflow-hidden cursor-pointer group card-game"
                           >
+                            {/* Confetti burst for funded item */}
+                            {confettiTitle === item.title && (
+                              <motion.div
+                                initial={{ opacity: 1 }}
+                                animate={{ opacity: 0 }}
+                                transition={{ duration: 2.5 }}
+                                className="absolute inset-0 pointer-events-none z-10 overflow-hidden"
+                              >
+                                {Array.from({ length: 20 }).map((_, ci) => (
+                                  <motion.div
+                                    key={ci}
+                                    className="absolute w-2 h-2 rounded-sm"
+                                    style={{
+                                      backgroundColor: ["#f59e0b","#10b981","#3b82f6","#ec4899","#8b5cf6"][ci % 5],
+                                      left: `${(ci / 20) * 100}%`,
+                                      top: "0%",
+                                    }}
+                                    animate={{
+                                      y: ["0%", "400%"],
+                                      x: [`${(Math.random() - 0.5) * 60}px`],
+                                      opacity: [1, 0],
+                                      rotate: [0, (ci % 2 === 0 ? 1 : -1) * 180],
+                                    }}
+                                    transition={{ duration: 1.5 + (ci % 5) * 0.2, delay: (ci % 4) * 0.1 }}
+                                  />
+                                ))}
+                              </motion.div>
+                            )}
                             <div className="relative w-full h-36 flex items-center justify-center bg-muted">
                               <Gift className="w-12 h-12 text-subtle" />
                               <div className={`absolute top-2 right-2 px-2 py-1 flex items-center gap-1 border text-[10px] font-black uppercase tracking-widest ${
