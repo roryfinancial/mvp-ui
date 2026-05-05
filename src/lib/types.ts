@@ -51,6 +51,71 @@ export interface Wishlist {
   createdAt: string;
 }
 
+// ─── Gamification ─────────────────────────────────────────────────────────────
+
+export type LeagueTier = "bronze" | "silver" | "gold" | "diamond";
+
+export type BadgeId =
+  | "early_adopter"
+  | "streak_lord"
+  | "big_spender"
+  | "first_gift"
+  | "league_leader"
+  | "jackpot"
+  | "speed_gifter"
+  | "century_club"
+  | "diamond_gifter"
+  | "variety_pack"
+  | "mystery_1"
+  | "mystery_2";
+
+export interface GamificationState {
+  xp: number;
+  level: number;
+  streakDays: number;
+  lastActivityDate: string; // ISO date YYYY-MM-DD
+  leagueTier: LeagueTier;
+  weeklyGifted: number;
+  badges: BadgeId[];
+  questsCompletedToday: string[]; // quest IDs
+}
+
+export interface FeedEvent {
+  id: string;
+  type: "gift" | "follow" | "milestone" | "new_item" | "league_up" | "streak";
+  actorName: string;
+  targetName: string;
+  amount?: number;
+  timestamp: string;
+}
+
+export interface DailyQuest {
+  id: string;
+  difficulty: "easy" | "medium" | "hard";
+  label: string;
+  xpReward: number;
+  completed: boolean;
+  locked: boolean;
+}
+
+export interface CreatorFeedItem {
+  id: string;
+  creatorName: string;
+  username: string;
+  avatarInitials: string;
+  avatarColor: string;
+  itemTitle: string;
+  itemDescription: string;
+  goalAmount: number;
+  raisedAmount: number;
+  gifterCount: number;
+  giftsToday: number;
+  daysLeft: number;
+  createdAt: string;
+  giftsLast24h: number;
+  tags: string[];
+}
+
 // ─── Activity ─────────────────────────────────────────────────────────────────
 
 export interface GiftEvent {
