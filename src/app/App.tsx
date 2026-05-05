@@ -26,6 +26,8 @@ import SupporterProfile from "./components/SupporterProfile";
 
 type UserType = "creator" | "supporter";
 
+const DEMO_SHOPIFY_STORE = { name: "My Creator Store", url: "https://my-creator-store.myshopify.com" };
+
 // ─── Loading screen while Supabase session initializes ───────────────────────
 function AuthLoading() {
   return (
@@ -166,7 +168,7 @@ function CreatorDashboardRoute() {
         <meta name="robots" content="noindex" />
       </Helmet>
       <CreatorDashboard
-        shopifyStore={{ name: "My Creator Store", url: "https://my-creator-store.myshopify.com" }}
+        shopifyStore={DEMO_SHOPIFY_STORE}
         onCreateWishlist={() => navigate("/dashboard/new-wishlist")}
         onAddItem={() => navigate("/dashboard/new-item")}
       />
@@ -373,9 +375,18 @@ export default function App() {
   const { user, updateBalance } = useAuth();
   const userType: UserType = user?.role ?? "creator";
   const creditBalance = user?.creditBalance ?? 0;
-  const [gamification, setGamification] = useState<GamificationState>(
-    () => Store.getGamificationState()
-  );
+  const [gamification, setGamification] = useState<GamificationState>(() => {
+    try {
+      const saved = localStorage.getItem("tipflow_gamification");
+      return saved ? (JSON.parse(saved) as GamificationState) : Store.getGamificationState();
+    } catch {
+      return Store.getGamificationState();
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem("tipflow_gamification", JSON.stringify(gamification));
+  }, [gamification]);
 
   return (
     <>

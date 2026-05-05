@@ -1,8 +1,25 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import type { GamificationState, DailyQuest } from "../../lib/types";
 import { Store } from "../../lib/store";
 import { Sounds } from "../../lib/sounds";
 import { levelFromXp } from "../../lib/gamification";
+
+function todayKey() {
+  return `tipflow_quests_${new Date().toISOString().slice(0, 10)}`;
+}
+
+function loadQuests(): DailyQuest[] {
+  try {
+    const saved = localStorage.getItem(todayKey());
+    return saved ? (JSON.parse(saved) as DailyQuest[]) : Store.getDailyQuests();
+  } catch {
+    return Store.getDailyQuests();
+  }
+}
+
+function saveQuests(quests: DailyQuest[]) {
+  localStorage.setItem(todayKey(), JSON.stringify(quests));
+}
 import LiveTicker from "./LiveTicker";
 import DailyQuests from "./DailyQuests";
 import CommunityFeed from "./CommunityFeed";
@@ -17,11 +34,11 @@ interface CommunityHubProps {
 
 export default function CommunityHub({ gamification, onGamificationUpdate }: CommunityHubProps) {
   const feedEvents = Store.getFeedEvents();
-  const [quests, setQuests] = useState<DailyQuest[]>(Store.getDailyQuests());
+  const [quests, setQuests] = useState<DailyQuest[]>(loadQuests);
   const [showLevelUpConfetti, setShowLevelUpConfetti] = useState(false);
   const { toasts, push: pushToast, dismiss } = useToasts();
 
-  function handleQuestComplete(questId: string) {
+  const handleQuestComplete = useCallback((questId: string) => {
     const quest = quests.find((q) => q.id === questId);
     if (!quest || quest.completed || quest.locked) return;
 
@@ -31,6 +48,7 @@ export default function CommunityHub({ gamification, onGamificationUpdate }: Com
       return q;
     });
     setQuests(updated);
+    saveQuests(updated);
 
     const allDone = updated.every((q) => q.completed);
     const xpGained = quest.xpReward + (allDone ? 50 : 0);
@@ -61,7 +79,7 @@ export default function CommunityHub({ gamification, onGamificationUpdate }: Com
     if (allDone) {
       setTimeout(() => Sounds.badge(), 400);
     }
-  }
+  }, [quests, gamification, onGamificationUpdate, pushToast]);
 
   return (
     <div className="min-h-screen bg-background pt-16">

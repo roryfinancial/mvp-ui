@@ -208,18 +208,15 @@ export const Store = {
 
   getRecommendedCreators(): CreatorFeedItem[] {
     const followingIds = new Set(["fc-1", "fc-3", "fc-6"]);
-    return [...FEED_CREATORS]
-      .map((c) => {
-        const progress = c.raisedAmount / c.goalAmount;
-        const velocity = c.giftsToday / Math.max(c.gifterCount, 1);
-        const followingBonus = followingIds.has(c.id) ? 0.25 : 0;
-        const ageHours = (Date.now() - new Date(c.createdAt).getTime()) / 3_600_000;
-        const recency = Math.max(0, 1 - ageHours / 168);
-        const score = progress * 0.3 + velocity * 0.3 + followingBonus + recency * 0.15;
-        return { ...c, _score: score };
-      })
-      .sort((a, b) => b._score - a._score)
-      .map(({ _score: _, ...rest }) => rest as CreatorFeedItem);
+    const scored: [CreatorFeedItem, number][] = FEED_CREATORS.map((c) => {
+      const progress = c.raisedAmount / c.goalAmount;
+      const velocity = c.giftsToday / Math.max(c.gifterCount, 1);
+      const followingBonus = followingIds.has(c.id) ? 0.25 : 0;
+      const ageHours = (Date.now() - new Date(c.createdAt).getTime()) / 3_600_000;
+      const recency = Math.max(0, 1 - ageHours / 168);
+      return [c, progress * 0.3 + velocity * 0.3 + followingBonus + recency * 0.15];
+    });
+    return scored.sort((a, b) => b[1] - a[1]).map(([c]) => c);
   },
 
   getFeedCreators(tab: "following" | "hot" | "explore" | "rising"): CreatorFeedItem[] {

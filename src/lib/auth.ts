@@ -11,6 +11,8 @@ import { Store, DEMO_CREDENTIALS } from "./store";
 import type { User, UserRole, LoginResult, SignUpResult } from "./types";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
+const DEMO_SESSION_KEY = "tipflow_demo_session";
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 export function mapSupabaseUser(su: SupabaseUser, profile?: Record<string, unknown> | null): User {
@@ -49,7 +51,10 @@ export const AuthService = {
     const isFanDemo = email === DEMO_CREDENTIALS.fan.email && password === DEMO_CREDENTIALS.fan.password;
     if (isCreatorDemo || isFanDemo) {
       const user = Store.findUserByEmail(email)?.user;
-      if (user) return { ok: true, user };
+      if (user) {
+        localStorage.setItem(DEMO_SESSION_KEY, JSON.stringify(user));
+        return { ok: true, user };
+      }
     }
 
     try {
@@ -88,7 +93,17 @@ export const AuthService = {
   },
 
   async logout(): Promise<void> {
+    localStorage.removeItem(DEMO_SESSION_KEY);
     try { await supabase.auth.signOut(); } catch { /* ignore */ }
+  },
+
+  getDemoSession(): User | null {
+    try {
+      const raw = localStorage.getItem(DEMO_SESSION_KEY);
+      return raw ? (JSON.parse(raw) as User) : null;
+    } catch {
+      return null;
+    }
   },
 
   onAuthStateChange(callback: (user: User | null) => void) {

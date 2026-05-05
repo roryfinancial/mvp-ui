@@ -39,12 +39,8 @@ export default function LiveTicker({ events }: LiveTickerProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
   const rafRef = useRef<number>(0);
-  const [paused, setPaused] = useState(false);
   const pausedRef = useRef(false);
-
-  useEffect(() => {
-    pausedRef.current = paused;
-  }, [paused]);
+  const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
     const speed = 0.32; // px per frame — noticeably slower
@@ -69,8 +65,8 @@ export default function LiveTicker({ events }: LiveTickerProps) {
   return (
     <div
       className="w-full overflow-hidden py-1.5 border-b border-white/8 bg-gradient-to-r from-white/[0.03] to-transparent"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      onMouseEnter={() => { pausedRef.current = true; setHovered(true); }}
+      onMouseLeave={() => { pausedRef.current = false; setHovered(false); }}
     >
       {/* Label */}
       <div className="flex items-center">
@@ -80,7 +76,7 @@ export default function LiveTicker({ events }: LiveTickerProps) {
         <div
           ref={trackRef}
           className="flex gap-0 whitespace-nowrap will-change-transform transition-opacity duration-300"
-          style={{ transform: `translateX(-${offset}px)`, opacity: paused ? 0.7 : 1 }}
+          style={{ transform: `translateX(-${offset}px)`, opacity: hovered ? 0.7 : 1 }}
         >
           {doubled.map((event, i) => (
             <span key={`${event.id}-${i}`} className="flex items-center gap-1.5 text-[11px] font-medium px-5">

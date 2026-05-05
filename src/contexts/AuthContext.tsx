@@ -23,6 +23,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // We rely solely on onAuthStateChange so the INITIAL_SESSION event (which reads
   // from localStorage) drives the first render — avoids a race with getSession().
   useEffect(() => {
+    // Check for a persisted demo session first — avoids a Supabase round-trip
+    // during investor demos where these users don't exist in the real DB.
+    const demoUser = AuthService.getDemoSession();
+    if (demoUser) {
+      setUser(demoUser);
+      setLoading(false);
+      return;
+    }
+
     // Safety: if onAuthStateChange never fires (e.g. paused Supabase project),
     // clear loading after 4s so the app doesn't stay on a blank spinner forever.
     const fallback = setTimeout(() => setLoading(false), 4000);
@@ -57,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    await AuthService.logout();
+    await AuthService.logout(); // also clears DEMO_SESSION_KEY
     setUser(null);
   }, []);
 

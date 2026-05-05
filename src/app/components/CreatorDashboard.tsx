@@ -7,17 +7,9 @@ import { Plus, User, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtu
 interface CreatorDashboardProps {
   username?: string;
   initialWishlistId?: number | null;
-  creditBalance?: number;
   shopifyStore?: { name: string; url: string } | null;
-  onLogout?: () => void;
   onCreateWishlist?: () => void;
   onAddItem?: () => void;
-  onViewProject?: () => void;
-  onViewAnalytics?: () => void;
-  onViewReferrals?: () => void;
-  onViewSettings?: () => void;
-  onViewLeaderboard?: () => void;
-  onViewBalance?: () => void;
 }
 
 interface Supporter {
