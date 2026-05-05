@@ -1,16 +1,18 @@
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { Routes, Route, useNavigate, useParams, useSearchParams, Outlet, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Loader2 } from "lucide-react";
 import Navbar from "./components/Navbar";
 import { useAuth } from "../contexts/AuthContext";
+import { Store } from "../lib/store";
+import type { GamificationState } from "../lib/types";
 
 import Home from "./pages/Home";
 import Auth from "./components/Auth";
 import ConnectPlatforms from "./components/ConnectPlatforms";
 import OnboardingChoice from "./components/OnboardingChoice";
 import CreatorDashboard from "./components/CreatorDashboard";
-import SupporterDashboard from "./components/SupporterDashboard";
+import CommunityHub from "./components/CommunityHub";
 import CreateProject from "./components/CreateProject";
 import CreateWishlist from "./components/CreateWishlist";
 import ProjectOverview from "./components/ProjectOverview";
@@ -42,24 +44,24 @@ function RequireAuth({ children }: { children: ReactNode }) {
 }
 
 // ─── Layout: always requires auth, always shows Navbar ───────────────────────
-function AuthenticatedLayout({ creditBalance, userType }: { creditBalance: number; userType: UserType }) {
+function AuthenticatedLayout({ creditBalance, userType, gamification }: { creditBalance: number; userType: UserType; gamification?: GamificationState }) {
   const { isAuthenticated, loading } = useAuth();
   if (loading) return <AuthLoading />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   return (
     <>
-      <Navbar creditBalance={creditBalance} userType={userType} />
+      <Navbar creditBalance={creditBalance} userType={userType} gamification={gamification} />
       <Outlet />
     </>
   );
 }
 
 // ─── Layout: public pages that show the Navbar only when logged in ────────────
-function PublicLayout({ creditBalance, userType }: { creditBalance: number; userType: UserType }) {
+function PublicLayout({ creditBalance, userType, gamification }: { creditBalance: number; userType: UserType; gamification?: GamificationState }) {
   const { isAuthenticated } = useAuth();
   return (
     <>
-      {isAuthenticated && <Navbar creditBalance={creditBalance} userType={userType} />}
+      {isAuthenticated && <Navbar creditBalance={creditBalance} userType={userType} gamification={gamification} />}
       <Outlet />
     </>
   );
@@ -172,18 +174,20 @@ function CreatorDashboardRoute() {
   );
 }
 
-function SupporterDashboardRoute() {
-  const navigate = useNavigate();
+function CommunityHubRoute({
+  gamification,
+  onGamificationUpdate,
+}: {
+  gamification: GamificationState;
+  onGamificationUpdate: (g: GamificationState) => void;
+}) {
   return (
     <>
       <Helmet>
-        <title>My Dashboard — TipFlow</title>
+        <title>Community — TipFlow</title>
         <meta name="robots" content="noindex" />
       </Helmet>
-      <SupporterDashboard
-        onViewProject={() => navigate("/project/1")}
-        onViewCreator={() => navigate("/creator/username")}
-      />
+      <CommunityHub gamification={gamification} onGamificationUpdate={onGamificationUpdate} />
     </>
   );
 }
@@ -366,9 +370,12 @@ function SupporterProfileRoute() {
 }
 
 export default function App() {
-  const { user, isAuthenticated, logout, updateBalance } = useAuth();
+  const { user, updateBalance } = useAuth();
   const userType: UserType = user?.role ?? "creator";
   const creditBalance = user?.creditBalance ?? 0;
+  const [gamification, setGamification] = useState<GamificationState>(
+    () => Store.getGamificationState()
+  );
 
   return (
     <>
@@ -383,7 +390,7 @@ export default function App() {
         <Route path="/onboarding" element={<OnboardingRoute userType={userType} />} />
 
         {/* Publicly browseable — navbar shown only when logged in */}
-        <Route element={<PublicLayout creditBalance={creditBalance} userType={userType} />}>
+        <Route element={<PublicLayout creditBalance={creditBalance} userType={userType} gamification={userType === "supporter" ? gamification : undefined} />}>
           <Route path="/creator/:username" element={<CreatorProfileRoute />} />
           <Route path="/creator/:username/wishlist/:wishlistId" element={<PublicWishlistRoute />} />
           <Route path="/leaderboard" element={<LeaderboardRoute />} />
@@ -391,9 +398,9 @@ export default function App() {
         </Route>
 
         {/* Authenticated only — navbar always visible */}
-        <Route element={<AuthenticatedLayout creditBalance={creditBalance} userType={userType} />}>
+        <Route element={<AuthenticatedLayout creditBalance={creditBalance} userType={userType} gamification={userType === "supporter" ? gamification : undefined} />}>
           <Route path="/dashboard" element={<CreatorDashboardRoute />} />
-          <Route path="/supporter" element={<SupporterDashboardRoute />} />
+          <Route path="/supporter" element={<CommunityHubRoute gamification={gamification} onGamificationUpdate={setGamification} />} />
           <Route path="/dashboard/new-wishlist" element={<CreateWishlistRoute />} />
           <Route path="/dashboard/new-item" element={<CreateProjectRoute />} />
           <Route path="/project/:id" element={<ProjectOverviewRoute userType={userType} />} />
