@@ -1,10 +1,12 @@
 import { motion } from "motion/react";
 import type { DailyQuest } from "../../lib/types";
 import { Sounds } from "../../lib/sounds";
+import type { ToastKind } from "./Toast";
 
 interface DailyQuestsProps {
   quests: DailyQuest[];
   onQuestComplete?: (questId: string) => void;
+  onToast?: (kind: ToastKind, message: string) => void;
 }
 
 const DIFFICULTY_COLORS: Record<DailyQuest["difficulty"], string> = {
@@ -13,7 +15,7 @@ const DIFFICULTY_COLORS: Record<DailyQuest["difficulty"], string> = {
   hard:   "text-red-400 border-red-400/30 bg-red-400/10",
 };
 
-export default function DailyQuests({ quests, onQuestComplete }: DailyQuestsProps) {
+export default function DailyQuests({ quests, onQuestComplete, onToast }: DailyQuestsProps) {
   const completedCount = quests.filter((q) => q.completed).length;
   const allDone = completedCount === 3;
 
@@ -42,6 +44,10 @@ export default function DailyQuests({ quests, onQuestComplete }: DailyQuestsProp
               if (!quest.locked && !quest.completed && onQuestComplete) {
                 Sounds.quest();
                 onQuestComplete(quest.id);
+                onToast?.("quest", `✅ Quest done! +${quest.xpReward} XP`);
+                if (completedCount + 1 === 3) {
+                  setTimeout(() => onToast?.("badge", "🏆 All quests done! +50 XP bonus"), 600);
+                }
               }
             }}
             className={`flex items-center gap-3 p-3 border transition-all ${

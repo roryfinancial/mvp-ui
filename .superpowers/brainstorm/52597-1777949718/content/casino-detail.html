@@ -1,0 +1,433 @@
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0a0a0a;color:#e8e8e8;font-family:'Inter',system-ui,sans-serif;font-size:13px}
+  .acc{color:#e63a76}.gold{color:#f59e0b}.green{color:#22c55e}.purple{color:#8b5cf6}
+  .label{font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#444}
+
+  /* ── NAVBAR ── */
+  .navbar{background:#0e0e0e;border-bottom:2px solid #1a1a1a;padding:0 20px;display:flex;align-items:center;gap:16px;height:52px;position:sticky;top:0;z-index:99}
+  .logo{font-size:15px;font-weight:900;color:#fff;letter-spacing:-.01em;margin-right:4px}
+  .nav-link{font-size:11px;font-weight:700;color:#444;padding:4px 10px;text-transform:uppercase;letter-spacing:.07em;cursor:default}
+  .nav-link.active{color:#fff;border-bottom:2px solid #e63a76}
+  .nav-xp{flex:1;max-width:160px;margin:0 8px}
+  .xp-track{height:5px;background:#1a1a1a;border-radius:0;overflow:hidden;position:relative}
+  .xp-fill{height:5px;background:linear-gradient(90deg,#e63a76,#f59e0b);width:62%;transition:width .3s}
+  .xp-text{display:flex;justify-content:space-between;font-size:8px;color:#444;margin-bottom:2px}
+  .league-pill{display:flex;align-items:center;gap:4px;border:1px solid #f59e0b44;background:#f59e0b11;padding:4px 8px;font-size:9px;font-weight:900;letter-spacing:.07em;color:#f59e0b}
+  .streak-pill{display:flex;align-items:center;gap:3px;border:1px solid #e63a7644;background:#e63a7611;padding:4px 8px;font-size:9px;font-weight:900;color:#e63a76}
+  .streak-flame{font-size:12px;animation:flicker .6s infinite alternate}
+  @keyframes flicker{from{opacity:1;transform:scale(1)}to{opacity:.8;transform:scale(1.1)}}
+
+  /* ── LIVE TICKER ── */
+  .ticker-bar{background:#0d0d0d;border-bottom:1px solid #1a1a1a;padding:6px 20px;display:flex;align-items:center;gap:10px;overflow:hidden}
+  .ticker-live{display:flex;align-items:center;gap:5px;flex-shrink:0}
+  .live-dot{width:6px;height:6px;border-radius:50%;background:#e63a76;animation:pulse 1s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+  .live-label{font-size:8px;font-weight:900;letter-spacing:.1em;color:#e63a76;text-transform:uppercase}
+  .ticker-scroll{display:flex;gap:16px;overflow:hidden;white-space:nowrap}
+  .tick-item{font-size:10px;color:#555;flex-shrink:0}
+  .tick-item strong{color:#ccc}
+  .tick-item .amt{color:#e63a76;font-weight:800}
+  .tick-item .milestone{color:#f59e0b;font-weight:800}
+  .separator{color:#222;padding:0 4px}
+
+  /* ── BODY LAYOUT ── */
+  .body{display:flex;gap:0;max-width:1100px;margin:0 auto;padding:20px}
+  .main{flex:1;min-width:0;padding-right:20px}
+  .sidebar{width:220px;flex-shrink:0}
+
+  /* ── QUEST CARD ── */
+  .quest-card{background:#0e0e0e;border:1px solid #1a1a1a;padding:14px;margin-bottom:16px}
+  .quest-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .quest-title{font-size:11px;font-weight:900;color:#fff;letter-spacing:.03em}
+  .quest-reset{font-size:9px;color:#444}
+  .quest-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #111}
+  .quest-row:last-child{border-bottom:0}
+  .quest-icon{font-size:16px;flex-shrink:0;width:28px;text-align:center}
+  .quest-info{flex:1}
+  .quest-name{font-size:10px;font-weight:700;color:#ccc;margin-bottom:2px}
+  .quest-sub{font-size:8px;color:#444}
+  .quest-xp{font-size:9px;font-weight:900;color:#f59e0b;white-space:nowrap}
+  .quest-check{width:16px;height:16px;border:1px solid #22c55e;display:flex;align-items:center;justify-content:center;font-size:9px;color:#22c55e;flex-shrink:0}
+  .quest-check.done{background:#22c55e1a}
+  .quest-check.lock{border-color:#222;color:#333}
+  .quest-progress{height:2px;background:#1a1a1a;margin-top:3px}
+  .quest-progress-fill{height:2px;background:#e63a76}
+
+  /* ── SECTION HEAD ── */
+  .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .section-title{font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#444}
+  .section-action{font-size:9px;color:#e63a76;cursor:default}
+
+  /* ── FEED TABS ── */
+  .feed-tabs{display:flex;gap:0;margin-bottom:12px;border-bottom:1px solid #1a1a1a}
+  .ftab{font-size:10px;font-weight:700;color:#444;padding:6px 12px;cursor:default;text-transform:uppercase;letter-spacing:.07em}
+  .ftab.active{color:#fff;border-bottom:2px solid #e63a76;margin-bottom:-1px}
+
+  /* ── CREATOR CARDS (feed) ── */
+  .creator-card{background:#0e0e0e;border:1px solid #1a1a1a;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start;position:relative;overflow:hidden;cursor:default;transition:border-color .15s}
+  .creator-card:hover{border-color:#333}
+  .creator-card.hot{border-color:#e63a7644}
+  .creator-card.almost{border-color:#f59e0b44}
+  .card-glow{position:absolute;top:0;left:0;right:0;height:1px}
+  .card-glow.hot{background:linear-gradient(90deg,#e63a76,transparent)}
+  .card-glow.gold{background:linear-gradient(90deg,#f59e0b,transparent)}
+  .avatar{width:36px;height:36px;border:1px solid #222;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#888;flex-shrink:0}
+  .avatar.acc{border-color:#e63a76;color:#e63a76}
+  .avatar.gold-border{border-color:#f59e0b;color:#f59e0b}
+  .card-body{flex:1;min-width:0}
+  .card-top{display:flex;align-items:flex-start;gap:6px;margin-bottom:4px}
+  .creator-name{font-size:12px;font-weight:800;color:#fff}
+  .card-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:1px}
+  .chip{font-size:7px;font-weight:800;padding:2px 5px;letter-spacing:.06em;text-transform:uppercase}
+  .chip.hot{background:#e63a761a;color:#e63a76;border:1px solid #e63a7633}
+  .chip.almost{background:#f59e0b1a;color:#f59e0b;border:1px solid #f59e0b33}
+  .chip.new{background:#22c55e1a;color:#22c55e;border:1px solid #22c55e33}
+  .chip.goal{background:#8b5cf61a;color:#8b5cf6;border:1px solid #8b5cf633}
+  .card-desc{font-size:9px;color:#555;margin-bottom:6px;line-height:1.4}
+  .progress-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+  .progress-track{flex:1;height:4px;background:#111;position:relative}
+  .progress-bar-fill{height:4px;background:linear-gradient(90deg,#e63a76,#f59e0b);position:relative}
+  .progress-bar-fill.green{background:linear-gradient(90deg,#22c55e,#16a34a)}
+  .progress-pct{font-size:9px;font-weight:800;color:#ccc;white-space:nowrap}
+  .progress-pct.acc{color:#e63a76}
+  .card-stats{display:flex;gap:12px}
+  .stat{font-size:9px;color:#444}
+  .stat strong{color:#888;font-weight:700}
+  .card-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+  .gift-btn{background:#e63a76;color:#fff;font-size:9px;font-weight:900;letter-spacing:.07em;padding:5px 10px;border:0;cursor:default;text-transform:uppercase;white-space:nowrap}
+  .gift-btn.ghost{background:transparent;border:1px solid #222;color:#444}
+  .raised-amt{font-size:14px;font-weight:900;color:#fff}
+  .raised-label{font-size:7px;color:#444;text-align:right;text-transform:uppercase;letter-spacing:.07em}
+
+  /* ── SIDEBAR ── */
+  .sb-section{margin-bottom:16px}
+  .sb-title{font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#333;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+  .sb-title span{color:#e63a76;font-size:10px}
+
+  /* XP block */
+  .xp-block{background:#0e0e0e;border:1px solid #1a1a1a;padding:12px;margin-bottom:8px}
+  .level-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .level-badge{background:#f59e0b;color:#000;font-size:8px;font-weight:900;padding:3px 7px;letter-spacing:.06em}
+  .level-num{font-size:18px;font-weight:900;color:#fff}
+  .xp-big{font-size:10px;font-weight:800;color:#f59e0b;margin-bottom:2px}
+  .xp-track2{height:6px;background:#111;margin-bottom:4px;position:relative;overflow:hidden}
+  .xp-fill2{height:6px;background:linear-gradient(90deg,#e63a76,#f59e0b);width:62%;box-shadow:0 0 8px #e63a7644}
+  .xp-sub{font-size:8px;color:#333}
+
+  /* Streak */
+  .streak-block{background:linear-gradient(135deg,#0e0e0e,#160a0e);border:1px solid #e63a7622;padding:12px;text-align:center;margin-bottom:8px}
+  .streak-big{font-size:32px;font-weight:900;line-height:1;color:#fff}
+  .streak-big span{font-size:28px;animation:flicker .6s infinite alternate}
+  .streak-sub{font-size:8px;color:#e63a76;text-transform:uppercase;letter-spacing:.1em;font-weight:900;margin-top:2px}
+  .streak-warn{font-size:8px;color:#f59e0b;margin-top:4px}
+
+  /* League */
+  .league-block{background:#0e0e0e;border:1px solid #f59e0b33;padding:10px;margin-bottom:8px}
+  .league-row{display:flex;align-items:center;gap:8px}
+  .league-icon{font-size:22px;line-height:1}
+  .league-info{flex:1}
+  .league-name{font-size:11px;font-weight:900;color:#f59e0b}
+  .league-sub{font-size:8px;color:#555}
+  .league-track{height:3px;background:#111;margin-top:5px}
+  .league-fill{height:3px;background:linear-gradient(90deg,#f59e0b,#e63a76);width:73%}
+  .tier-row{display:flex;justify-content:space-between;margin-top:4px}
+  .tier{font-size:7px;text-align:center;color:#333}
+  .tier.active{color:#f59e0b;font-weight:800}
+
+  /* Mini leaderboard */
+  .lb-row{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid #111}
+  .lb-row:last-child{border-bottom:0}
+  .lb-rank{font-size:9px;font-weight:900;width:14px;text-align:center}
+  .lb-rank.r1{color:#f59e0b}
+  .lb-rank.r2{color:#888}
+  .lb-rank.r3{color:#cd7f32}
+  .lb-name{font-size:9px;color:#666;flex:1}
+  .lb-name.you{color:#e63a76;font-weight:700}
+  .lb-amt{font-size:9px;font-weight:800;color:#333}
+  .lb-amt.you{color:#e63a76}
+
+  /* Badges */
+  .badges-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+  .badge-slot{aspect-ratio:1;border:1px solid #1a1a1a;display:flex;align-items:center;justify-content:center;font-size:14px;background:#0e0e0e;position:relative;cursor:default}
+  .badge-slot:hover{border-color:#333}
+  .badge-slot.locked{opacity:.25;filter:grayscale(1)}
+  .badge-new{position:absolute;top:-2px;right:-2px;width:6px;height:6px;background:#e63a76;border-radius:50%}
+
+  /* Annotation callouts */
+  .callout{background:#e63a7610;border:1px solid #e63a7622;padding:6px 10px;font-size:9px;color:#e63a76;margin-bottom:6px;display:flex;align-items:flex-start;gap:6px}
+  .callout.gold{background:#f59e0b10;border-color:#f59e0b22;color:#f59e0b}
+  .callout.green{background:#22c55e10;border-color:#22c55e22;color:#22c55e}
+  .callout-arrow{flex-shrink:0;font-size:10px}
+</style>
+
+<!-- NAVBAR -->
+<div class="navbar">
+  <div class="logo">TipFlow</div>
+  <div class="nav-link active">Home</div>
+  <div class="nav-link">Explore</div>
+  <div class="nav-link">Leaderboard</div>
+  <!-- XP bar in nav (Duolingo-style) -->
+  <div class="nav-xp">
+    <div class="xp-text"><span style="color:#444;font-size:7px">LEVEL 7</span><span style="color:#f59e0b;font-size:7px">2,340 / 3,000 XP</span></div>
+    <div class="xp-track"><div class="xp-fill"></div></div>
+  </div>
+  <div class="league-pill">🥇 Gold Gifter</div>
+  <div class="streak-pill"><span class="streak-flame">🔥</span> 12</div>
+</div>
+
+<!-- LIVE CASINO TICKER -->
+<div class="ticker-bar">
+  <div class="ticker-live"><div class="live-dot"></div><div class="live-label">Live</div></div>
+  <div class="ticker-scroll">
+    <span class="tick-item"><strong>fanatic99</strong> gifted <span class="amt">$50</span> to Clavicular</span>
+    <span class="separator">·</span>
+    <span class="tick-item">🎰 <span class="milestone">GOAL HIT</span> — Clavicular's Streaming Setup is <span class="milestone">FUNDED</span></span>
+    <span class="separator">·</span>
+    <span class="tick-item"><strong>mikechen</strong> gifted <span class="amt">$20</span> · streak now <strong>8 days</strong></span>
+    <span class="separator">·</span>
+    <span class="tick-item"><strong>emilyrod</strong> just hit <span class="acc" style="color:#8b5cf6">Diamond Gifter</span> 💎</span>
+    <span class="separator">·</span>
+    <span class="tick-item"><strong>pixelart_k</strong> is <span class="acc">96% funded</span> — only <span class="amt">$120 left</span></span>
+  </div>
+</div>
+
+<div style="max-width:1060px;margin:0 auto;padding:16px 20px">
+
+<!-- callout annotation row -->
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
+  <div class="callout"><span class="callout-arrow">↑</span> XP bar always visible in nav — Duolingo's #1 engagement driver</div>
+  <div class="callout gold"><span class="callout-arrow">↑</span> League tier visible at a glance — users chase the next tier</div>
+  <div class="callout green"><span class="callout-arrow">↑</span> Live feed = casino floor energy — social proof, FOMO</div>
+</div>
+
+<div style="display:flex;gap:20px">
+
+<!-- ── MAIN COLUMN ── -->
+<div style="flex:1;min-width:0">
+
+  <!-- Daily Quests (Duolingo) -->
+  <div class="quest-card">
+    <div class="quest-header">
+      <div class="quest-title">⚡ Daily Quests</div>
+      <div class="quest-reset" style="color:#e63a76">2 / 3 done · <span style="color:#444">resets in 8h</span></div>
+    </div>
+    <div class="quest-row">
+      <div class="quest-icon">🎁</div>
+      <div class="quest-info">
+        <div class="quest-name">Gift any creator</div>
+        <div class="quest-sub">Keep your streak alive</div>
+        <div class="quest-progress"><div class="quest-progress-fill" style="width:100%"></div></div>
+      </div>
+      <div class="quest-xp">+50 XP</div>
+      <div class="quest-check done">✓</div>
+    </div>
+    <div class="quest-row">
+      <div class="quest-icon">👥</div>
+      <div class="quest-info">
+        <div class="quest-name">Follow a new creator</div>
+        <div class="quest-sub">Discover someone new</div>
+        <div class="quest-progress"><div class="quest-progress-fill" style="width:100%"></div></div>
+      </div>
+      <div class="quest-xp">+30 XP</div>
+      <div class="quest-check done">✓</div>
+    </div>
+    <div class="quest-row">
+      <div class="quest-icon">💸</div>
+      <div class="quest-info">
+        <div class="quest-name">Gift $25 or more in one go</div>
+        <div class="quest-sub">Big gifter bonus</div>
+        <div class="quest-progress"><div class="quest-progress-fill" style="width:0%"></div></div>
+      </div>
+      <div class="quest-xp">+100 XP</div>
+      <div class="quest-check lock">🔒</div>
+    </div>
+  </div>
+
+  <!-- Feed tabs -->
+  <div class="feed-tabs">
+    <div class="ftab active">Following</div>
+    <div class="ftab">🔥 Hot Now</div>
+    <div class="ftab">✨ Explore</div>
+    <div class="ftab">📈 Rising</div>
+  </div>
+
+  <!-- Creator card 1: ALMOST FUNDED (urgency) -->
+  <div class="creator-card almost">
+    <div class="card-glow gold"></div>
+    <div class="avatar gold-border">PX</div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="creator-name">pixelart_k</div>
+        <div class="card-tags">
+          <span class="chip almost">⏰ Almost funded</span>
+          <span class="chip goal">Goal: $3,200</span>
+        </div>
+      </div>
+      <div class="card-desc">PC Upgrade for streaming — only <strong style="color:#f59e0b">$120 left</strong> to reach the goal. 203 gifters already in.</div>
+      <div class="progress-row">
+        <div class="progress-track"><div class="progress-bar-fill green" style="width:96%"></div></div>
+        <div class="progress-pct" style="color:#f59e0b">96% 🔥</div>
+      </div>
+      <div class="card-stats">
+        <div class="stat">👥 <strong>203 gifters</strong></div>
+        <div class="stat">📈 <strong>+18 today</strong></div>
+        <div class="stat">⏱ <strong>3 days left</strong></div>
+      </div>
+    </div>
+    <div class="card-right">
+      <div class="raised-amt" style="color:#f59e0b">$3,080</div>
+      <div class="raised-label">raised</div>
+      <div class="gift-btn">Gift Now</div>
+    </div>
+  </div>
+
+  <!-- Creator card 2: HOT -->
+  <div class="creator-card hot">
+    <div class="card-glow hot"></div>
+    <div class="avatar acc">CL</div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="creator-name">Clavicular</div>
+        <div class="card-tags">
+          <span class="chip hot">🔥 On a roll</span>
+          <span class="chip new">+$340 today</span>
+        </div>
+      </div>
+      <div class="card-desc">Streaming Setup · Next item: Elgato Key Light Air — already building momentum.</div>
+      <div class="progress-row">
+        <div class="progress-track"><div class="progress-bar-fill" style="width:76%"></div></div>
+        <div class="progress-pct acc">76%</div>
+      </div>
+      <div class="card-stats">
+        <div class="stat">👥 <strong>142 gifters</strong></div>
+        <div class="stat">📈 <strong>+12 today</strong></div>
+      </div>
+    </div>
+    <div class="card-right">
+      <div class="raised-amt">$1,890</div>
+      <div class="raised-label">raised</div>
+      <div class="gift-btn">Gift Now</div>
+    </div>
+  </div>
+
+  <!-- Creator card 3: regular -->
+  <div class="creator-card">
+    <div class="avatar" style="border-color:#8b5cf622;color:#8b5cf6">SD</div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="creator-name">sarahdesigns</div>
+        <div class="card-tags"><span class="chip goal">Art Supplies</span></div>
+      </div>
+      <div class="card-desc">Professional art materials for commissions — 84 supporters so far.</div>
+      <div class="progress-row">
+        <div class="progress-track"><div class="progress-bar-fill" style="width:65%;background:linear-gradient(90deg,#8b5cf6,#e63a76)"></div></div>
+        <div class="progress-pct">65%</div>
+      </div>
+      <div class="card-stats">
+        <div class="stat">👥 <strong>84 gifters</strong></div>
+        <div class="stat">💰 <strong>$520 / $800</strong></div>
+      </div>
+    </div>
+    <div class="card-right">
+      <div class="raised-amt">$520</div>
+      <div class="raised-label">raised</div>
+      <div class="gift-btn ghost">Gift</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── SIDEBAR ── -->
+<div style="width:210px;flex-shrink:0">
+
+  <!-- XP / Level -->
+  <div class="sb-section">
+    <div class="sb-title">Your Progress <span>→</span></div>
+    <div class="xp-block">
+      <div class="level-row">
+        <div>
+          <div style="font-size:9px;color:#444;font-weight:800;letter-spacing:.07em;text-transform:uppercase">Level</div>
+          <div class="level-num">7</div>
+        </div>
+        <div class="level-badge">GOLD GIFTER</div>
+      </div>
+      <div class="xp-big">2,340 XP</div>
+      <div class="xp-track2"><div class="xp-fill2"></div></div>
+      <div class="xp-sub">660 XP to Level 8 · <span style="color:#f59e0b">Platinum Gifter</span></div>
+    </div>
+  </div>
+
+  <!-- Streak -->
+  <div class="sb-section">
+    <div class="streak-block">
+      <div class="streak-big">12 <span>🔥</span></div>
+      <div class="streak-sub">Day Streak</div>
+      <div class="streak-warn">⚠️ Gift today to keep it going</div>
+    </div>
+    <div class="callout green" style="font-size:8px;margin:0"><span>💡</span> Streaks give 2x XP on all gifts. Break it and lose the bonus.</div>
+  </div>
+
+  <!-- League -->
+  <div class="sb-section">
+    <div class="sb-title">Your League</div>
+    <div class="league-block">
+      <div class="league-row">
+        <div class="league-icon">🥇</div>
+        <div class="league-info">
+          <div class="league-name">Gold Gifter</div>
+          <div class="league-sub">Top 15% this week</div>
+        </div>
+      </div>
+      <div class="league-track"><div class="league-fill"></div></div>
+      <div class="tier-row">
+        <div class="tier">🥉 Bronze</div>
+        <div class="tier">🥈 Silver</div>
+        <div class="tier active">🥇 Gold ←</div>
+        <div class="tier">💎 Diamond</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Weekly Leaderboard -->
+  <div class="sb-section">
+    <div class="sb-title">This Week's Gifters <span>↑</span></div>
+    <div style="background:#0e0e0e;border:1px solid #1a1a1a;padding:8px">
+      <div class="lb-row"><div class="lb-rank r1">1</div><div class="lb-name">fanatic99</div><div class="lb-amt" style="color:#f59e0b">$340</div></div>
+      <div class="lb-row"><div class="lb-rank r2">2</div><div class="lb-name">mikechen</div><div class="lb-amt">$210</div></div>
+      <div class="lb-row"><div class="lb-rank r3">3</div><div class="lb-name you">you</div><div class="lb-amt you">$180</div></div>
+      <div class="lb-row"><div class="lb-rank">4</div><div class="lb-name">emilyrod</div><div class="lb-amt">$90</div></div>
+      <div class="lb-row"><div class="lb-rank">5</div><div class="lb-name">thecj</div><div class="lb-amt">$45</div></div>
+      <div style="text-align:center;padding-top:6px;font-size:8px;color:#e63a76">$30 from #2 · close 🔺</div>
+    </div>
+  </div>
+
+  <!-- Badges -->
+  <div class="sb-section">
+    <div class="sb-title">Badges <span style="color:#444;font-size:8px">4 / 12</span></div>
+    <div class="badges-grid">
+      <div class="badge-slot" title="Early Adopter">🌟<div class="badge-new"></div></div>
+      <div class="badge-slot" title="10-Day Streak">🔥</div>
+      <div class="badge-slot" title="$100 Gifted">💎</div>
+      <div class="badge-slot" title="First Gift">🎁</div>
+      <div class="badge-slot locked" title="???">🏆</div>
+      <div class="badge-slot locked" title="???">⚡</div>
+      <div class="badge-slot locked" title="???">💰</div>
+      <div class="badge-slot locked" title="???">🎰</div>
+      <div class="badge-slot locked" title="???">👑</div>
+      <div class="badge-slot locked" title="???">🌈</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- Bottom callouts -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px">
+  <div class="callout gold"><span class="callout-arrow">🎯</span> Daily quests = Duolingo's daily goal. Creates daily return habit.</div>
+  <div class="callout"><span class="callout-arrow">⏰</span> "Almost funded" cards create urgency. Supporter feels like part of the win.</div>
+  <div class="callout gold"><span class="callout-arrow">🏆</span> League system = weekly reset. Stay in Gold or get demoted.</div>
+  <div class="callout green"><span class="callout-arrow">🔒</span> Locked badges create mystery/curiosity — users want to discover them.</div>
+</div>
+
+</div>

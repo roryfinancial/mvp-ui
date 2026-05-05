@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect, useRef } from "react";
 import { Sounds } from "../../lib/sounds";
+import ConfettiBurst from "./Confetti";
 import { Plus, User, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, ChevronDown, List, ShoppingBag, Trophy } from "lucide-react";
 
 interface CreatorDashboardProps {
@@ -78,9 +79,11 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
     const funded = wishlists.flatMap((w) => w.items).find((i) => i.status === "completed");
     if (funded) {
       firedFunded.current = true;
-      Sounds.funded();
+      // Softer funded sound for creator (not as jarring as supporter's casino version)
+      setTimeout(() => Sounds.achievement(), 300);
+      setTimeout(() => Sounds.funded(), 800);
       setConfettiTitle(funded.title);
-      setTimeout(() => setConfettiTitle(null), 3000);
+      setTimeout(() => setConfettiTitle(null), 3500);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -232,7 +235,7 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
               transition={{ duration: 0.5, delay: 0.3 }}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
-              onClick={onAddItem}
+              onClick={() => { Sounds.click(); onAddItem?.(); }}
               className="w-full flex items-center justify-center gap-2 px-6 py-3 btn-cta text-white font-black text-xs uppercase tracking-widest"
             >
               <Plus className="w-4 h-4" />
@@ -244,7 +247,7 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
               transition={{ duration: 0.5, delay: 0.35 }}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
-              onClick={onCreateWishlist}
+              onClick={() => { Sounds.softClick(); onCreateWishlist?.(); }}
               className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-border bg-background hover:bg-muted text-foreground font-bold text-xs uppercase tracking-wide transition-colors"
             >
               <List className="w-4 h-4" />
@@ -295,7 +298,7 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.35, delay: wIndex * 0.07 }}
                         whileHover={{ y: -2 }}
-                        onClick={() => { setSelectedWishlistId(wishlist.id); setSelectedItemIndex(null); setItemTab("active"); }}
+                        onClick={() => { Sounds.softClick(); setSelectedWishlistId(wishlist.id); setSelectedItemIndex(null); setItemTab("active"); }}
                         className="bg-background border border-border rounded-xl overflow-hidden cursor-pointer group card-game"
                       >
                         <div className="relative h-32 overflow-hidden bg-muted">
@@ -564,7 +567,7 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
                       {(["active", "completed", "all"] as const).map(t => (
                         <button
                           key={t}
-                          onClick={() => setItemTab(t)}
+                          onClick={() => { Sounds.softClick(); setItemTab(t); }}
                           className={`pb-4 text-sm font-bold capitalize transition-colors relative ${
                             itemTab === t ? "text-foreground" : "text-subtle hover:text-foreground"
                           }`}
@@ -592,33 +595,7 @@ export default function CreatorDashboard({ username = "Username", initialWishlis
                             className="relative bg-background border border-border rounded-xl overflow-hidden cursor-pointer group card-game"
                           >
                             {/* Confetti burst for funded item */}
-                            {confettiTitle === item.title && (
-                              <motion.div
-                                initial={{ opacity: 1 }}
-                                animate={{ opacity: 0 }}
-                                transition={{ duration: 2.5 }}
-                                className="absolute inset-0 pointer-events-none z-10 overflow-hidden"
-                              >
-                                {Array.from({ length: 20 }).map((_, ci) => (
-                                  <motion.div
-                                    key={ci}
-                                    className="absolute w-2 h-2 rounded-sm"
-                                    style={{
-                                      backgroundColor: ["#f59e0b","#10b981","#3b82f6","#ec4899","#8b5cf6"][ci % 5],
-                                      left: `${(ci / 20) * 100}%`,
-                                      top: "0%",
-                                    }}
-                                    animate={{
-                                      y: ["0%", "400%"],
-                                      x: [`${(Math.random() - 0.5) * 60}px`],
-                                      opacity: [1, 0],
-                                      rotate: [0, (ci % 2 === 0 ? 1 : -1) * 180],
-                                    }}
-                                    transition={{ duration: 1.5 + (ci % 5) * 0.2, delay: (ci % 4) * 0.1 }}
-                                  />
-                                ))}
-                              </motion.div>
-                            )}
+                            <ConfettiBurst active={confettiTitle === item.title} mode="local" count={30} />
                             <div className="relative w-full h-36 flex items-center justify-center bg-muted">
                               <Gift className="w-12 h-12 text-subtle" />
                               <div className={`absolute top-2 right-2 px-2 py-1 flex items-center gap-1 border text-[10px] font-black uppercase tracking-widest ${

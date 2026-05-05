@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Store } from "../../lib/store";
 import { Sounds } from "../../lib/sounds";
 import CreatorCard from "./CreatorCard";
+import type { ToastKind } from "./Toast";
 
 type FeedTab = "following" | "hot" | "explore" | "rising";
 
@@ -22,7 +23,11 @@ const RECOMMENDATION_REASONS: Record<string, string> = {
   "fc-5": "Matches your gifting style",
 };
 
-export default function CommunityFeed() {
+interface CommunityFeedProps {
+  onToast?: (kind: ToastKind, message: string) => void;
+}
+
+export default function CommunityFeed({ onToast }: CommunityFeedProps) {
   const [activeTab, setActiveTab] = useState<FeedTab>("following");
   const creators = Store.getFeedCreators(activeTab);
 
@@ -70,6 +75,7 @@ export default function CommunityFeed() {
                 creator={creator}
                 recommendationReason={activeTab === "explore" ? RECOMMENDATION_REASONS[creator.id] : undefined}
                 onGift={() => {}}
+                onToast={onToast}
               />
             ))
           )}

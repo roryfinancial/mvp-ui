@@ -1,9 +1,12 @@
 import { motion } from "motion/react";
 import type { GamificationState, BadgeId } from "../../lib/types";
 import { xpProgress, leagueBadgeColor, leagueLabel } from "../../lib/gamification";
+import { Sounds } from "../../lib/sounds";
+import type { ToastKind } from "./Toast";
 
 interface GamificationSidebarProps {
   gamification: GamificationState;
+  onToast?: (kind: ToastKind, message: string) => void;
 }
 
 const BADGE_META: Record<BadgeId, { emoji: string; label: string; description: string }> = {
@@ -35,7 +38,7 @@ const MOCK_LEADERBOARD = [
   { rank: 5, name: "Sarah J.",     amount: 95  },
 ];
 
-export default function GamificationSidebar({ gamification }: GamificationSidebarProps) {
+export default function GamificationSidebar({ gamification, onToast }: GamificationSidebarProps) {
   const { current, needed, pct } = xpProgress(gamification.xp);
 
   return (
@@ -110,17 +113,24 @@ export default function GamificationSidebar({ gamification }: GamificationSideba
             const meta = BADGE_META[id];
             const isMystery = id.startsWith("mystery");
             return (
-              <div
+              <motion.div
                 key={id}
+                whileHover={earned ? { scale: 1.15 } : {}}
                 title={earned ? `${meta.label}: ${meta.description}` : isMystery ? "Mystery — keep gifting!" : `Locked: ${meta.description}`}
-                className={`w-10 h-10 flex items-center justify-center text-xl border transition-all cursor-help ${
+                onClick={() => {
+                  if (earned) {
+                    Sounds.pop();
+                    onToast?.("badge", `${meta.emoji} ${meta.label}`);
+                  }
+                }}
+                className={`w-10 h-10 flex items-center justify-center text-xl border transition-all ${
                   earned
-                    ? "border-accent/40 bg-accent/10"
-                    : "border-white/10 opacity-30 grayscale"
+                    ? "border-accent/40 bg-accent/10 cursor-pointer"
+                    : "border-white/10 opacity-25 grayscale cursor-default"
                 }`}
               >
                 {earned || !isMystery ? meta.emoji : "❓"}
-              </div>
+              </motion.div>
             );
           })}
         </div>

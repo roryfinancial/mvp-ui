@@ -1,11 +1,15 @@
+import { useState } from "react";
 import { motion } from "motion/react";
 import type { CreatorFeedItem } from "../../lib/types";
 import { Sounds } from "../../lib/sounds";
+import ConfettiBurst from "./Confetti";
+import type { ToastKind } from "./Toast";
 
 interface CreatorCardProps {
   creator: CreatorFeedItem;
   recommendationReason?: string;
   onGift?: (creatorId: string) => void;
+  onToast?: (kind: ToastKind, message: string) => void;
 }
 
 function urgencyChip(c: CreatorFeedItem): { label: string; color: string } | null {
@@ -23,16 +27,33 @@ function progressBarColor(pct: number): string {
   return "bg-accent";
 }
 
-export default function CreatorCard({ creator, recommendationReason, onGift }: CreatorCardProps) {
+export default function CreatorCard({ creator, recommendationReason, onGift, onToast }: CreatorCardProps) {
+  const [showConfetti, setShowConfetti] = useState(false);
   const pct = Math.min(creator.raisedAmount / creator.goalAmount, 1);
   const chip = urgencyChip(creator);
+  const isNearGoal = pct >= 0.9;
+
+  function handleGift() {
+    Sounds.gift();
+    onGift?.(creator.id);
+    // Confetti if near goal or just hit it
+    if (isNearGoal) {
+      Sounds.funded();
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 2500);
+      onToast?.("funded", `🎰 ${creator.creatorName} is almost funded!`);
+    } else {
+      onToast?.("gift", `🎁 Gift sent to ${creator.creatorName}!`);
+    }
+  }
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/5 border border-white/10 p-4 space-y-3 hover:border-accent/40 transition-all"
+      className="relative bg-white/5 border border-white/10 p-4 space-y-3 hover:border-accent/40 transition-all overflow-hidden"
     >
+      <ConfettiBurst active={showConfetti} mode="local" count={24} />
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -85,7 +106,7 @@ export default function CreatorCard({ creator, recommendationReason, onGift }: C
       )}
 
       <button
-        onClick={() => { Sounds.gift(); onGift?.(creator.id); }}
+        onClick={handleGift}
         className="w-full py-2 bg-accent text-white font-black text-sm uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all"
       >
         Gift Now 🎁

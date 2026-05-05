@@ -67,6 +67,64 @@ export const Sounds = {
     tone(800, 0.08, "square", 0.15);
   },
 
+  // Softer click for tabs and toggles
+  softClick() {
+    if (isMuted()) return;
+    tone(600, 0.07, "sine", 0.1);
+  },
+
+  // Subtle hover — very quiet whoosh
+  hover() {
+    if (isMuted()) return;
+    tone(1200, 0.05, "sine", 0.05);
+  },
+
+  // Positive success chime
+  success() {
+    if (isMuted()) return;
+    tone(659, 0.1, "sine", 0.2, 0);
+    tone(880, 0.15, "sine", 0.25, 0.08);
+  },
+
+  // Subtle error buzz
+  error() {
+    if (isMuted()) return;
+    tone(220, 0.12, "sawtooth", 0.12, 0);
+    tone(180, 0.1, "sawtooth", 0.1, 0.08);
+  },
+
+  // Pop — for toasts/popups appearing
+  pop() {
+    if (isMuted()) return;
+    tone(1000, 0.06, "sine", 0.18, 0);
+    tone(1300, 0.06, "sine", 0.12, 0.04);
+  },
+
+  // Page/route transition whoosh
+  pageTransition() {
+    if (isMuted()) return;
+    const c = ctx();
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.connect(gain);
+    gain.connect(c.destination);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(400, c.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(800, c.currentTime + 0.12);
+    gain.gain.setValueAtTime(0.12, c.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.15);
+    osc.start(c.currentTime);
+    osc.stop(c.currentTime + 0.18);
+  },
+
+  // Soft achievement sound for creator dashboard (less aggressive)
+  achievement() {
+    if (isMuted()) return;
+    tone(523, 0.15, "sine", 0.18, 0);
+    tone(659, 0.15, "sine", 0.15, 0.12);
+    tone(784, 0.2,  "sine", 0.2,  0.22);
+  },
+
   gift() {
     if (isMuted()) return;
     const c = ctx();

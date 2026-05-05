@@ -23,12 +23,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // We rely solely on onAuthStateChange so the INITIAL_SESSION event (which reads
   // from localStorage) drives the first render — avoids a race with getSession().
   useEffect(() => {
+    // Safety: if onAuthStateChange never fires (e.g. paused Supabase project),
+    // clear loading after 4s so the app doesn't stay on a blank spinner forever.
+    const fallback = setTimeout(() => setLoading(false), 4000);
+
     const { data: { subscription } } = AuthService.onAuthStateChange((u) => {
+      clearTimeout(fallback);
       setUser(u);
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(fallback);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = useCallback(async (email: string, password: string): Promise<LoginResult> => {
