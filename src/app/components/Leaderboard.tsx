@@ -1,6 +1,8 @@
 import { motion } from "motion/react";
-import { useState } from "react";
-import { Trophy, TrendingUp, Gift, Heart } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Trophy, TrendingUp, Gift, Heart, Loader2 } from "lucide-react";
+import { leaderboardApi } from "../../lib/api";
+import type { LeaderboardEntryResponse } from "../../lib/api";
 
 interface LeaderboardProps {
   onViewCreator?: (username: string) => void;
@@ -19,35 +21,62 @@ interface LeaderboardEntry {
 
 const RANK_COLORS = ["#FFD700", "#C0C0C0", "#CD7F32"] as const;
 
-const topCreators: LeaderboardEntry[] = [
-  { rank: 1, name: "Alex Creative", username: "@alexcreative", initials: "AC", amount: "$12,450", items: 8, supporters: 142 },
-  { rank: 2, name: "Sarah Designs", username: "@sarahdesigns", initials: "SD", amount: "$9,820", items: 12, supporters: 98 },
-  { rank: 3, name: "Jordan Streams", username: "@jordanstreams", initials: "JS", amount: "$8,340", items: 5, supporters: 87 },
-  { rank: 4, name: "Maya Arts", username: "@mayaarts", initials: "MA", amount: "$6,120", items: 9, supporters: 64 },
-  { rank: 5, name: "Chris Builds", username: "@chrisbuilds", initials: "CB", amount: "$5,780", items: 6, supporters: 53 },
-  { rank: 6, name: "Taylor Makes", username: "@taylormakes", initials: "TM", amount: "$4,900", items: 4, supporters: 41 },
-  { rank: 7, name: "Sam Creates", username: "@samcreates", initials: "SC", amount: "$3,650", items: 7, supporters: 38 },
-  { rank: 8, name: "Riley Codes", username: "@rileycodes", initials: "RC", amount: "$2,940", items: 3, supporters: 29 },
-  { rank: 9, name: "Morgan Plays", username: "@morganplays", initials: "MP", amount: "$2,100", items: 5, supporters: 22 },
-  { rank: 10, name: "Casey Films", username: "@caseyfilms", initials: "CF", amount: "$1,870", items: 4, supporters: 18 },
-];
-
-const topSupporters: LeaderboardEntry[] = [
-  { rank: 1, name: "Mike Chen", username: "@mikechen", initials: "MC", amount: "$4,250", items: 15, contributions: 32 },
-  { rank: 2, name: "Emily Rodriguez", username: "@emilyrodriguez", initials: "ER", amount: "$3,800", items: 12, contributions: 28 },
-  { rank: 3, name: "David Kim", username: "@davidkim", initials: "DK", amount: "$3,120", items: 9, contributions: 21 },
-  { rank: 4, name: "Lisa Park", username: "@lisapark", initials: "LP", amount: "$2,640", items: 11, contributions: 19 },
-  { rank: 5, name: "James Wilson", username: "@jameswilson", initials: "JW", amount: "$2,100", items: 8, contributions: 16 },
-  { rank: 6, name: "Anna Lee", username: "@annalee", initials: "AL", amount: "$1,890", items: 7, contributions: 14 },
-  { rank: 7, name: "Tom Harris", username: "@tomharris", initials: "TH", amount: "$1,540", items: 6, contributions: 11 },
-  { rank: 8, name: "Sophie Turner", username: "@sophieturner", initials: "ST", amount: "$1,200", items: 5, contributions: 9 },
-  { rank: 9, name: "Ryan Brooks", username: "@ryanbrooks", initials: "RB", amount: "$980", items: 4, contributions: 7 },
-  { rank: 10, name: "Olivia Grant", username: "@oliviagrant", initials: "OG", amount: "$750", items: 3, contributions: 5 },
-];
-
 export default function Leaderboard({ onViewCreator }: LeaderboardProps) {
   const [tab, setTab] = useState<"creators" | "supporters">("creators");
-  const entries = tab === "creators" ? topCreators : topSupporters;
+  const [creatorsData, setCreatorsData] = useState<LeaderboardEntry[]>([]);
+  const [supportersData, setSupportersData] = useState<LeaderboardEntry[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      setDataLoading(true);
+      const [creatorsRes, supportersRes] = await Promise.all([
+        leaderboardApi.getTopCreators(10),
+        leaderboardApi.getTopSupporters(10),
+      ]);
+
+      if (creatorsRes.success && creatorsRes.data) {
+        setCreatorsData(
+          creatorsRes.data.map((c: LeaderboardEntryResponse) => ({
+            rank: c.rank,
+            name: c.displayName,
+            username: `@${c.username}`,
+            initials: c.initials,
+            amount: `$${c.totalAmount.toLocaleString()}`,
+            items: c.totalItems,
+            supporters: c.totalContributions,
+          }))
+        );
+      }
+
+      if (supportersRes.success && supportersRes.data) {
+        setSupportersData(
+          supportersRes.data.map((s: LeaderboardEntryResponse) => ({
+            rank: s.rank,
+            name: s.displayName,
+            username: `@${s.username}`,
+            initials: s.initials,
+            amount: `$${s.totalAmount.toLocaleString()}`,
+            items: s.totalItems,
+            contributions: s.totalContributions,
+          }))
+        );
+      }
+
+      setDataLoading(false);
+    }
+    loadData();
+  }, []);
+
+  const entries = tab === "creators" ? creatorsData : supportersData;
+
+  if (dataLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">

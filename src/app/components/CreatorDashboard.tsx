@@ -1,6 +1,9 @@
 import { motion, AnimatePresence } from "motion/react";
-import { useState } from "react";
-import { Plus, User, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, ChevronDown, List, ShoppingBag, Trophy } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, User, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, ChevronDown, List, ShoppingBag, Trophy, Loader2 } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
+import { wishlistApi, giftApi } from "../../lib/api";
+import type { WishlistResponse, RecentSupporterResponse, TopSupporterResponse } from "../../lib/api";
 
 interface CreatorDashboardProps {
   username?: string;
@@ -36,55 +39,104 @@ interface WishlistItem {
 }
 
 interface Wishlist {
-  id: number;
+  id: string;
   name: string;
   description: string;
   coverImage?: string | null;
   items: WishlistItem[];
 }
 
-export default function CreatorDashboard({ username = "Username", initialWishlistId = null, shopifyStore = null, onCreateWishlist, onAddItem }: CreatorDashboardProps) {
-  const [selectedWishlistId, setSelectedWishlistId] = useState<number | null>(initialWishlistId);
+function getInitials(name: string): string {
+  return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+}
+
+export default function CreatorDashboard({ username: propUsername, initialWishlistId = null, shopifyStore = null, onCreateWishlist, onAddItem }: CreatorDashboardProps) {
+  const { user } = useAuth();
+  const username = user?.username ?? propUsername ?? "Username";
+
+  const [selectedWishlistId, setSelectedWishlistId] = useState<string | null>(initialWishlistId?.toString() ?? null);
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
   const [itemTab, setItemTab] = useState<"active" | "completed" | "all">("active");
+  const [dataLoading, setDataLoading] = useState(true);
 
-  const recentSupporters: Supporter[] = [
-    { name: "Sarah Johnson", amount: "$250", initials: "SJ", timeAgo: "2h ago" },
-    { name: "Mike Chen", amount: "$180", initials: "MC", timeAgo: "5h ago" },
-    { name: "Emily Rodriguez", amount: "$120", initials: "ER", timeAgo: "1d ago" },
-    { name: "Alex Thompson", amount: "$95", initials: "AT", timeAgo: "2d ago" },
-    { name: "Jordan Lee", amount: "$75", initials: "JL", timeAgo: "3d ago" },
-  ];
+  // Dynamic data from API
+  const [wishlists, setWishlists] = useState<Wishlist[]>([]);
+  const [recentSupporters, setRecentSupporters] = useState<Supporter[]>([]);
+  const [topSupportersLeaderboard, setTopSupportersLeaderboard] = useState<
+    { rank: number; name: string; initials: string; totalAmount: string; contributions: number }[]
+  >([]);
 
-  const wishlists: Wishlist[] = [
-    {
-      id: 1,
-      name: "Creator Essentials",
-      description: "Everything I need to level up my content",
-      items: [
-        { title: "New Streaming Setup", description: "Upgrading for better quality streams", goal: "$2,500", raised: "$1,890", progress: 76, status: "active" },
-        { title: "Art Supplies Collection", description: "Professional grade materials for commissions", goal: "$800", raised: "$520", progress: 65, status: "active" },
-        { title: "Coffee Fund", description: "Fuel the creative process", goal: "$200", raised: "$340", progress: 170, status: "completed" },
-      ],
-    },
-  ];
+  useEffect(() => {
+    async function loadData() {
+      setDataLoading(true);
+      const [wishlistRes, recentRes, topRes] = await Promise.all([
+        wishlistApi.getMyWishlists(),
+        giftApi.getRecentSupporters(username, 5),
+        giftApi.getTopSupporters(username, 10),
+      ]);
 
-  const topSupportersLeaderboard = [
-    { rank: 1, name: "Sarah Johnson", initials: "SJ", totalAmount: "$1,250", contributions: 8 },
-    { rank: 2, name: "Mike Chen", initials: "MC", totalAmount: "$980", contributions: 12 },
-    { rank: 3, name: "Emily Rodriguez", initials: "ER", totalAmount: "$720", contributions: 5 },
-    { rank: 4, name: "Alex Thompson", initials: "AT", totalAmount: "$495", contributions: 6 },
-    { rank: 5, name: "Jordan Lee", initials: "JL", totalAmount: "$375", contributions: 4 },
-    { rank: 6, name: "Taylor Kim", initials: "TK", totalAmount: "$310", contributions: 3 },
-    { rank: 7, name: "Casey Nguyen", initials: "CN", totalAmount: "$245", contributions: 7 },
-    { rank: 8, name: "Morgan Davis", initials: "MD", totalAmount: "$190", contributions: 2 },
-    { rank: 9, name: "Riley Parker", initials: "RP", totalAmount: "$150", contributions: 3 },
-    { rank: 10, name: "Quinn Foster", initials: "QF", totalAmount: "$120", contributions: 1 },
-  ];
+      if (wishlistRes.success && wishlistRes.data) {
+        setWishlists(
+          wishlistRes.data.map((w: WishlistResponse) => ({
+            id: w.id,
+            name: w.name,
+            description: w.description,
+            coverImage: w.coverImageUrl,
+            items: w.items.map((item) => ({
+              title: item.title,
+              description: item.description,
+              goal: `$${item.goalAmount.toLocaleString()}`,
+              raised: `$${item.raisedAmount.toLocaleString()}`,
+              progress: item.progress,
+              status: item.status === "ACTIVE" ? "active" as const : "completed" as const,
+              thumbnail: item.thumbnailUrl,
+            })),
+          }))
+        );
+      }
 
-  const totalRaised = "$2,410";
+      if (recentRes.success && recentRes.data) {
+        setRecentSupporters(
+          recentRes.data.map((s: RecentSupporterResponse) => ({
+            name: s.supporterDisplayName,
+            amount: `$${s.amount.toLocaleString()}`,
+            initials: s.supporterInitials,
+            timeAgo: s.timeAgo,
+          }))
+        );
+      }
+
+      if (topRes.success && topRes.data) {
+        setTopSupportersLeaderboard(
+          topRes.data.map((s: TopSupporterResponse) => ({
+            rank: s.rank,
+            name: s.supporterDisplayName,
+            initials: s.supporterInitials,
+            totalAmount: `$${s.totalAmount.toLocaleString()}`,
+            contributions: s.contributionCount,
+          }))
+        );
+      }
+
+      setDataLoading(false);
+    }
+    loadData();
+  }, [username]);
+
+  const totalRaised = `$${wishlists
+    .flatMap((w) => w.items)
+    .reduce((sum, i) => sum + parseFloat(i.raised.replace(/[$,]/g, "") || "0"), 0)
+    .toLocaleString()}`;
   const totalActiveItems = wishlists.flatMap(w => w.items).filter(i => i.status === "active").length;
   const totalSupporters = recentSupporters.length;
+
+  if (dataLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">

@@ -1,7 +1,9 @@
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User, Bell, Lock, Mail, Key, Shield, DollarSign, Palette, Sun, Moon, Monitor } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useAuth } from "../../contexts/AuthContext";
+import { userApi } from "../../lib/api";
 
 interface SettingsProps {
   username?: string;
@@ -12,11 +14,10 @@ interface SettingsProps {
 }
 
 export default function Settings({
-  username = "Username",
-  email = "user@example.com",
   creditBalance,
   initialSection = "profile",
 }: SettingsProps) {
+  const { user, refreshUser } = useAuth();
   const [activeSection, setActiveSection] = useState<"profile" | "account" | "notifications" | "privacy" | "balance" | "customization">(initialSection);
   const { theme, setTheme, resolvedTheme } = useTheme();
   const spendingHistory = [
@@ -26,9 +27,10 @@ export default function Settings({
     { label: "All time", amount: "$28,320.00" },
   ];
 
-  const [displayName, setDisplayName] = useState(username);
-  const [userEmail, setUserEmail] = useState(email);
-  const [bio, setBio] = useState("Creator and artist");
+  const [displayName, setDisplayName] = useState(user?.displayName ?? "");
+  const [userEmail, setUserEmail] = useState(user?.email ?? "");
+  const [bio, setBio] = useState(user?.bio ?? "");
+  const [saving, setSaving] = useState(false);
 
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
@@ -37,6 +39,34 @@ export default function Settings({
 
   const [profileVisibility, setProfileVisibility] = useState(true);
   const [showLeaderboard, setShowLeaderboard] = useState(true);
+
+  // Populate from user data
+  useEffect(() => {
+    if (user) {
+      setDisplayName(user.displayName);
+      setUserEmail(user.email);
+      setBio(user.bio);
+    }
+  }, [user]);
+
+  async function handleSaveProfile() {
+    if (!user) return;
+    setSaving(true);
+    await userApi.updateProfile(user.username, { displayName, bio });
+    await refreshUser();
+    setSaving(false);
+  }
+
+  async function handleSaveSettings() {
+    if (!user) return;
+    await userApi.updateSettings(user.username, {
+      emailNotifications,
+      giftNotifications: newSupporter,
+      milestoneNotifications: goalReached,
+      profileVisible: profileVisibility,
+      showOnLeaderboard: showLeaderboard,
+    });
+  }
 
   const navItems = [
     { key: "profile" as const,       icon: <User className="w-4 h-4" />,        label: "Profile" },

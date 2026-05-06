@@ -24,6 +24,9 @@ export function createUser(
     bio: fields.bio ?? "",
     avatarUrl: fields.avatarUrl ?? null,
     creditBalance: fields.creditBalance ?? 0,
+    referralCode: fields.referralCode ?? null,
+    stripeOnboardingComplete: fields.stripeOnboardingComplete ?? false,
+    isProfileComplete: fields.isProfileComplete ?? true,
     createdAt: fields.createdAt ?? now(),
     ...fields,
   };

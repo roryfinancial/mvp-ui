@@ -1,6 +1,8 @@
 import { motion, AnimatePresence } from "motion/react";
-import { useState } from "react";
-import { TrendingUp, DollarSign, Users, Gift, Link2, ArrowRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { TrendingUp, DollarSign, Users, Gift, Link2, ArrowRight, Loader2 } from "lucide-react";
+import { analyticsApi, referralApi } from "../../lib/api";
+import type { AnalyticsResponse, ReferralStatsResponse } from "../../lib/api";
 
 interface AnalyticsProps {
   onNavigateReferrals?: () => void;
@@ -8,47 +10,6 @@ interface AnalyticsProps {
 
 type Metric = "revenue" | "supporters" | "gifts" | "avgContribution" | "referralEarnings" | "commissionEarned";
 type TimePeriod = "week" | "month" | "year";
-
-const chartData: Record<TimePeriod, Record<Metric, { values: number[]; labels: string[]; format: (n: number) => string }>> = {
-  week: {
-    revenue:          { values: [85, 120, 95, 180, 145, 210, 175],  labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], format: n => `$${n}` },
-    supporters:       { values: [2, 3, 1, 4, 3, 5, 4],             labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], format: n => `${n}` },
-    gifts:            { values: [1, 2, 1, 3, 2, 4, 3],             labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], format: n => `${n}` },
-    avgContribution:  { values: [42, 40, 95, 45, 48, 42, 44],       labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], format: n => `$${n}` },
-    referralEarnings: { values: [12, 18, 14, 22, 19, 28, 24],       labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], format: n => `$${n}` },
-    commissionEarned: { values: [6, 9, 7, 11, 9, 14, 12],           labels: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"], format: n => `$${n}` },
-  },
-  month: {
-    revenue:          { values: [420, 580, 710, 700],               labels: ["Week 1","Week 2","Week 3","Week 4"], format: n => `$${n}` },
-    supporters:       { values: [8, 12, 15, 12],                    labels: ["Week 1","Week 2","Week 3","Week 4"], format: n => `${n}` },
-    gifts:            { values: [4, 7, 8, 4],                       labels: ["Week 1","Week 2","Week 3","Week 4"], format: n => `${n}` },
-    avgContribution:  { values: [52, 48, 47, 58],                   labels: ["Week 1","Week 2","Week 3","Week 4"], format: n => `$${n}` },
-    referralEarnings: { values: [62, 94, 118, 106],                  labels: ["Week 1","Week 2","Week 3","Week 4"], format: n => `$${n}` },
-    commissionEarned: { values: [31, 47, 59, 53],                    labels: ["Week 1","Week 2","Week 3","Week 4"], format: n => `$${n}` },
-  },
-  year: {
-    revenue:          { values: [180, 240, 310, 280, 420, 380, 510, 490, 620, 580, 710, 850], labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], format: n => `$${n}` },
-    supporters:       { values: [5, 8, 10, 9, 14, 12, 16, 15, 19, 18, 22, 25],               labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], format: n => `${n}` },
-    gifts:            { values: [3, 4, 6, 5, 8, 7, 9, 9, 11, 10, 13, 15],                    labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], format: n => `${n}` },
-    avgContribution:  { values: [36, 30, 31, 31, 30, 32, 32, 33, 33, 32, 32, 34],             labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], format: n => `$${n}` },
-    referralEarnings: { values: [0, 0, 42, 68, 95, 112, 148, 162, 198, 220, 264, 310],        labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], format: n => `$${n}` },
-    commissionEarned: { values: [0, 0, 21, 34, 47, 56, 74, 81, 99, 110, 132, 155],            labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], format: n => `$${n}` },
-  },
-};
-
-// ── Stat totals per time period ─────────────────────────────────────────────
-const periodStats: Record<TimePeriod, {
-  revenue: string; revenueChange: string;
-  supporters: number; supportersChange: string;
-  gifts: number; giftsChange: string;
-  avg: string; avgChange: string;
-  referralEarnings: string; referralEarningsChange: string;
-  commissionEarned: string; commissionEarnedChange: string;
-}> = {
-  week:  { revenue: "$1,010", revenueChange: "+8%",  supporters: 22,  supportersChange: "+5",  gifts: 16,  giftsChange: "+3",  avg: "$45.91", avgChange: "+2%",  referralEarnings: "$137",    referralEarningsChange: "+14%", commissionEarned: "$68",     commissionEarnedChange: "+14%" },
-  month: { revenue: "$2,410", revenueChange: "+12%", supporters: 47,  supportersChange: "+8",  gifts: 23,  giftsChange: "+5",  avg: "$51.28", avgChange: "+3%",  referralEarnings: "$380",    referralEarningsChange: "+21%", commissionEarned: "$190",    commissionEarnedChange: "+21%" },
-  year:  { revenue: "$18,240",revenueChange: "+34%", supporters: 173, supportersChange: "+89", gifts: 100, giftsChange: "+52", avg: "$105.43",avgChange: "+18%", referralEarnings: "$1,619",  referralEarningsChange: "+68%", commissionEarned: "$809",    commissionEarnedChange: "+68%" },
-};
 
 const metricConfig: Record<Metric, { label: string; color: string; accentClass: string; borderClass: string; badgeClass: string; iconColor: string }> = {
   revenue:          { label: "Revenue Over Time",             color: "oklch(65.6% 0.241 354.308)",   accentClass: "bg-purple-600/10",   borderClass: "border-purple-500/20", badgeClass: "text-purple-400 bg-purple-600/20", iconColor: "text-purple-400" },
@@ -59,23 +20,78 @@ const metricConfig: Record<Metric, { label: string; color: string; accentClass: 
   commissionEarned: { label: "Commission Earned Over Time",   color: "oklch(68% 0.15 185)",           accentClass: "bg-teal-600/10",     borderClass: "border-teal-500/20",   badgeClass: "text-teal-400 bg-teal-600/20",     iconColor: "text-teal-400" },
 };
 
-const recentActivity = [
-  { supporter: "Sarah Johnson",   amount: "$250", project: "New Streaming Setup",     timeAgo: "2h ago",  initials: "SJ" },
-  { supporter: "Mike Chen",       amount: "$180", project: "Art Supplies Collection", timeAgo: "5h ago",  initials: "MC" },
-  { supporter: "Emily Rodriguez", amount: "$120", project: "New Streaming Setup",     timeAgo: "1d ago",  initials: "ER" },
-  { supporter: "Alex Thompson",   amount: "$95",  project: "Coffee Fund",             timeAgo: "2d ago",  initials: "AT" },
-  { supporter: "Jordan Lee",      amount: "$75",  project: "Art Supplies Collection", timeAgo: "3d ago",  initials: "JL" },
-];
-
 export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("month");
   const [selectedMetric, setSelectedMetric] = useState<Metric>("revenue");
   const [hoveredBar, setHoveredBar] = useState<number | null>(null);
+  const [dataLoading, setDataLoading] = useState(true);
 
-  const stats = periodStats[timePeriod];
-  const chart = chartData[timePeriod][selectedMetric];
+  // Dynamic data from API
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsResponse | null>(null);
+  const [referralStats, setReferralStats] = useState<ReferralStatsResponse | null>(null);
+  const [recentActivity, setRecentActivity] = useState<{ supporter: string; amount: string; project: string; timeAgo: string; initials: string }[]>([]);
+
+  useEffect(() => {
+    async function loadData() {
+      setDataLoading(true);
+      const period = timePeriod === "week" ? "month" : timePeriod === "month" ? "month" : "year";
+      const [analyticsRes, referralRes] = await Promise.all([
+        analyticsApi.get(period as "month" | "year" | "all-time"),
+        referralApi.getStats(),
+      ]);
+
+      if (analyticsRes.success && analyticsRes.data) {
+        setAnalyticsData(analyticsRes.data);
+        setRecentActivity(
+          analyticsRes.data.recentActivity.map((a) => ({
+            supporter: a.supporterDisplayName,
+            amount: `$${a.amount.toLocaleString()}`,
+            project: a.itemTitle,
+            timeAgo: a.timeAgo,
+            initials: a.supporterDisplayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2),
+          }))
+        );
+      }
+
+      if (referralRes.success && referralRes.data) {
+        setReferralStats(referralRes.data);
+      }
+
+      setDataLoading(false);
+    }
+    loadData();
+  }, [timePeriod]);
+
+  // Build chart and stats from API data (with fallbacks)
+  const apiStats = analyticsData?.stats;
+  const stats = {
+    revenue: apiStats ? `$${apiStats.totalRevenue.toLocaleString()}` : "$0",
+    revenueChange: apiStats ? `${apiStats.revenueChange >= 0 ? "+" : ""}${apiStats.revenueChange}%` : "0%",
+    supporters: apiStats?.totalSupporters ?? 0,
+    supportersChange: apiStats ? `${apiStats.supportersChange >= 0 ? "+" : ""}${apiStats.supportersChange}` : "0",
+    gifts: apiStats?.totalGifts ?? 0,
+    giftsChange: apiStats ? `${apiStats.giftsChange >= 0 ? "+" : ""}${apiStats.giftsChange}` : "0",
+    avg: apiStats ? `$${apiStats.avgContribution.toFixed(2)}` : "$0",
+    avgChange: apiStats ? `${apiStats.avgContributionChange >= 0 ? "+" : ""}${apiStats.avgContributionChange}%` : "0%",
+    referralEarnings: referralStats ? `$${referralStats.totalCommissionEarned.toLocaleString()}` : "$0",
+    referralEarningsChange: referralStats ? `+${Math.round((referralStats.commissionThisMonth / Math.max(1, referralStats.totalCommissionEarned)) * 100)}%` : "0%",
+    commissionEarned: referralStats ? `$${referralStats.commissionThisMonth.toLocaleString()}` : "$0",
+    commissionEarnedChange: referralStats ? `+${Math.round((referralStats.commissionThisMonth / Math.max(1, referralStats.totalCommissionEarned)) * 100)}%` : "0%",
+  };
+
+  const chartDataFromApi = analyticsData?.chartData;
+  const chartDataMap: Record<Metric, { values: number[]; labels: string[]; format: (n: number) => string }> = {
+    revenue:          { values: chartDataFromApi?.revenue ?? [], labels: chartDataFromApi?.labels ?? [], format: n => `$${n}` },
+    supporters:       { values: chartDataFromApi?.supporters ?? [], labels: chartDataFromApi?.labels ?? [], format: n => `${n}` },
+    gifts:            { values: chartDataFromApi?.gifts ?? [], labels: chartDataFromApi?.labels ?? [], format: n => `${n}` },
+    avgContribution:  { values: chartDataFromApi?.avgContribution ?? [], labels: chartDataFromApi?.labels ?? [], format: n => `$${n}` },
+    referralEarnings: { values: chartDataFromApi?.revenue.map(v => Math.round(v * 0.05)) ?? [], labels: chartDataFromApi?.labels ?? [], format: n => `$${n}` },
+    commissionEarned: { values: chartDataFromApi?.revenue.map(v => Math.round(v * 0.025)) ?? [], labels: chartDataFromApi?.labels ?? [], format: n => `$${n}` },
+  };
+
+  const chart = chartDataMap[selectedMetric];
   const cfg = metricConfig[selectedMetric];
-  const maxVal = Math.max(...chart.values);
+  const maxVal = Math.max(...(chart.values.length > 0 ? chart.values : [1]));
   const chartKey = `${selectedMetric}-${timePeriod}`;
 
   const statCards: { metric: Metric; icon: React.ReactNode; label: string; value: string; change: string }[] = [
@@ -89,6 +105,14 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
     { metric: "referralEarnings", icon: <Link2 className="w-10 h-10 text-amber-400" />,       label: "Referral Earnings",    value: stats.referralEarnings,           change: stats.referralEarningsChange },
     { metric: "commissionEarned", icon: <TrendingUp className="w-10 h-10 text-teal-400" />,   label: "Commission Earned",    value: stats.commissionEarned,           change: stats.commissionEarnedChange },
   ];
+
+  if (dataLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -435,13 +459,13 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
                 { label: "Active Referred Creators", value: "3", sub: "of 5 total", color: "text-amber-400" },
                 {
                   label: "Referral Earnings",
-                  value: periodStats[timePeriod].referralEarnings,
-                  sub: `${periodStats[timePeriod].referralEarningsChange} vs prior ${timePeriod}`,
+                  value: stats.referralEarnings,
+                  sub: `${stats.referralEarningsChange} vs prior ${timePeriod}`,
                   color: "text-amber-400",
                 },
                 {
                   label: "Commission Earned",
-                  value: periodStats[timePeriod].commissionEarned,
+                  value: stats.commissionEarned,
                   sub: "5% rate · Starter tier",
                   color: "text-teal-400",
                 },

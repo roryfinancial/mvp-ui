@@ -35,17 +35,21 @@ function AuthLoading() {
 
 // ─── Route guard — redirects unauthenticated users to /auth ──────────────────
 function RequireAuth({ children }: { children: ReactNode }) {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
   if (loading) return <AuthLoading />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  // New users with provisional profile get redirected to onboarding
+  if (user && !user.isProfileComplete) return <Navigate to="/onboarding" replace />;
   return <>{children}</>;
 }
 
 // ─── Layout: always requires auth, always shows Navbar ───────────────────────
 function AuthenticatedLayout({ creditBalance, userType }: { creditBalance: number; userType: UserType }) {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
   if (loading) return <AuthLoading />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  // New users with provisional profile get redirected to onboarding
+  if (user && !user.isProfileComplete) return <Navigate to="/onboarding" replace />;
   return (
     <>
       <Navbar creditBalance={creditBalance} userType={userType} />
@@ -87,6 +91,14 @@ function HomeRoute() {
 
 function LoginRoute() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  function handleAuthComplete(type: "creator" | "supporter") {
+    if (user && !user.isProfileComplete) {
+      navigate("/onboarding");
+    } else {
+      navigate(type === "creator" ? "/dashboard" : "/supporter");
+    }
+  }
   return (
     <>
       <Helmet>
@@ -96,7 +108,7 @@ function LoginRoute() {
       <Auth
         mode="login"
         onBack={() => navigate("/")}
-        onAuthComplete={(type) => navigate(type === "creator" ? "/dashboard" : "/supporter")}
+        onAuthComplete={handleAuthComplete}
         onSwitchMode={() => navigate("/signup")}
       />
     </>
@@ -114,7 +126,7 @@ function SignUpRoute() {
       <Auth
         mode="signup"
         onBack={() => navigate("/")}
-        onAuthComplete={(type) => navigate(type === "creator" ? "/dashboard" : "/supporter")}
+        onAuthComplete={() => navigate("/onboarding")}
         onSwitchMode={() => navigate("/login")}
       />
     </>
@@ -342,8 +354,14 @@ function AuthCallbackRoute() {
   const { isAuthenticated, loading, user } = useAuth();
 
   useEffect(() => {
-    if (!loading) {
-      navigate(isAuthenticated && user?.role === "supporter" ? "/supporter" : "/dashboard", { replace: true });
+    if (!loading && isAuthenticated && user) {
+      if (!user.isProfileComplete) {
+        navigate("/onboarding", { replace: true });
+      } else {
+        navigate(user.role === "supporter" ? "/supporter" : "/dashboard", { replace: true });
+      }
+    } else if (!loading && !isAuthenticated) {
+      navigate("/login", { replace: true });
     }
   }, [loading, isAuthenticated, user, navigate]);
 

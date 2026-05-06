@@ -1,9 +1,10 @@
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Search, LogOut, LayoutDashboard, BarChart3, Settings as SettingsIcon, DollarSign, Link2, Trophy } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import { useAuth } from "../../contexts/AuthContext";
+import { searchApi } from "../../lib/api";
 
 interface NavbarProps {
   creditBalance: number;
@@ -13,20 +14,41 @@ interface NavbarProps {
 export default function Navbar({ creditBalance, userType }: NavbarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [searchResults, setSearchResults] = useState<{
+    creators: { name: string; username: string; initials: string }[];
+    supporters: { name: string; username: string; initials: string }[];
+  }>({ creators: [], supporters: [] });
+  const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuth();
 
-  const searchResults = searchQuery.length > 0 ? {
-    creators: [
-      { name: "Alex Creative", username: "@alexcreative", initials: "AC" },
-      { name: "Sarah Designs", username: "@sarahdesigns", initials: "SD" },
-    ],
-    supporters: [
-      { name: "Mike Chen", username: "@mikechen", initials: "MC" },
-      { name: "Emily Rodriguez", username: "@emilyrodriguez", initials: "ER" },
-    ],
-  } : { creators: [], supporters: [] };
+  // Debounced search
+  useEffect(() => {
+    if (searchQuery.length < 2) {
+      setSearchResults({ creators: [], supporters: [] });
+      return;
+    }
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    searchTimeout.current = setTimeout(async () => {
+      const res = await searchApi.search(searchQuery);
+      if (res.success && res.data) {
+        setSearchResults({
+          creators: res.data.creators.map(c => ({
+            name: c.displayName,
+            username: `@${c.username}`,
+            initials: c.displayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2),
+          })),
+          supporters: res.data.supporters.map(s => ({
+            name: s.displayName,
+            username: `@${s.username}`,
+            initials: s.displayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2),
+          })),
+        });
+      }
+    }, 300);
+    return () => { if (searchTimeout.current) clearTimeout(searchTimeout.current); };
+  }, [searchQuery]);
 
   const path = location.pathname;
 

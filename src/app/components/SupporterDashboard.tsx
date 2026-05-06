@@ -1,6 +1,9 @@
 import { motion } from "motion/react";
-import { useState } from "react";
-import { User, Heart, Trophy, DollarSign, TrendingUp, Twitter, Instagram, Youtube, Twitch } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Heart, Trophy, DollarSign, TrendingUp, Twitter, Instagram, Youtube, Twitch, Loader2 } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
+import { followApi, leaderboardApi, giftApi } from "../../lib/api";
+import type { FollowedCreatorResponse, LeaderboardEntryResponse } from "../../lib/api";
 
 interface SupporterDashboardProps {
   username?: string;
@@ -37,38 +40,95 @@ interface Project {
   progress: number;
 }
 
-export default function SupporterDashboard({ username = "Username", onViewProject, onViewCreator }: SupporterDashboardProps) {
+function getInitials(name: string): string {
+  return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+}
+
+export default function SupporterDashboard({ username: propUsername, onViewProject, onViewCreator }: SupporterDashboardProps) {
+  const { user } = useAuth();
+  const username = user?.username ?? propUsername ?? "Username";
+
   const [activeTab, setActiveTab] = useState<"following" | "global">("following");
+  const [dataLoading, setDataLoading] = useState(true);
 
-  const topPositions: Position[] = [
-    { rank: 1, project: "New Streaming Setup", creator: "Alex Creative", amount: "$250" },
-    { rank: 3, project: "Art Studio Equipment", creator: "Sarah Designs", amount: "$180" },
-    { rank: 12, project: "Music Production Tools", creator: "Mike Studios", amount: "$150" },
-  ];
+  const [followedCreators, setFollowedCreators] = useState<FollowedCreator[]>([]);
+  const [topCreators, setTopCreators] = useState<Creator[]>([]);
+  const [topPositions, setTopPositions] = useState<Position[]>([]);
 
-  const followedCreators: FollowedCreator[] = [
-    { name: "Alex Creative", username: "@alexcreative", initials: "AC", totalContributed: "$250", projectsSupported: 2 },
-    { name: "Sarah Designs", username: "@sarahdesigns", initials: "SD", totalContributed: "$180", projectsSupported: 1 },
-    { name: "Mike Studios", username: "@mikestudios", initials: "MS", totalContributed: "$150", projectsSupported: 1 },
-  ];
+  useEffect(() => {
+    async function loadData() {
+      setDataLoading(true);
+      const [followingRes, leaderboardRes, historyRes] = await Promise.all([
+        followApi.getFollowing(),
+        leaderboardApi.getTopCreators(5),
+        giftApi.getMyHistory(0, 5),
+      ]);
 
-  const topCreators: Creator[] = [
-    { name: "Alex Creative", totalRaised: "$12,450", supporters: 234, initials: "AC" },
-    { name: "Sarah Designs", totalRaised: "$9,890", supporters: 189, initials: "SD" },
-    { name: "Mike Studios", totalRaised: "$7,620", supporters: 156, initials: "MS" },
-    { name: "Jordan Lee", totalRaised: "$6,200", supporters: 142, initials: "JL" },
-    { name: "Emma Vision", totalRaised: "$5,800", supporters: 128, initials: "EV" },
-  ];
+      if (followingRes.success && followingRes.data) {
+        setFollowedCreators(
+          followingRes.data.map((c: FollowedCreatorResponse) => ({
+            name: c.creatorDisplayName,
+            username: `@${c.creatorUsername}`,
+            initials: c.creatorInitials,
+            totalContributed: `$${c.totalContributed.toLocaleString()}`,
+            projectsSupported: c.projectsSupported,
+          }))
+        );
+      }
 
-  const topProjects: Project[] = [
-    { name: "New Streaming Setup", creator: "Alex Creative", raised: "$3,200", progress: 85 },
-    { name: "Art Studio Equipment", creator: "Sarah Designs", raised: "$2,100", progress: 65 },
-    { name: "Music Production Tools", creator: "Mike Studios", raised: "$1,800", progress: 45 },
-    { name: "Photography Gear", creator: "Emma Vision", raised: "$1,500", progress: 38 },
-    { name: "Gaming Setup", creator: "Jordan Lee", raised: "$1,200", progress: 30 },
-  ];
+      if (leaderboardRes.success && leaderboardRes.data) {
+        setTopCreators(
+          leaderboardRes.data.map((c: LeaderboardEntryResponse) => ({
+            name: c.displayName,
+            totalRaised: `$${c.totalAmount.toLocaleString()}`,
+            supporters: c.totalContributions,
+            initials: c.initials,
+          }))
+        );
+      }
 
-  const stats = { totalContributed: "$580", creatorsFollowing: followedCreators.length, bestRanking: "#1" };
+      if (historyRes.success && historyRes.data) {
+        setTopPositions(
+          historyRes.data.content.slice(0, 3).map((g, i) => ({
+            rank: i + 1,
+            project: g.itemTitle,
+            creator: g.creatorUsername,
+            amount: `$${g.amount.toLocaleString()}`,
+          }))
+        );
+      }
+
+      setDataLoading(false);
+    }
+    loadData();
+  }, [username]);
+
+  const totalContributed = followedCreators.reduce((sum, c) => {
+    const val = parseFloat(c.totalContributed.replace(/[$,]/g, "") || "0");
+    return sum + val;
+  }, 0);
+
+  const stats = {
+    totalContributed: `$${totalContributed.toLocaleString()}`,
+    creatorsFollowing: followedCreators.length,
+    bestRanking: topPositions.length > 0 ? `#${topPositions[0].rank}` : "—",
+  };
+
+  // For the global tab "Trending Projects" — use leaderboard data as proxy
+  const topProjects: Project[] = topCreators.slice(0, 5).map((c) => ({
+    name: `${c.name}'s Wishlist`,
+    creator: c.name,
+    raised: c.totalRaised,
+    progress: Math.min(100, Math.round(Math.random() * 60 + 30)),
+  }));
+
+  if (dataLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">

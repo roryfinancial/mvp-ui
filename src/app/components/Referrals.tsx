@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Copy,
   Check,
@@ -10,7 +10,10 @@ import {
   TrendingUp,
   ChevronDown,
   Share2,
+  Loader2,
 } from "lucide-react";
+import { referralApi } from "../../lib/api";
+import type { ReferralResponse, ReferralLinkResponse, ReferralStatsResponse } from "../../lib/api";
 
 interface ReferralsProps {}
 
@@ -26,72 +29,12 @@ interface ReferredCreator {
   tipsThisMonth: string;
 }
 
-const referredCreators: ReferredCreator[] = [
-  {
-    name: "Alex Rivera",
-    username: "@alexriv",
-    initials: "AR",
-    joinedDate: "Mar 2, 2026",
-    totalTips: "$3,840",
-    yourCommission: "$192",
-    commissionRate: 5,
-    status: "active",
-    tipsThisMonth: "$620",
-  },
-  {
-    name: "Mia Santos",
-    username: "@miasantos",
-    initials: "MS",
-    joinedDate: "Feb 14, 2026",
-    totalTips: "$6,120",
-    yourCommission: "$306",
-    commissionRate: 5,
-    status: "active",
-    tipsThisMonth: "$940",
-  },
-  {
-    name: "Jordan Lee",
-    username: "@jordanlee",
-    initials: "JL",
-    joinedDate: "Jan 28, 2026",
-    totalTips: "$1,250",
-    yourCommission: "$62.50",
-    commissionRate: 5,
-    status: "inactive",
-    tipsThisMonth: "$0",
-  },
-  {
-    name: "Chris Park",
-    username: "@chrispark",
-    initials: "CP",
-    joinedDate: "Apr 10, 2026",
-    totalTips: "$410",
-    yourCommission: "$20.50",
-    commissionRate: 5,
-    status: "pending",
-    tipsThisMonth: "$410",
-  },
-  {
-    name: "Taylor Monroe",
-    username: "@taylorm",
-    initials: "TM",
-    joinedDate: "Mar 19, 2026",
-    totalTips: "$2,780",
-    yourCommission: "$139",
-    commissionRate: 5,
-    status: "active",
-    tipsThisMonth: "$540",
-  },
-];
-
 const commissionTiers = [
   { label: "Starter", range: "0–5 referrals", rate: "5%", color: "bg-purple-600/15", border: "border-purple-500/30", badge: "text-purple-400 bg-purple-500/20", active: false },
   { label: "Builder", range: "6–15 referrals", rate: "7%", color: "bg-pink-600/15", border: "border-pink-500/30", badge: "text-pink-400 bg-pink-500/20", active: false },
   { label: "Pro", range: "16–30 referrals", rate: "9%", color: "bg-amber-600/15", border: "border-amber-500/30", badge: "text-amber-400 bg-amber-500/20", active: false },
   { label: "Elite", range: "31+ referrals", rate: "12%", color: "bg-emerald-600/15", border: "border-emerald-500/30", badge: "text-emerald-400 bg-emerald-500/20", active: false },
 ];
-
-const REFERRAL_LINK = "tipflow.app/ref/yourcreator";
 
 const statusStyle: Record<ReferredCreator["status"], string> = {
   active:   "text-emerald-400 bg-emerald-500/15 border border-emerald-500/30",
@@ -103,8 +46,49 @@ export default function Referrals(_: ReferralsProps) {
   const [copied, setCopied] = useState(false);
   const [sortBy, setSortBy] = useState<"commission" | "tips" | "joined">("commission");
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [dataLoading, setDataLoading] = useState(true);
+
+  // Dynamic API data
+  const [referredCreators, setReferredCreators] = useState<ReferredCreator[]>([]);
+  const [referralLink, setReferralLink] = useState<string>("tipflow.app/ref/...");
+
+  useEffect(() => {
+    async function loadData() {
+      setDataLoading(true);
+      const [referralsRes, linkRes] = await Promise.all([
+        referralApi.getMyReferrals(),
+        referralApi.getLink(),
+      ]);
+
+      if (referralsRes.success && referralsRes.data) {
+        setReferredCreators(
+          referralsRes.data.map((r: ReferralResponse) => ({
+            name: r.referredUsername,
+            username: `@${r.referredUsername}`,
+            initials: r.referredUsername.slice(0, 2).toUpperCase(),
+            joinedDate: new Date(r.joinedDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+            totalTips: `$${r.totalTipsGenerated.toLocaleString()}`,
+            yourCommission: `$${r.yourCommission.toLocaleString()}`,
+            commissionRate: r.commissionRate,
+            status: r.status.toLowerCase() as "active" | "inactive" | "pending",
+            tipsThisMonth: `$${r.tipsThisMonth.toLocaleString()}`,
+          }))
+        );
+      }
+
+      if (linkRes.success && linkRes.data) {
+        setReferralLink(linkRes.data.referralLink);
+      }
+
+      setDataLoading(false);
+    }
+    loadData();
+  }, []);
+
+  const REFERRAL_LINK = referralLink;
 
   const handleCopy = () => {
+    navigator.clipboard.writeText(REFERRAL_LINK);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -118,6 +102,14 @@ export default function Referrals(_: ReferralsProps) {
   const totalCommission = referredCreators.reduce((s, c) => s + parseFloat(c.yourCommission.replace(/[$,]/g, "")), 0);
   const totalReferralVolume = referredCreators.reduce((s, c) => s + parseFloat(c.totalTips.replace(/[$,]/g, "")), 0);
   const activeCount = referredCreators.filter(c => c.status === "active").length;
+
+  if (dataLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">

@@ -1,12 +1,14 @@
 import { motion, AnimatePresence } from "motion/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   User, Check, Zap, X, DollarSign, ArrowUp, Twitter, Youtube, Twitch,
   Play, Eye, Heart, MessageCircle, ChevronRight, List, ExternalLink,
-  Edit2, Settings, LogIn,
+  Edit2, Settings, LogIn, Loader2,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
+import { userApi, wishlistApi, followApi } from "../../lib/api";
+import type { PublicUserResponse, WishlistResponse } from "../../lib/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -86,22 +88,95 @@ const DEFAULT_PLATFORMS: ConnectedPlatform[] = [
 
 export default function CreatorProfile({
   routeUsername = "",
-  creatorName = "Clavicular",
-  rank = 10,
-  description = "Streaming, tech reviews, and creative projects. I make content about gear, games, and the stuff I'm obsessed with.",
+  creatorName: propCreatorName,
+  rank: propRank,
+  description: propDescription,
   profileImage,
   recentEvents = [{ title: "Stream VOD" }, { title: "Studio Tour" }, { title: "Unboxing" }, { title: "Q&A" }, { title: "Collab" }],
   feedItems = DEFAULT_FEED,
-  wishlists = DEFAULT_WISHLISTS,
-  connectedPlatforms = DEFAULT_PLATFORMS,
+  wishlists: propWishlists,
+  connectedPlatforms: propConnectedPlatforms,
   onViewWishlist,
 }: CreatorProfileProps) {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
 
+  // Dynamic state loaded from API
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [creatorName, setCreatorName] = useState(propCreatorName ?? "");
+  const [rank, setRank] = useState(propRank ?? 0);
+  const [description, setDescription] = useState(propDescription ?? "");
+  const [wishlists, setWishlists] = useState<Wishlist[]>(propWishlists ?? DEFAULT_WISHLISTS);
+  const [connectedPlatforms, setConnectedPlatforms] = useState<ConnectedPlatform[]>(propConnectedPlatforms ?? DEFAULT_PLATFORMS);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [isFollowing, setIsFollowing] = useState(false);
+
+  useEffect(() => {
+    if (!routeUsername) { setProfileLoading(false); return; }
+
+    async function loadProfile() {
+      setProfileLoading(true);
+      const [profileRes, wishlistRes, followCountRes] = await Promise.all([
+        userApi.getPublicProfile(routeUsername),
+        wishlistApi.getByCreator(routeUsername),
+        followApi.getFollowerCount(routeUsername),
+      ]);
+
+      if (profileRes.success && profileRes.data) {
+        const p = profileRes.data as PublicUserResponse;
+        setCreatorName(p.displayName);
+        setRank(p.rank ?? 0);
+        setDescription(p.bio);
+        setConnectedPlatforms(
+          p.connectedPlatforms.map(cp => ({
+            platform: cp.platform.toLowerCase() as ConnectedPlatform["platform"],
+            url: cp.url,
+            handle: cp.handle,
+          }))
+        );
+      }
+
+      if (wishlistRes.success && wishlistRes.data) {
+        setWishlists(
+          wishlistRes.data.map((w: WishlistResponse) => ({
+            id: w.id,
+            name: w.name,
+            description: w.description,
+            coverImage: w.coverImageUrl ?? undefined,
+            items: w.items.map(item => ({
+              id: item.id,
+              title: item.title,
+              thumbnail: item.thumbnailUrl ?? undefined,
+            })),
+          }))
+        );
+      }
+
+      if (followCountRes.success && followCountRes.data) {
+        setFollowerCount((followCountRes.data as { count: number }).count);
+      }
+
+      setProfileLoading(false);
+    }
+    loadProfile();
+  }, [routeUsername]);
+
   // Auth-derived view modes
   const isOwnProfile = isAuthenticated && !!user && user.username.toLowerCase() === routeUsername.toLowerCase();
   const isGuest = !isAuthenticated;
+
+  async function handleFollow() {
+    if (!isAuthenticated) { navigate("/login"); return; }
+    if (isFollowing) {
+      await followApi.unfollow(routeUsername);
+      setIsFollowing(false);
+      setFollowerCount(c => c - 1);
+    } else {
+      await followApi.follow(routeUsername);
+      setIsFollowing(true);
+      setFollowerCount(c => c + 1);
+    }
+  }
 
   // Feed filter state
   const [feedFilter, setFeedFilter] = useState<"all" | keyof typeof platformConfig>("all");
