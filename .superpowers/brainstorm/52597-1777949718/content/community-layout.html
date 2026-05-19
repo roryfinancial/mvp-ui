@@ -1,0 +1,336 @@
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0e0e0e; color: #e8e8e8; font-family: 'Inter', system-ui, sans-serif; }
+  .pg-title { font-size: 13px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; color: #888; margin-bottom: 6px; }
+  .pg-sub { font-size: 12px; color: #555; margin-bottom: 28px; }
+  .layouts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .option { border: 1px solid #222; background: #111; padding: 16px; cursor: pointer; transition: border-color .15s, background .15s; position: relative; }
+  .option:hover { border-color: #444; }
+  .option.selected { border-color: #e63a76; background: #160a0e; }
+  .option-label { font-size: 10px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; color: #e63a76; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .option-title { font-size: 14px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+  .option-desc { font-size: 11px; color: #666; line-height: 1.5; margin-bottom: 14px; }
+
+  /* ── Mockup chrome ── */
+  .mock { background: #0a0a0a; border: 1px solid #1e1e1e; overflow: hidden; }
+  .mock-nav { background: #0e0e0e; border-bottom: 1px solid #1e1e1e; padding: 6px 10px; display: flex; align-items: center; gap: 8px; }
+  .mock-logo { font-size: 9px; font-weight: 900; color: #fff; letter-spacing: .05em; }
+  .mock-tab { font-size: 8px; color: #444; padding: 3px 6px; cursor: default; }
+  .mock-tab.active { color: #e63a76; border-bottom: 1px solid #e63a76; }
+  .dot { width: 5px; height: 5px; border-radius: 50%; background: #e63a76; flex-shrink: 0; }
+  .dot.green { background: #22c55e; }
+  .dot.gold { background: #f59e0b; }
+  .acc { color: #e63a76; }
+  .badge { display: inline-flex; align-items: center; gap: 3px; background: #e63a76; color: #fff; font-size: 7px; font-weight: 800; letter-spacing: .06em; padding: 1px 5px; text-transform: uppercase; }
+  .badge.gold { background: #f59e0b; }
+  .badge.green { background: #22c55e; }
+  .badge.purple { background: #8b5cf6; }
+  .tag { display: inline-block; font-size: 7px; color: #555; border: 1px solid #222; padding: 1px 4px; margin: 1px; }
+
+  /* ── OPTION A: Feed-first ── */
+  .feed-layout { display: flex; gap: 0; }
+  .feed-sidebar { width: 90px; border-right: 1px solid #1e1e1e; padding: 8px 6px; flex-shrink: 0; }
+  .feed-main { flex: 1; padding: 8px; }
+  .sidebar-head { font-size: 7px; font-weight: 900; letter-spacing: .1em; color: #444; text-transform: uppercase; margin-bottom: 6px; }
+  .s-creator { display: flex; align-items: center; gap: 4px; margin-bottom: 5px; padding: 3px 4px; }
+  .s-creator.online { border-left: 2px solid #22c55e; }
+  .avatar { width: 20px; height: 20px; background: #1e1e1e; border: 1px solid #333; display: flex; align-items: center; justify-content: center; font-size: 7px; font-weight: 800; color: #888; flex-shrink: 0; }
+  .avatar.accent { border-color: #e63a76; color: #e63a76; }
+  .s-name { font-size: 7px; color: #777; }
+  .feed-event { border: 1px solid #1a1a1a; padding: 7px 8px; margin-bottom: 5px; background: #0d0d0d; position: relative; }
+  .feed-event.hot { border-color: #e63a76; }
+  .event-top { display: flex; align-items: center; gap: 5px; margin-bottom: 4px; }
+  .event-text { font-size: 8px; color: #888; line-height: 1.4; }
+  .event-text strong { color: #ccc; }
+  .event-amount { font-size: 11px; font-weight: 900; color: #e63a76; margin-left: auto; }
+  .fire { font-size: 9px; position: absolute; top: 4px; right: 4px; }
+  .event-bar { height: 2px; background: #1e1e1e; margin-top: 5px; }
+  .event-bar-fill { height: 2px; background: #e63a76; }
+  .event-ticker { display: flex; align-items: center; gap: 4px; margin-top: 4px; }
+  .ticker-val { font-size: 7px; color: #555; }
+  .ticker-val.up { color: #22c55e; }
+
+  /* ── OPTION B: Discovery Grid ── */
+  .discover-header { padding: 8px 10px; border-bottom: 1px solid #1e1e1e; display: flex; align-items: center; gap: 8px; }
+  .discover-tabs { display: flex; gap: 0; border-bottom: 1px solid #1e1e1e; }
+  .d-tab { font-size: 8px; font-weight: 700; color: #444; padding: 5px 10px; cursor: default; text-transform: uppercase; letter-spacing: .06em; }
+  .d-tab.active { color: #fff; border-bottom: 2px solid #e63a76; }
+  .creator-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 8px; }
+  .creator-tile { background: #111; border: 1px solid #1e1e1e; padding: 8px; position: relative; overflow: hidden; cursor: default; }
+  .creator-tile.featured { border-color: #f59e0b; }
+  .creator-tile.hot { border-color: #e63a76; }
+  .tile-glow { position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #e63a76, transparent); }
+  .tile-glow.gold { background: linear-gradient(90deg, #f59e0b, transparent); }
+  .tile-stats { display: flex; justify-content: space-between; margin-top: 5px; }
+  .stat-mini { text-align: center; }
+  .stat-n { font-size: 10px; font-weight: 900; color: #fff; }
+  .stat-n.acc { color: #e63a76; }
+  .stat-l { font-size: 6px; color: #444; text-transform: uppercase; letter-spacing: .07em; }
+  .progress-bar { height: 2px; background: #1e1e1e; margin-top: 4px; }
+  .progress-fill { height: 2px; }
+  .rank-badge { position: absolute; top: 4px; right: 4px; font-size: 7px; font-weight: 900; color: #f59e0b; }
+  .pulse { width: 5px; height: 5px; border-radius: 50%; background: #22c55e; display: inline-block; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  /* ── OPTION C: Hybrid Hub ── */
+  .hub-body { display: flex; }
+  .hub-left { flex: 1; padding: 8px; }
+  .hub-right { width: 100px; border-left: 1px solid #1e1e1e; padding: 8px; }
+  .section-head { font-size: 7px; font-weight: 900; letter-spacing: .1em; color: #444; text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+  .section-head span { color: #e63a76; font-size: 8px; }
+  .feed-tabs { display: flex; gap: 0; margin-bottom: 8px; border-bottom: 1px solid #1e1e1e; }
+  .f-tab { font-size: 8px; font-weight: 700; color: #444; padding: 4px 8px; cursor: default; }
+  .f-tab.active { color: #fff; border-bottom: 2px solid #e63a76; }
+  .mini-event { display: flex; align-items: flex-start; gap: 5px; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid #161616; }
+  .mini-text { font-size: 7.5px; color: #777; line-height: 1.4; flex: 1; }
+  .mini-text strong { color: #ccc; }
+  .mini-amount { font-size: 8px; font-weight: 800; color: #e63a76; }
+  .xp-block { background: #111; border: 1px solid #1e1e1e; padding: 6px; margin-bottom: 6px; }
+  .xp-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+  .xp-label { font-size: 7px; font-weight: 800; color: #666; text-transform: uppercase; letter-spacing: .07em; }
+  .xp-val { font-size: 8px; font-weight: 900; color: #f59e0b; }
+  .xp-bar { height: 3px; background: #1e1e1e; }
+  .xp-fill { height: 3px; background: linear-gradient(90deg, #f59e0b, #e63a76); width: 62%; }
+  .rank-row { display: flex; align-items: center; gap: 3px; padding: 3px 0; border-bottom: 1px solid #161616; }
+  .rank-n { font-size: 8px; font-weight: 900; color: #333; width: 12px; }
+  .rank-n.gold { color: #f59e0b; }
+  .rank-n.silver { color: #888; }
+  .rank-n.bronze { color: #cd7f32; }
+  .rank-name { font-size: 7px; color: #777; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .rank-amt { font-size: 7px; font-weight: 800; color: #e63a76; }
+  .streak-block { background: #111; border: 1px solid #1e1e1e; padding: 5px; margin-bottom: 6px; text-align: center; }
+  .streak-num { font-size: 18px; font-weight: 900; color: #f59e0b; line-height: 1; }
+  .streak-label { font-size: 6px; color: #444; text-transform: uppercase; letter-spacing: .08em; margin-top: 1px; }
+  .badge-row { display: flex; gap: 3px; flex-wrap: wrap; }
+  .mini-badge { width: 18px; height: 18px; border: 1px solid #222; background: #111; display: flex; align-items: center; justify-content: center; font-size: 9px; }
+  .live-ticker { background: #160a0e; border: 1px solid #e63a76/30; padding: 4px 6px; display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
+  .live-dot { width: 5px; height: 5px; border-radius: 50%; background: #e63a76; }
+  .live-text { font-size: 7px; color: #888; flex: 1; }
+  .live-text strong { color: #e63a76; }
+
+  .check-icon { width: 14px; height: 14px; border-radius: 50%; border: 1px solid #e63a76; display: inline-flex; align-items: center; justify-content: center; font-size: 8px; color: #e63a76; }
+</style>
+
+<h2 style="font-size:15px;font-weight:900;color:#fff;margin-bottom:4px;">Community Hub — Layout Concepts</h2>
+<p class="subtitle" style="margin-bottom:24px;">Three directions for the logged-in supporter experience. Click to select your favorite.</p>
+
+<div class="layouts">
+
+  <!-- ── A: FEED-FIRST ── -->
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="option-label"><div class="dot"></div> Option A</div>
+    <div class="option-title">Feed-First</div>
+    <div class="option-desc">Live activity stream dominates. Everything animates in — gifting events, milestones, shoutouts. Creator roster on the side like Twitch's sidebar.</div>
+
+    <div class="mock">
+      <div class="mock-nav">
+        <div class="mock-logo">TipFlow</div>
+        <div class="mock-tab active">Feed</div>
+        <div class="mock-tab">Explore</div>
+        <div class="mock-tab">Leaderboard</div>
+        <div style="margin-left:auto"><span class="pulse"></span></div>
+      </div>
+      <div class="feed-layout" style="min-height:180px">
+        <div class="feed-sidebar">
+          <div class="sidebar-head">Following</div>
+          <div class="s-creator online"><div class="avatar accent">CL</div><div><div class="s-name" style="color:#ccc">Clavicular</div><div class="s-name" style="color:#22c55e;font-size:6px">● live</div></div></div>
+          <div class="s-creator"><div class="avatar">SD</div><div class="s-name">sarahd</div></div>
+          <div class="s-creator"><div class="avatar">MK</div><div class="s-name">mkdraws</div></div>
+          <div class="s-creator"><div class="avatar">XR</div><div class="s-name">xrstream</div></div>
+          <div class="s-creator"><div class="avatar">TJ</div><div class="s-name">thecj</div></div>
+          <div style="margin-top:10px">
+            <div class="sidebar-head">Suggested</div>
+            <div class="s-creator"><div class="avatar">PX</div><div class="s-name">pixelart</div></div>
+          </div>
+        </div>
+        <div class="feed-main">
+          <div class="feed-event hot">
+            <div class="fire">🔥</div>
+            <div class="event-top"><div class="avatar accent" style="width:16px;height:16px;font-size:6px">F9</div><div class="event-text"><strong>fanatic99</strong> gifted to Clavicular</div><div class="event-amount">$50</div></div>
+            <div class="event-bar"><div class="event-bar-fill" style="width:76%"></div></div>
+            <div class="event-ticker"><span class="ticker-val">76% funded</span><span class="ticker-val up" style="margin-left:auto">+12 gifts today ↑</span></div>
+          </div>
+          <div class="feed-event">
+            <div class="event-top"><div class="avatar" style="width:16px;height:16px;font-size:6px">MC</div><div class="event-text"><strong>mikec</strong> followed <strong>sarahdesigns</strong></div></div>
+            <div class="event-ticker"><span class="ticker-val">2 min ago</span></div>
+          </div>
+          <div class="feed-event">
+            <div class="event-top"><div class="badge green">Milestone</div></div>
+            <div class="event-text" style="margin-top:2px"><strong>Clavicular</strong> hit $2,000 on Streaming Setup 🎉</div>
+            <div class="event-bar"><div class="event-bar-fill" style="width:80%;background:#22c55e"></div></div>
+          </div>
+          <div class="feed-event">
+            <div class="event-top"><div class="avatar" style="width:16px;height:16px;font-size:6px">ER</div><div class="event-text"><strong>emilyrod</strong> gifted to mkdraws</div><div class="event-amount">$25</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── B: DISCOVERY GRID ── -->
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="option-label"><div class="dot"></div> Option B</div>
+    <div class="option-title">Discovery Grid</div>
+    <div class="option-desc">Roblox/Steam-style browseable grid. "Hot right now," "Trending," "Following" sections. Stats-heavy tiles with progress bars and live donor counts.</div>
+
+    <div class="mock">
+      <div class="mock-nav">
+        <div class="mock-logo">TipFlow</div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:4px;font-size:7px;color:#444">
+          <span class="pulse"></span><span style="color:#22c55e">128 gifting now</span>
+        </div>
+      </div>
+      <div class="discover-tabs">
+        <div class="d-tab active">🔥 Hot Now</div>
+        <div class="d-tab">✨ Following</div>
+        <div class="d-tab">📈 Rising</div>
+        <div class="d-tab">🏆 Top</div>
+      </div>
+      <div class="creator-grid">
+        <div class="creator-tile featured">
+          <div class="tile-glow gold"></div>
+          <div class="rank-badge">👑 #1</div>
+          <div class="avatar accent" style="width:28px;height:28px;font-size:10px;margin-bottom:4px">CL</div>
+          <div style="font-size:8px;font-weight:800;color:#fff">Clavicular</div>
+          <div style="font-size:7px;color:#555;margin-bottom:4px">Streaming Setup</div>
+          <div class="tile-stats">
+            <div class="stat-mini"><div class="stat-n acc">$1.8k</div><div class="stat-l">raised</div></div>
+            <div class="stat-mini"><div class="stat-n">142</div><div class="stat-l">gifters</div></div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:76%;background:linear-gradient(90deg,#e63a76,#f59e0b)"></div></div>
+        </div>
+        <div class="creator-tile hot">
+          <div class="tile-glow"></div>
+          <div class="avatar" style="width:28px;height:28px;font-size:10px;margin-bottom:4px;border-color:#e63a76">SD</div>
+          <div style="font-size:8px;font-weight:800;color:#fff">sarahd</div>
+          <div style="font-size:7px;color:#555;margin-bottom:4px">Art Supplies</div>
+          <div class="tile-stats">
+            <div class="stat-mini"><div class="stat-n acc">$520</div><div class="stat-l">raised</div></div>
+            <div class="stat-mini"><div class="stat-n">84</div><div class="stat-l">gifters</div></div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:65%;background:#e63a76"></div></div>
+        </div>
+        <div class="creator-tile">
+          <div class="avatar" style="width:28px;height:28px;font-size:10px;margin-bottom:4px">MK</div>
+          <div style="font-size:8px;font-weight:800;color:#fff">mkdraws</div>
+          <div style="font-size:7px;color:#555;margin-bottom:4px">Drawing Tablet</div>
+          <div class="tile-stats">
+            <div class="stat-mini"><div class="stat-n">$390</div><div class="stat-l">raised</div></div>
+            <div class="stat-mini"><div class="stat-n">47</div><div class="stat-l">gifters</div></div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:39%;background:#8b5cf6"></div></div>
+        </div>
+        <div class="creator-tile">
+          <div class="avatar" style="width:28px;height:28px;font-size:10px;margin-bottom:4px">XR</div>
+          <div style="font-size:8px;font-weight:800;color:#fff">xrstream</div>
+          <div style="font-size:7px;color:#555;margin-bottom:4px">VR Headset</div>
+          <div class="tile-stats">
+            <div class="stat-mini"><div class="stat-n">$1.2k</div><div class="stat-l">raised</div></div>
+            <div class="stat-mini"><div class="stat-n">98</div><div class="stat-l">gifters</div></div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:48%;background:#22c55e"></div></div>
+        </div>
+        <div class="creator-tile">
+          <div class="avatar" style="width:28px;height:28px;font-size:10px;margin-bottom:4px">PX</div>
+          <div style="font-size:8px;font-weight:800;color:#fff">pixelart_k</div>
+          <div style="font-size:7px;color:#555;margin-bottom:4px">PC Upgrade</div>
+          <div class="tile-stats">
+            <div class="stat-mini"><div class="stat-n">$2.9k</div><div class="stat-l">raised</div></div>
+            <div class="stat-mini"><div class="stat-n">203</div><div class="stat-l">gifters</div></div>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:91%;background:linear-gradient(90deg,#22c55e,#e63a76)"></div></div>
+        </div>
+        <div class="creator-tile" style="border-style:dashed;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px">
+          <div style="font-size:16px">＋</div>
+          <div style="font-size:7px;color:#333">Explore more</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── C: HYBRID HUB ── -->
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="option-label"><div class="dot"></div> Option C</div>
+    <div class="option-title">Hybrid Hub</div>
+    <div class="option-desc">Feed + gamification sidebar. You → XP bar, streaks, badges. Tabs switch between "Following" feed and "Explore" grid. Leaderboard mini-panel always visible.</div>
+
+    <div class="mock">
+      <div class="mock-nav">
+        <div class="mock-logo">TipFlow</div>
+        <div class="mock-tab active">Home</div>
+        <div class="mock-tab">Explore</div>
+        <div style="margin-left:auto;display:flex;gap:4px">
+          <div class="badge gold">Lv.7</div>
+          <div class="badge">12 🔥</div>
+        </div>
+      </div>
+      <!-- live ticker -->
+      <div class="live-ticker">
+        <div class="live-dot"></div>
+        <div class="live-text"><strong>fanatic99</strong> just gifted $50 to Clavicular · <strong>mikechen</strong> gifted $20 · <strong>emilyrod</strong> followed xrstream</div>
+      </div>
+      <div class="hub-body">
+        <div class="hub-left">
+          <div class="feed-tabs">
+            <div class="f-tab active">Following</div>
+            <div class="f-tab">🔥 Hot</div>
+            <div class="f-tab">✨ New</div>
+          </div>
+          <div class="mini-event">
+            <div class="avatar accent" style="width:18px;height:18px;font-size:7px;flex-shrink:0">CL</div>
+            <div class="mini-text"><strong>Clavicular</strong> needs $610 more for Streaming Setup. 76% there.</div>
+            <div class="mini-amount">$50 →</div>
+          </div>
+          <div class="mini-event">
+            <div class="avatar" style="width:18px;height:18px;font-size:7px;flex-shrink:0;border-color:#22c55e">SD</div>
+            <div class="mini-text"><strong>sarahdesigns</strong> got 3 new gifts 🎉 Art Supplies 65% funded.</div>
+            <div class="mini-amount">$25 →</div>
+          </div>
+          <div class="mini-event" style="border:0;padding-bottom:0;margin-bottom:0">
+            <div class="avatar" style="width:18px;height:18px;font-size:7px;flex-shrink:0">MK</div>
+            <div class="mini-text"><strong>mkdraws</strong> added a new item: Drawing Tablet Pro</div>
+            <div style="font-size:7px;color:#444">New →</div>
+          </div>
+        </div>
+        <div class="hub-right">
+          <!-- XP / Level -->
+          <div class="section-head">Your XP</div>
+          <div class="xp-block" style="margin-bottom:6px">
+            <div class="xp-row">
+              <div class="xp-label">Level 7</div>
+              <div class="xp-val">2,340</div>
+            </div>
+            <div class="xp-bar"><div class="xp-fill"></div></div>
+            <div style="font-size:6px;color:#333;margin-top:2px">660 xp to Lv.8</div>
+          </div>
+          <!-- Streak -->
+          <div class="streak-block" style="margin-bottom:6px">
+            <div class="streak-num">12🔥</div>
+            <div class="streak-label">day streak</div>
+          </div>
+          <!-- Mini leaderboard -->
+          <div class="section-head">Top Gifters <span>↑</span></div>
+          <div class="rank-row"><div class="rank-n gold">1</div><div class="rank-name">fanatic99</div><div class="rank-amt">$340</div></div>
+          <div class="rank-row"><div class="rank-n silver">2</div><div class="rank-name">mikechen</div><div class="rank-amt">$210</div></div>
+          <div class="rank-row"><div class="rank-n bronze">3</div><div class="rank-name">you</div><div class="rank-amt acc" style="color:#e63a76">$180</div></div>
+          <div class="rank-row"><div class="rank-n">4</div><div class="rank-name">emilyrod</div><div class="rank-amt">$90</div></div>
+          <!-- Badges -->
+          <div class="section-head" style="margin-top:8px">Badges</div>
+          <div class="badge-row">
+            <div class="mini-badge" title="Early Supporter">🌟</div>
+            <div class="mini-badge" title="10-day streak">🔥</div>
+            <div class="mini-badge" title="$100 gifted">💎</div>
+            <div class="mini-badge" title="First gift">🎁</div>
+            <div class="mini-badge" style="border-style:dashed;color:#333;font-size:8px">?</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:20px;padding:12px 16px;border:1px solid #1e1e1e;background:#0d0d0d">
+  <div style="font-size:10px;font-weight:900;color:#555;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Note on scope</div>
+  <p style="font-size:11px;color:#555;line-height:1.6">This is a large feature surface. Whichever layout you pick, we'd build it in phases: (1) layout skeleton + feed, (2) gamification sidebar/XP, (3) casino-feel animations. Pick the direction first — we'll scope the rest from there.</p>
+</div>

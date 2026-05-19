@@ -3,15 +3,19 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Search, LogOut, LayoutDashboard, BarChart3, Settings as SettingsIcon, DollarSign, Link2, Trophy } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
+import XPBar from "./XPBar";
 import { useAuth } from "../../contexts/AuthContext";
 import { searchApi } from "../../lib/api";
+import { Sounds } from "../../lib/sounds";
+import type { GamificationState } from "../../lib/types";
 
 interface NavbarProps {
   creditBalance: number;
   userType: "creator" | "supporter";
+  gamification?: GamificationState;
 }
 
-export default function Navbar({ creditBalance, userType }: NavbarProps) {
+export default function Navbar({ creditBalance, userType, gamification }: NavbarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [searchResults, setSearchResults] = useState<{
@@ -22,6 +26,11 @@ export default function Navbar({ creditBalance, userType }: NavbarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuth();
+
+  function nav(path: string) {
+    Sounds.click();
+    navigate(path);
+  }
 
   // Debounced search
   useEffect(() => {
@@ -61,7 +70,7 @@ export default function Navbar({ creditBalance, userType }: NavbarProps) {
   ];
 
   const supporterLinks = [
-    { label: "Dashboard", icon: LayoutDashboard, path: "/supporter" },
+    { label: "Community", icon: LayoutDashboard, path: "/supporter" },
     { label: "Leaderboard", icon: Trophy, path: "/leaderboard" },
     { label: "Settings", icon: SettingsIcon, path: "/settings" },
   ];
@@ -75,12 +84,14 @@ export default function Navbar({ creditBalance, userType }: NavbarProps) {
           <div className="text-xl font-black text-white tracking-tight">TipFlow</div>
           <div className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => {
-              const isActive = path === link.path || (link.path === "/dashboard" && path.startsWith("/dashboard")) || (link.path === "/supporter" && path.startsWith("/supporter"));
+              const isActive = path === link.path
+                || (link.path === "/dashboard" && path.startsWith("/dashboard"))
+                || (link.path === "/supporter" && path.startsWith("/supporter"));
               const Icon = link.icon;
               return (
                 <button
                   key={link.path}
-                  onClick={() => navigate(link.path)}
+                  onClick={() => nav(link.path)}
                   className={
                     isActive
                       ? "flex items-center gap-2 px-4 py-2 bg-accent text-white font-medium text-sm transition-all"
@@ -94,14 +105,21 @@ export default function Navbar({ creditBalance, userType }: NavbarProps) {
             })}
           </div>
         </div>
+
         <div className="flex items-center gap-4">
+          {/* Gamification widgets — supporter only */}
+          {userType === "supporter" && gamification && (
+            <XPBar gamification={gamification} />
+          )}
+
           <button
-            onClick={() => navigate("/settings?section=balance")}
+            onClick={() => { Sounds.click(); navigate("/settings?section=balance"); }}
             className="flex items-center gap-2 px-3 py-2 border border-white/20 text-white hover:bg-white/10 transition-colors text-sm font-medium"
           >
             <DollarSign className="w-4 h-4 text-accent" />
             <span className="hidden sm:inline">${creditBalance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </button>
+
           <div className="relative hidden sm:block">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 z-10" />
             <input
@@ -125,7 +143,7 @@ export default function Navbar({ creditBalance, userType }: NavbarProps) {
                     {searchResults.creators.map((creator, index) => (
                       <div
                         key={index}
-                        onClick={() => { navigate(`/creator/${creator.username.replace("@", "")}`); setSearchQuery(""); setShowSearchDropdown(false); }}
+                        onClick={() => { nav(`/creator/${creator.username.replace("@", "")}`); setSearchQuery(""); setShowSearchDropdown(false); }}
                         className="flex items-center gap-3 p-2 hover:bg-muted cursor-pointer transition-colors"
                       >
                         <div className="w-8 h-8 bg-muted border border-border flex items-center justify-center text-foreground font-bold text-xs">{creator.initials}</div>
@@ -143,7 +161,7 @@ export default function Navbar({ creditBalance, userType }: NavbarProps) {
                     {searchResults.supporters.map((supporter, index) => (
                       <div
                         key={index}
-                        onClick={() => { navigate(`/supporter/${supporter.username.replace("@", "")}`); setSearchQuery(""); setShowSearchDropdown(false); }}
+                        onClick={() => { nav(`/supporter/${supporter.username.replace("@", "")}`); setSearchQuery(""); setShowSearchDropdown(false); }}
                         className="flex items-center gap-3 p-2 hover:bg-muted cursor-pointer transition-colors"
                       >
                         <div className="w-8 h-8 bg-muted border border-border flex items-center justify-center text-foreground font-bold text-xs">{supporter.initials}</div>
@@ -161,9 +179,10 @@ export default function Navbar({ creditBalance, userType }: NavbarProps) {
               </motion.div>
             )}
           </div>
+
           <ThemeToggle />
           <button
-            onClick={async () => { await logout(); navigate("/"); }}
+            onClick={async () => { Sounds.click(); await logout(); navigate("/"); }}
             className="flex items-center gap-2 px-4 py-2 border border-white/20 text-white hover:bg-white/10 text-sm font-medium transition-colors"
           >
             <LogOut className="w-4 h-4" />

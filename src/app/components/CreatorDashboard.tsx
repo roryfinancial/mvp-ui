@@ -1,5 +1,6 @@
-import { motion, AnimatePresence } from "motion/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useEffect } from "react";
+import { Sounds } from "../../lib/sounds";
+import ConfettiBurst from "./Confetti";
 import { Plus, User, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, ChevronDown, List, ShoppingBag, Trophy, Loader2, Trash2, X } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { projectApi, giftApi } from "../../lib/api";
@@ -13,12 +14,6 @@ interface CreatorDashboardProps {
   onLogout?: () => void;
   onCreateProject?: () => void;
   onAddItem?: () => void;
-  onViewProject?: () => void;
-  onViewAnalytics?: () => void;
-  onViewReferrals?: () => void;
-  onViewSettings?: () => void;
-  onViewLeaderboard?: () => void;
-  onViewBalance?: () => void;
 }
 
 interface Supporter {
@@ -58,6 +53,57 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(initialProjectId?.toString() ?? null);
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
   const [itemTab, setItemTab] = useState<"active" | "completed" | "all">("active");
+  const [confettiTitle, setConfettiTitle] = useState<string | null>(null);
+  const firedFunded = useRef(false);
+
+  const recentSupporters: Supporter[] = [
+    { name: "Sarah Johnson", amount: "$250", initials: "SJ", timeAgo: "2h ago" },
+    { name: "Mike Chen", amount: "$180", initials: "MC", timeAgo: "5h ago" },
+    { name: "Emily Rodriguez", amount: "$120", initials: "ER", timeAgo: "1d ago" },
+    { name: "Alex Thompson", amount: "$95", initials: "AT", timeAgo: "2d ago" },
+    { name: "Jordan Lee", amount: "$75", initials: "JL", timeAgo: "3d ago" },
+  ];
+
+  const wishlists: Wishlist[] = [
+    {
+      id: 1,
+      name: "Creator Essentials",
+      description: "Everything I need to level up my content",
+      items: [
+        { title: "New Streaming Setup", description: "Upgrading for better quality streams", goal: "$2,500", raised: "$1,890", progress: 76, status: "active" },
+        { title: "Art Supplies Collection", description: "Professional grade materials for commissions", goal: "$800", raised: "$520", progress: 65, status: "active" },
+        { title: "Coffee Fund", description: "Fuel the creative process", goal: "$200", raised: "$340", progress: 170, status: "completed" },
+      ],
+    },
+  ];
+
+  // Fire funded sound + confetti once on mount for any completed items
+  useEffect(() => {
+    if (firedFunded.current) return;
+    const funded = wishlists.flatMap((w) => w.items).find((i) => i.status === "completed");
+    if (funded) {
+      firedFunded.current = true;
+      // Softer funded sound for creator (not as jarring as supporter's casino version)
+      setTimeout(() => Sounds.achievement(), 300);
+      setTimeout(() => Sounds.funded(), 800);
+      setConfettiTitle(funded.title);
+      setTimeout(() => setConfettiTitle(null), 3500);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const topSupportersLeaderboard = [
+    { rank: 1, name: "Sarah Johnson", initials: "SJ", totalAmount: "$1,250", contributions: 8 },
+    { rank: 2, name: "Mike Chen", initials: "MC", totalAmount: "$980", contributions: 12 },
+    { rank: 3, name: "Emily Rodriguez", initials: "ER", totalAmount: "$720", contributions: 5 },
+    { rank: 4, name: "Alex Thompson", initials: "AT", totalAmount: "$495", contributions: 6 },
+    { rank: 5, name: "Jordan Lee", initials: "JL", totalAmount: "$375", contributions: 4 },
+    { rank: 6, name: "Taylor Kim", initials: "TK", totalAmount: "$310", contributions: 3 },
+    { rank: 7, name: "Casey Nguyen", initials: "CN", totalAmount: "$245", contributions: 7 },
+    { rank: 8, name: "Morgan Davis", initials: "MD", totalAmount: "$190", contributions: 2 },
+    { rank: 9, name: "Riley Parker", initials: "RP", totalAmount: "$150", contributions: 3 },
+    { rank: 10, name: "Quinn Foster", initials: "QF", totalAmount: "$120", contributions: 1 },
+  ];
   const [dataLoading, setDataLoading] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
 
@@ -316,7 +362,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
               transition={{ duration: 0.5, delay: 0.3 }}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
-              onClick={onAddItem}
+              onClick={() => { Sounds.click(); onAddItem?.(); }}
               className="w-full flex items-center justify-center gap-2 px-6 py-3 btn-cta text-white font-black text-xs uppercase tracking-widest"
             >
               <Plus className="w-4 h-4" />
@@ -328,7 +374,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
               transition={{ duration: 0.5, delay: 0.35 }}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
-              onClick={onCreateProject}
+              onClick={() => { Sounds.softClick(); onCreateProject?.(); }}
               className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-border bg-background hover:bg-muted text-foreground font-bold text-xs uppercase tracking-wide transition-colors"
             >
               <List className="w-4 h-4" />
@@ -388,7 +434,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.35, delay: wIndex * 0.07 }}
                         whileHover={{ y: -2 }}
-                        onClick={() => { setSelectedProjectId(project.id); setSelectedItemIndex(null); setItemTab("active"); }}
+                        onClick={() => { Sounds.softClick(); setSelectedProjectId(project.id); setSelectedItemIndex(null); setItemTab("active"); }}
                         className="bg-background border border-border rounded-xl overflow-hidden cursor-pointer group card-game"
                       >
                         <div className="relative h-32 overflow-hidden bg-muted">
@@ -660,7 +706,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                       {(["active", "completed", "all"] as const).map(t => (
                         <button
                           key={t}
-                          onClick={() => setItemTab(t)}
+                          onClick={() => { Sounds.softClick(); setItemTab(t); }}
                           className={`pb-4 text-sm font-bold capitalize transition-colors relative ${
                             itemTab === t ? "text-foreground" : "text-subtle hover:text-foreground"
                           }`}
@@ -685,8 +731,10 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                             transition={{ duration: 0.3, delay: index * 0.05 }}
                             whileHover={{ y: -2 }}
                             onClick={() => setSelectedItemIndex(currentProject.items.indexOf(item))}
-                            className="bg-background border border-border rounded-xl overflow-hidden cursor-pointer group card-game"
+                            className="relative bg-background border border-border rounded-xl overflow-hidden cursor-pointer group card-game"
                           >
+                            {/* Confetti burst for funded item */}
+                            <ConfettiBurst active={confettiTitle === item.title} mode="local" count={30} />
                             <div className="relative w-full h-36 flex items-center justify-center bg-muted">
                               <Gift className="w-12 h-12 text-subtle" />
                               <button
