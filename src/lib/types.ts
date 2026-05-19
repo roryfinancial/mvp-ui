@@ -27,13 +27,13 @@ export type SignUpResult =
   | { ok: true; user: User; confirmEmail: boolean }
   | { ok: false; error: string; field?: "email" | "password" | "general" };
 
-// ─── Wishlist ─────────────────────────────────────────────────────────────────
+// ─── Project ────────────────────────────────────────────────────────────────
 
 export type ItemStatus = "active" | "completed" | "cancelled";
 
-export interface WishlistItem {
+export interface ProjectItem {
   id: string;
-  wishlistId: string;
+  projectId: string;
   title: string;
   description: string;
   url: string;
@@ -44,13 +44,13 @@ export interface WishlistItem {
   createdAt: string;
 }
 
-export interface Wishlist {
+export interface Project {
   id: string;
   creatorId: string;
   name: string;
   description: string;
   coverImageUrl: string | null;
-  items: WishlistItem[];
+  items: ProjectItem[];
   createdAt: string;
 }
 
@@ -62,7 +62,7 @@ export interface GiftEvent {
   supporterName: string;
   itemId: string;
   itemTitle: string;
-  wishlistId: string;
+  projectId: string;
   amount: number;
   createdAt: string;
 }

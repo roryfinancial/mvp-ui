@@ -80,17 +80,20 @@ export interface CompleteProfileRequest {
   referralCode?: string;
 }
 
-export interface WishlistResponse {
+export interface ProjectResponse {
   id: string;
   name: string;
   description: string;
   coverImageUrl: string | null;
   isPublic: boolean;
-  items: WishlistItemResponse[];
+  goalAmount: number;
+  raisedAmount: number;
+  progress: number;
+  items: ProjectItemResponse[];
   createdAt: string;
 }
 
-export interface WishlistItemResponse {
+export interface ProjectItemResponse {
   id: string;
   title: string;
   description: string;
@@ -102,14 +105,14 @@ export interface WishlistItemResponse {
   giftedByUsername: string | null;
 }
 
-export interface CreateWishlistRequest {
+export interface CreateProjectRequest {
   name: string;
   description?: string;
   coverImageUrl?: string;
   isPublic?: boolean;
 }
 
-export interface CreateWishlistItemRequest {
+export interface CreateProjectItemRequest {
   title: string;
   description?: string;
   thumbnailUrl?: string;
@@ -262,6 +265,7 @@ async function apiFetch<T>(
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers,
+    cache: "no-store" as RequestCache,
   });
 
   if (!res.ok) {
@@ -325,52 +329,52 @@ export const userApi = {
     apiFetch<void>(`/api/users/${username}/platforms/${platform}`, { method: "DELETE" }),
 };
 
-// ─── Wishlist endpoints ──────────────────────────────────────────────────────
+// ─── Project endpoints ──────────────────────────────────────────────────────
 
-export const wishlistApi = {
-  getMyWishlists: () => apiFetch<WishlistResponse[]>("/api/wishlists"),
+export const projectApi = {
+  getMyProjects: () => apiFetch<ProjectResponse[]>("/api/projects"),
 
-  getById: (id: string) => apiFetch<WishlistResponse>(`/api/wishlists/${id}`),
+  getById: (id: string) => apiFetch<ProjectResponse>(`/api/projects/${id}`),
 
   getByCreator: (username: string) =>
-    apiFetch<WishlistResponse[]>(`/api/wishlists/creator/${username}`),
+    apiFetch<ProjectResponse[]>(`/api/projects/creator/${username}`),
 
-  create: (body: CreateWishlistRequest) =>
-    apiFetch<WishlistResponse>("/api/wishlists", {
+  create: (body: CreateProjectRequest) =>
+    apiFetch<ProjectResponse>("/api/projects", {
       method: "POST",
       body: JSON.stringify(body),
     }),
 
-  update: (id: string, body: Partial<CreateWishlistRequest>) =>
-    apiFetch<WishlistResponse>(`/api/wishlists/${id}`, {
+  update: (id: string, body: Partial<CreateProjectRequest>) =>
+    apiFetch<ProjectResponse>(`/api/projects/${id}`, {
       method: "PUT",
       body: JSON.stringify(body),
     }),
 
   delete: (id: string) =>
-    apiFetch<void>(`/api/wishlists/${id}`, { method: "DELETE" }),
+    apiFetch<void>(`/api/projects/${id}`, { method: "DELETE" }),
 
-  addItem: (wishlistId: string, body: CreateWishlistItemRequest) =>
-    apiFetch<WishlistItemResponse>(`/api/wishlists/${wishlistId}/items`, {
+  addItem: (projectId: string, body: CreateProjectItemRequest) =>
+    apiFetch<ProjectItemResponse>(`/api/projects/${projectId}/items`, {
       method: "POST",
       body: JSON.stringify(body),
     }),
 
-  updateItem: (wishlistId: string, itemId: string, body: Partial<CreateWishlistItemRequest>) =>
-    apiFetch<WishlistItemResponse>(`/api/wishlists/${wishlistId}/items/${itemId}`, {
+  updateItem: (projectId: string, itemId: string, body: Partial<CreateProjectItemRequest>) =>
+    apiFetch<ProjectItemResponse>(`/api/projects/${projectId}/items/${itemId}`, {
       method: "PUT",
       body: JSON.stringify(body),
     }),
 
-  deleteItem: (wishlistId: string, itemId: string) =>
-    apiFetch<void>(`/api/wishlists/${wishlistId}/items/${itemId}`, { method: "DELETE" }),
+  deleteItem: (projectId: string, itemId: string) =>
+    apiFetch<void>(`/api/projects/${projectId}/items/${itemId}`, { method: "DELETE" }),
 };
 
 // ─── Gift endpoints ──────────────────────────────────────────────────────────
 
 export const giftApi = {
-  create: (body: { wishlistItemId: string; amount: number; message?: string }) =>
-    apiFetch<{ giftId: string; clientSecret: string; amount: number; creatorUsername: string; itemTitle: string }>(
+  create: (body: { projectId: string; amount: number; message?: string }) =>
+    apiFetch<{ giftId: string; clientSecret: string; amount: number; creatorUsername: string; projectName: string }>(
       "/api/gifts",
       { method: "POST", body: JSON.stringify(body) }
     ),

@@ -71,7 +71,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
             </motion.div>
 
             <h1 className="text-7xl md:text-8xl font-black mb-8 leading-none tracking-tight text-white">
-              Your wishlist,
+              Your project,
               <br />
               <span style={{ color: "oklch(65.6% 0.241 354.308)" }}>funded.</span>
             </h1>
@@ -92,7 +92,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
                 whileTap={{ scale: 0.97 }}
                 className="px-10 py-4 btn-cta text-white text-lg font-black uppercase tracking-widest"
               >
-                Start Your Wishlist
+                Start Your Project
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -134,7 +134,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
         </div>
       </div>
 
-      {/* Feature Section 1 — Wishlists */}
+      {/* Feature Section 1 — Projects */}
       <section id="features" className="py-28 px-6 bg-background">
         <div className="max-w-7xl mx-auto">
           <motion.div
@@ -156,7 +156,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
                   className="text-xs font-bold uppercase tracking-widest"
                   style={{ color: "oklch(65.6% 0.241 354.308)" }}
                 >
-                  Wishlists
+                  Projects
                 </span>
               </div>
               <h2 className="text-5xl font-black mb-6 leading-tight text-foreground tracking-tight">
@@ -204,7 +204,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
               <div className="overflow-hidden shadow-xl border border-border">
                 <ImageWithFallback
                   src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYXJrJTIwbW9kZSUyMGFuYWx5dGljcyUyMGRhc2hib2FyZCUyMHVpfGVufDF8fHx8MTc3NjA2MzE2Nnww&ixlib=rb-4.1.0&q=80&w=1080"
-                  alt="Wishlist Dashboard"
+                  alt="Project Dashboard"
                   className="w-full h-auto"
                 />
               </div>
@@ -311,7 +311,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
             <h2 className="text-7xl md:text-8xl font-black mb-8 leading-none tracking-tight text-white">
               Start your
               <br />
-              <span style={{ color: "oklch(65.6% 0.241 354.308)" }}>wishlist.</span>
+              <span style={{ color: "oklch(65.6% 0.241 354.308)" }}>project.</span>
             </h2>
             <p className="text-xl text-white/50 mb-12 max-w-xl mx-auto">
               Join 10,000+ creators getting gifted exactly what they want.
@@ -322,7 +322,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
               whileTap={{ scale: 0.97 }}
               className="px-12 py-5 btn-cta text-white text-xl font-black uppercase tracking-widest"
             >
-              Create Your Wishlist
+              Create Your Project
             </motion.button>
 
             <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-10 text-sm text-white/30">
@@ -344,7 +344,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
             <div className="md:col-span-2">
               <div className="text-xl font-black text-white mb-4">TipFlow</div>
               <p className="text-white/40 mb-6 max-w-xs text-sm leading-relaxed">
-                The wishlist platform for creators. Get gifted what you actually want. Zero fees, ever.
+                The funding platform for creators. Get exactly what you need. Zero fees, ever.
               </p>
             </div>
             {[

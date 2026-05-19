@@ -1,5 +1,5 @@
 import { type ReactNode, useEffect } from "react";
-import { Routes, Route, useNavigate, useParams, useSearchParams, Outlet, Navigate } from "react-router-dom";
+import { Routes, Route, useNavigate, useLocation, useParams, useSearchParams, Outlet, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Loader2 } from "lucide-react";
 import Navbar from "./components/Navbar";
@@ -121,7 +121,7 @@ function SignUpRoute() {
     <>
       <Helmet>
         <title>Sign Up — TipFlow</title>
-        <meta name="description" content="Create your TipFlow account to start gifting or building your wishlist." />
+        <meta name="description" content="Create your TipFlow account to start gifting or building your project." />
       </Helmet>
       <Auth
         mode="signup"
@@ -169,6 +169,7 @@ function OnboardingRoute({ userType }: { userType: UserType }) {
 
 function CreatorDashboardRoute() {
   const navigate = useNavigate();
+  const location = useLocation();
   return (
     <>
       <Helmet>
@@ -176,8 +177,9 @@ function CreatorDashboardRoute() {
         <meta name="robots" content="noindex" />
       </Helmet>
       <CreatorDashboard
+        key={location.key}
         shopifyStore={{ name: "My Creator Store", url: "https://my-creator-store.myshopify.com" }}
-        onCreateWishlist={() => navigate("/dashboard/new-wishlist")}
+        onCreateProject={() => navigate("/dashboard/new-project")}
         onAddItem={() => navigate("/dashboard/new-item")}
       />
     </>
@@ -200,17 +202,17 @@ function SupporterDashboardRoute() {
   );
 }
 
-function CreateWishlistRoute() {
+function CreateProjectListRoute() {
   const navigate = useNavigate();
   return (
     <>
       <Helmet>
-        <title>New Wishlist — TipFlow</title>
+        <title>New Project — TipFlow</title>
         <meta name="robots" content="noindex" />
       </Helmet>
       <CreateWishlist
         onBack={() => navigate("/dashboard")}
-        onCreateWishlist={() => navigate("/dashboard")}
+        onCreateProject={() => navigate("/dashboard")}
       />
     </>
   );
@@ -238,12 +240,11 @@ function ProjectOverviewRoute({ userType }: { userType: UserType }) {
     <>
       <Helmet>
         <title>Project — TipFlow</title>
-        <meta name="description" content="Support this creator's wishlist item on TipFlow." />
+        <meta name="description" content="Support this creator's project on TipFlow." />
       </Helmet>
       <ProjectOverview
-        isCreator={userType === "creator"}
         onBack={() => navigate(-1 as never)}
-        onBackToWishlist={() => navigate("/dashboard")}
+        onBackToProject={() => navigate("/dashboard")}
         onViewCreator={() => navigate("/creator/username")}
       />
     </>
@@ -257,23 +258,23 @@ function CreatorProfileRoute() {
     <>
       <Helmet>
         <title>Creator Profile — TipFlow</title>
-        <meta name="description" content="Support this creator on TipFlow — gift items from their wishlist." />
+        <meta name="description" content="Support this creator on TipFlow — donate to their projects." />
       </Helmet>
       <CreatorProfile
         routeUsername={username ?? ""}
-        onViewWishlist={(wishlistId) => navigate(`/creator/${username}/wishlist/${wishlistId}`)}
+        onViewProject={(projectId) => navigate(`/creator/${username}/project/${projectId}`)}
       />
     </>
   );
 }
 
-function PublicWishlistRoute() {
+function PublicProjectRoute() {
   const navigate = useNavigate();
   return (
     <>
       <Helmet>
-        <title>Wishlist — TipFlow</title>
-        <meta name="description" content="Browse and support items on this creator's wishlist." />
+        <title>Project — TipFlow</title>
+        <meta name="description" content="Browse and donate to this creator's project." />
       </Helmet>
       <PublicWishlist
         onBack={() => navigate(-1 as never)}
@@ -403,7 +404,7 @@ export default function App() {
         {/* Publicly browseable — navbar shown only when logged in */}
         <Route element={<PublicLayout creditBalance={creditBalance} userType={userType} />}>
           <Route path="/creator/:username" element={<CreatorProfileRoute />} />
-          <Route path="/creator/:username/wishlist/:wishlistId" element={<PublicWishlistRoute />} />
+          <Route path="/creator/:username/project/:projectId" element={<PublicProjectRoute />} />
           <Route path="/leaderboard" element={<LeaderboardRoute />} />
           <Route path="/supporter/:username" element={<SupporterProfileRoute />} />
         </Route>
@@ -412,7 +413,7 @@ export default function App() {
         <Route element={<AuthenticatedLayout creditBalance={creditBalance} userType={userType} />}>
           <Route path="/dashboard" element={<CreatorDashboardRoute />} />
           <Route path="/supporter" element={<SupporterDashboardRoute />} />
-          <Route path="/dashboard/new-wishlist" element={<CreateWishlistRoute />} />
+          <Route path="/dashboard/new-project" element={<CreateProjectListRoute />} />
           <Route path="/dashboard/new-item" element={<CreateProjectRoute />} />
           <Route path="/project/:id" element={<ProjectOverviewRoute userType={userType} />} />
           <Route path="/settings" element={<SettingsRoute creditBalance={creditBalance} onUpdateBalance={updateBalance} />} />

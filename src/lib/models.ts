@@ -3,7 +3,7 @@
 // When switching to a real database, the server returns the same shape — these
 // factories become response mappers/validators (e.g., Zod schemas).
 
-import type { User, Wishlist, WishlistItem, GiftEvent, UserRole, ItemStatus } from "./types";
+import type { User, Project, ProjectItem, GiftEvent, UserRole, ItemStatus } from "./types";
 
 function uid(): string {
   return crypto.randomUUID();
@@ -32,9 +32,9 @@ export function createUser(
   };
 }
 
-export function createWishlistItem(
-  fields: Pick<WishlistItem, "wishlistId" | "title"> & Partial<Omit<WishlistItem, "wishlistId" | "title">>
-): WishlistItem {
+export function createProjectItem(
+  fields: Pick<ProjectItem, "projectId" | "title"> & Partial<Omit<ProjectItem, "projectId" | "title">>
+): ProjectItem {
   return {
     id: fields.id ?? uid(),
     description: fields.description ?? "",
@@ -48,9 +48,9 @@ export function createWishlistItem(
   };
 }
 
-export function createWishlist(
-  fields: Pick<Wishlist, "creatorId" | "name"> & Partial<Omit<Wishlist, "creatorId" | "name">>
-): Wishlist {
+export function createProject(
+  fields: Pick<Project, "creatorId" | "name"> & Partial<Omit<Project, "creatorId" | "name">>
+): Project {
   return {
     id: fields.id ?? uid(),
     description: fields.description ?? "",
@@ -62,7 +62,7 @@ export function createWishlist(
 }
 
 export function createGiftEvent(
-  fields: Pick<GiftEvent, "supporterId" | "supporterName" | "itemId" | "itemTitle" | "wishlistId" | "amount"> &
+  fields: Pick<GiftEvent, "supporterId" | "supporterName" | "itemId" | "itemTitle" | "projectId" | "amount"> &
     Partial<Pick<GiftEvent, "id" | "createdAt">>
 ): GiftEvent {
   return {

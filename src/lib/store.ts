@@ -3,9 +3,9 @@
 // Migration path: replace each Store method with a fetch() to the real API.
 // The shapes returned must still match the types in types.ts.
 
-import { createUser, createWishlist, createWishlistItem, createGiftEvent } from "./models";
+import { createUser, createProject, createProjectItem, createGiftEvent } from "./models";
 import { hashPassword } from "./security";
-import type { User, Wishlist, GiftEvent } from "./types";
+import type { User, Project, GiftEvent } from "./types";
 
 interface UserRecord {
   user: User;
@@ -36,26 +36,26 @@ const SUPPORTER = createUser({
   createdAt: "2026-01-15T00:00:00.000Z",
 });
 
-// ─── Seed wishlists ──────────────────────────────────────────────────────────
+// ─── Seed projects ──────────────────────────────────────────────────────────
 
-const WISHLIST_1 = createWishlist({
-  id: "wishlist-studio",
+const PROJECT_1 = createProject({
+  id: "project-studio",
   creatorId: CREATOR.id,
   name: "Creator Essentials",
   description: "Everything I need to level up my content",
   items: [
-    createWishlistItem({
-      id: "item-stream", wishlistId: "wishlist-studio",
+    createProjectItem({
+      id: "item-stream", projectId: "project-studio",
       title: "New Streaming Setup", description: "Upgrading for better quality streams",
       goalAmount: 2500, raisedAmount: 1890, status: "active",
     }),
-    createWishlistItem({
-      id: "item-art", wishlistId: "wishlist-studio",
+    createProjectItem({
+      id: "item-art", projectId: "project-studio",
       title: "Art Supplies Collection", description: "Professional grade materials for commissions",
       goalAmount: 800, raisedAmount: 520, status: "active",
     }),
-    createWishlistItem({
-      id: "item-coffee", wishlistId: "wishlist-studio",
+    createProjectItem({
+      id: "item-coffee", projectId: "project-studio",
       title: "Coffee Fund", description: "Fuel the creative process",
       goalAmount: 200, raisedAmount: 340, status: "completed",
     }),
@@ -65,9 +65,9 @@ const WISHLIST_1 = createWishlist({
 // ─── Seed gift events ────────────────────────────────────────────────────────
 
 const RECENT_GIFTS: GiftEvent[] = [
-  createGiftEvent({ supporterId: SUPPORTER.id, supporterName: "Sarah J.", itemId: "item-stream", itemTitle: "New Streaming Setup", wishlistId: "wishlist-studio", amount: 250, createdAt: "2026-04-28T10:00:00.000Z" }),
-  createGiftEvent({ supporterId: "u2", supporterName: "Mike C.", itemId: "item-stream", itemTitle: "New Streaming Setup", wishlistId: "wishlist-studio", amount: 180, createdAt: "2026-04-28T05:00:00.000Z" }),
-  createGiftEvent({ supporterId: "u3", supporterName: "Emily R.", itemId: "item-art",  itemTitle: "Art Supplies Collection", wishlistId: "wishlist-studio", amount: 120, createdAt: "2026-04-27T12:00:00.000Z" }),
+  createGiftEvent({ supporterId: SUPPORTER.id, supporterName: "Sarah J.", itemId: "item-stream", itemTitle: "New Streaming Setup", projectId: "project-studio", amount: 250, createdAt: "2026-04-28T10:00:00.000Z" }),
+  createGiftEvent({ supporterId: "u2", supporterName: "Mike C.", itemId: "item-stream", itemTitle: "New Streaming Setup", projectId: "project-studio", amount: 180, createdAt: "2026-04-28T05:00:00.000Z" }),
+  createGiftEvent({ supporterId: "u3", supporterName: "Emily R.", itemId: "item-art",  itemTitle: "Art Supplies Collection", projectId: "project-studio", amount: 120, createdAt: "2026-04-27T12:00:00.000Z" }),
 ];
 
 // ─── Internal maps ────────────────────────────────────────────────────────────
@@ -77,8 +77,8 @@ const _users = new Map<string, UserRecord>([
   [SUPPORTER.email, { user: SUPPORTER, passwordHash: hashPassword("demo1234") }],
 ]);
 
-const _wishlists = new Map<string, Wishlist>([
-  [WISHLIST_1.id, WISHLIST_1],
+const _projects = new Map<string, Project>([
+  [PROJECT_1.id, PROJECT_1],
 ]);
 
 // ─── Store API ────────────────────────────────────────────────────────────────
@@ -98,18 +98,18 @@ export const Store = {
     return undefined;
   },
 
-  getWishlistsByCreator(creatorId: string): Wishlist[] {
-    return [..._wishlists.values()].filter((w) => w.creatorId === creatorId);
+  getProjectsByCreator(creatorId: string): Project[] {
+    return [..._projects.values()].filter((w) => w.creatorId === creatorId);
   },
 
-  getWishlistById(id: string): Wishlist | undefined {
-    return _wishlists.get(id);
+  getProjectById(id: string): Project | undefined {
+    return _projects.get(id);
   },
 
   getRecentGifts(creatorId: string): GiftEvent[] {
-    const wishlists = Store.getWishlistsByCreator(creatorId);
-    const ids = new Set(wishlists.map((w) => w.id));
-    return RECENT_GIFTS.filter((g) => ids.has(g.wishlistId)).sort(
+    const projects = Store.getProjectsByCreator(creatorId);
+    const ids = new Set(projects.map((w) => w.id));
+    return RECENT_GIFTS.filter((g) => ids.has(g.projectId)).sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
   },

@@ -1,11 +1,6 @@
 import { motion } from "motion/react";
-import { useState } from "react";
-import { User, ChevronDown, ChevronUp, Heart, DollarSign } from "lucide-react";
 
-interface Goal {
-  name: string;
-  progress: number;
-}
+import { User } from "lucide-react";
 
 interface Supporter {
   name: string;
@@ -15,45 +10,32 @@ interface Supporter {
 
 interface ProjectOverviewProps {
   projectTitle?: string;
-  wishlistName?: string;
+  projectName?: string;
   creatorName?: string;
   description?: string;
-  totalFunded?: string;
-  goals?: Goal[];
   supporters?: Supporter[];
-  wishlistId?: number;
-  isCreator?: boolean;
+  projectId?: number;
   onBack?: () => void;
-  onBackToWishlist?: (wishlistId: number) => void;
+  onBackToProject?: (projectId: number) => void;
   onViewCreator?: () => void;
 }
 
 export default function ProjectOverview({
   projectTitle = "My Awesome Game",
-  wishlistName = "Creator Essentials",
+  projectName = "Creator Essentials",
   creatorName = "Creator Name",
   description = "This is a placeholder for a detailed description of the project. It covers mechanics, art style, development roadmap, and what funding will help achieve. We're building an epic open-world RPG with pixel-art graphics and a deep narrative. Your support helps us afford better tools, pay artists, and dedicate full-time effort to making this a reality.",
-  totalFunded = "$1,234.56",
-  goals = [
-    { name: "New Monitor", progress: 80 },
-    { name: "Game Engine License", progress: 10 },
-    { name: "Coffee Fund", progress: 100 },
-  ],
   supporters = [
     { name: "Supporter Name 1", amount: "$100", initials: "S1" },
     { name: "Supporter Name 2", amount: "$75", initials: "S2" },
     { name: "Supporter Name 3", amount: "$50", initials: "S3" },
     { name: "Supporter Name 4", amount: "$30", initials: "S4" },
   ],
-  wishlistId = 1,
-  isCreator = false,
+  projectId = 1,
   onBack,
-  onBackToWishlist,
+  onBackToProject,
   onViewCreator,
 }: ProjectOverviewProps) {
-  const [supportAmount, setSupportAmount] = useState("");
-  const [goalsExpanded, setGoalsExpanded] = useState(false);
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Main Content */}
@@ -61,9 +43,9 @@ export default function ProjectOverview({
         <div className="max-w-6xl mx-auto">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 mb-8 text-sm">
-            <button onClick={onBack} className="text-subtle hover:text-foreground transition-colors font-medium">My Wishlists</button>
+            <button onClick={onBack} className="text-subtle hover:text-foreground transition-colors font-medium">My Projects</button>
             <span className="text-subtle">/</span>
-            <button onClick={() => onBackToWishlist?.(wishlistId)} className="text-subtle hover:text-foreground transition-colors font-medium">{wishlistName}</button>
+            <button onClick={() => onBackToProject?.(projectId)} className="text-subtle hover:text-foreground transition-colors font-medium">{projectName}</button>
             <span className="text-subtle">/</span>
             <span className="text-foreground font-bold truncate max-w-[200px]">{projectTitle}</span>
           </div>
@@ -80,7 +62,7 @@ export default function ProjectOverview({
             </div>
 
             <div className="flex-1">
-              <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">{wishlistName}</div>
+              <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">{projectName}</div>
               <h1 className="text-5xl font-black text-foreground mb-4 tracking-tight">{projectTitle}</h1>
               <button
                 onClick={onViewCreator}
@@ -104,88 +86,13 @@ export default function ProjectOverview({
               <div className="mb-8">
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-3 h-5 bg-accent" />
-                  <h2 className="text-xl font-black text-foreground tracking-tight">About This Item</h2>
+                  <h2 className="text-xl font-black text-foreground tracking-tight">About This Project</h2>
                 </div>
                 <div className="p-6 border border-border bg-muted text-muted-foreground leading-relaxed text-sm">
                   {description}
                 </div>
               </div>
 
-              {/* Support Section */}
-              {!isCreator && (
-                <div className="mb-8">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-4">Support This Item</div>
-                  <div className="flex items-center gap-3">
-                    <div className="relative flex-shrink-0">
-                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-subtle" />
-                      <input
-                        type="number"
-                        placeholder="0.00"
-                        value={supportAmount}
-                        onChange={(e) => setSupportAmount(e.target.value)}
-                        min="1"
-                        className="w-32 pl-9 pr-4 py-3 border border-border bg-background text-foreground placeholder-[#999999] focus:outline-none focus:ring-2 focus:ring-accent transition-all text-sm"
-                      />
-                    </div>
-                    <motion.button
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
-                      className="flex items-center gap-2 px-6 py-3 btn-cta text-white font-black text-xs uppercase tracking-widest"
-                    >
-                      <Heart className="w-4 h-4" />
-                      Gift This
-                    </motion.button>
-                  </div>
-                </div>
-              )}
-
-              {/* Total Funded */}
-              <div className="mb-8 p-5 border border-border bg-background">
-                <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-1">Total Funded</div>
-                <p className="text-4xl font-black text-accent">{totalFunded}</p>
-              </div>
-
-              {/* Goals */}
-              <div className="border border-border bg-background">
-                <button
-                  onClick={() => setGoalsExpanded(!goalsExpanded)}
-                  className="w-full flex items-center justify-between p-5 cursor-pointer hover:bg-muted transition-colors"
-                >
-                  <h3 className="text-sm font-black uppercase tracking-widest text-foreground">Funding Goals</h3>
-                  {goalsExpanded ? (
-                    <ChevronUp className="w-4 h-4 text-subtle" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-subtle" />
-                  )}
-                </button>
-
-                {goalsExpanded && (
-                  <motion.ul
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    transition={{ duration: 0.3 }}
-                    className="border-t border-border"
-                  >
-                    {goals.map((goal, index) => (
-                      <motion.li
-                        key={index}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.05 }}
-                        className="flex items-center justify-between p-4 border-b border-border last:border-b-0"
-                      >
-                        <span className="text-foreground text-sm font-medium">{goal.name}</span>
-                        <div className="flex items-center gap-3">
-                          <div className="w-24 h-1.5 bg-secondary overflow-hidden">
-                            <div className="h-full bg-accent transition-all duration-500" style={{ width: `${goal.progress}%` }} />
-                          </div>
-                          <span className="text-foreground font-bold text-xs w-10 text-right">{goal.progress}%</span>
-                        </div>
-                      </motion.li>
-                    ))}
-                  </motion.ul>
-                )}
-              </div>
             </motion.div>
 
             {/* Right Column: Supporters */}

@@ -1,74 +1,67 @@
 import { motion } from "motion/react";
 import { useState } from "react";
-import { User, Check, Zap, X, DollarSign, ArrowUp, ArrowLeft, ChevronRight } from "lucide-react";
+import { User, Check, Zap, X, DollarSign, ArrowUp, ArrowLeft } from "lucide-react";
 
-interface WishlistItem {
+interface ProjectItem {
   id: string;
   title: string;
   status: "active" | "gifted";
   giftedBy?: string;
   thumbnail?: string;
-  funded?: number;
-  goal?: number;
 }
 
-interface PublicWishlistProps {
-  wishlistName?: string;
-  wishlistDescription?: string;
+interface PublicProjectProps {
+  projectName?: string;
+  projectDescription?: string;
   coverImage?: string;
   creatorName?: string;
   creatorUsername?: string;
-  items?: WishlistItem[];
+  items?: ProjectItem[];
+  totalFunded?: number;
+  totalGoal?: number;
   onBack?: () => void;
   onViewCreator?: () => void;
   onViewProject?: (itemId: string) => void;
 }
 
 export default function PublicWishlist({
-  wishlistName = "Studio Gear",
-  wishlistDescription = "Everything I need to level up my recording setup. Help me build the ultimate creative workspace!",
+  projectName = "Studio Gear",
+  projectDescription = "Everything I need to level up my recording setup. Help me build the ultimate creative workspace!",
   coverImage,
   creatorName = "Clavicular",
   creatorUsername = "clavicular",
   items = [
-    { id: "1", title: "Ableton Push 3", status: "active" as const, funded: 340, goal: 999 },
-    { id: "2", title: "Universal Audio Apollo X4 Gen 2", status: "active" as const, funded: 120, goal: 2499 },
-    { id: "3", title: "Bose Solo Soundbar Series II", status: "gifted" as const, giftedBy: "Anonymous", funded: 199, goal: 199 },
-    { id: "4", title: "Audio-Technica AT2020 Mic", status: "active" as const, funded: 0, goal: 99 },
-    { id: "5", title: "Elgato Stream Deck MK.2", status: "active" as const, funded: 75, goal: 149 },
-    { id: "6", title: "Sony MDR-7506 Headphones", status: "gifted" as const, giftedBy: "boogerbill01", funded: 89, goal: 89 },
+    { id: "1", title: "Ableton Push 3", status: "active" as const },
+    { id: "2", title: "Universal Audio Apollo X4 Gen 2", status: "active" as const },
+    { id: "3", title: "Bose Solo Soundbar Series II", status: "gifted" as const, giftedBy: "Anonymous" },
+    { id: "4", title: "Audio-Technica AT2020 Mic", status: "active" as const },
+    { id: "5", title: "Elgato Stream Deck MK.2", status: "active" as const },
+    { id: "6", title: "Sony MDR-7506 Headphones", status: "gifted" as const, giftedBy: "boogerbill01" },
   ],
+  totalFunded = 823,
+  totalGoal = 4034,
   onBack,
   onViewCreator,
   onViewProject,
-}: PublicWishlistProps) {
+}: PublicProjectProps) {
   const [showQuickTip, setShowQuickTip] = useState(false);
   const [selectedTipAmount, setSelectedTipAmount] = useState<number>(10);
   const [customTipAmount, setCustomTipAmount] = useState("");
-  const [selectedTipItem, setSelectedTipItem] = useState<string | null>(null);
   const [tipConfirmed, setTipConfirmed] = useState(false);
 
   const activeItems = items.filter(i => i.status === "active");
   const giftedCount = items.filter(i => i.status === "gifted").length;
-  const totalFunded = items.reduce((sum, i) => sum + (i.funded ?? 0), 0);
-  const totalGoal = items.reduce((sum, i) => sum + (i.goal ?? 0), 0);
 
   const handleConfirmTip = () => {
     const amount = selectedTipAmount ?? (customTipAmount ? parseFloat(customTipAmount) : 0);
-    if (!selectedTipItem || amount <= 0) return;
+    if (amount <= 0) return;
     setTipConfirmed(true);
     setTimeout(() => {
       setTipConfirmed(false);
       setShowQuickTip(false);
-      setSelectedTipItem(null);
       setSelectedTipAmount(10);
       setCustomTipAmount("");
     }, 2000);
-  };
-
-  const handleTipItem = (itemId: string) => {
-    setSelectedTipItem(itemId);
-    setShowQuickTip(true);
   };
 
   return (
@@ -78,12 +71,12 @@ export default function PublicWishlist({
         {/* Cover area */}
         <div className="w-full h-48 bg-gradient-to-br from-[#4a3060] via-[#5a3a6a] to-[#3a2848] overflow-hidden">
           {coverImage && (
-            <img src={coverImage} alt={wishlistName} className="w-full h-full object-cover" />
+            <img src={coverImage} alt={projectName} className="w-full h-full object-cover" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
         </div>
 
-        {/* Wishlist info */}
+        {/* Project info */}
         <div className="max-w-5xl mx-auto px-6 -mt-16 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -107,21 +100,21 @@ export default function PublicWishlist({
                 {creatorName}
               </button>
               <span className="text-subtle">/</span>
-              <span className="text-foreground font-bold">{wishlistName}</span>
+              <span className="text-foreground font-bold">{projectName}</span>
             </div>
 
-            <h1 className="text-3xl font-black text-foreground mb-2">{wishlistName}</h1>
-            {wishlistDescription && (
-              <p className="text-muted-foreground text-sm max-w-2xl mb-4">{wishlistDescription}</p>
+            <h1 className="text-3xl font-black text-foreground mb-2">{projectName}</h1>
+            {projectDescription && (
+              <p className="text-muted-foreground text-sm max-w-2xl mb-4">{projectDescription}</p>
             )}
 
-            {/* Stats bar */}
-            <div className="flex items-center gap-6 mb-6">
+            {/* Stats bar + Donate button */}
+            <div className="flex items-center gap-6 mb-6 flex-wrap">
               <div className="flex items-center gap-4 text-sm">
-                <span className="text-foreground font-bold">{items.length} items</span>
-                <span className="text-subtle">{activeItems.length} active</span>
+                <span className="text-foreground font-bold">{items.length} items needed</span>
+                <span className="text-subtle">{activeItems.length} remaining</span>
                 {giftedCount > 0 && (
-                  <span className="text-[#22c55e] font-medium">{giftedCount} gifted</span>
+                  <span className="text-[#22c55e] font-medium">{giftedCount} funded</span>
                 )}
               </div>
               {totalGoal > 0 && (
@@ -137,17 +130,26 @@ export default function PublicWishlist({
                   </span>
                 </div>
               )}
+              <button
+                onClick={() => setShowQuickTip(true)}
+                className="ml-auto px-6 py-2.5 bg-[#22c55e] hover:bg-[#16a34a] text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2"
+              >
+                <Zap className="w-4 h-4" />
+                Donate to Project
+              </button>
             </div>
           </motion.div>
         </div>
       </div>
 
-      {/* Items Grid */}
+      {/* Items Needed Grid */}
       <div className="max-w-5xl mx-auto px-6 pb-16">
+        <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-4 flex items-center gap-2">
+          <span className="w-3 h-px bg-accent" />
+          Items Needed
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {items.map((item, index) => {
-            const progress = item.goal ? Math.min(100, ((item.funded ?? 0) / item.goal) * 100) : 0;
-            return (
+          {items.map((item, index) => (
               <motion.div
                 key={item.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -175,9 +177,9 @@ export default function PublicWishlist({
                     }`}
                   >
                     {item.status === "gifted" ? (
-                      <><Check className="w-2.5 h-2.5" />Gifted</>
+                      <><Check className="w-2.5 h-2.5" />Funded</>
                     ) : (
-                      <><ArrowUp className="w-2.5 h-2.5" />Active</>
+                      <><ArrowUp className="w-2.5 h-2.5" />Needed</>
                     )}
                   </div>
                 </div>
@@ -191,48 +193,19 @@ export default function PublicWishlist({
                     {item.title}
                   </h3>
 
-                  {/* Funding progress */}
-                  {item.goal && (
-                    <div className="mb-3">
-                      <div className="flex justify-between text-[11px] mb-1">
-                        <span className="text-subtle">
-                          ${(item.funded ?? 0).toLocaleString()} raised
-                        </span>
-                        <span className="text-foreground font-bold">
-                          ${item.goal.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="h-1.5 bg-muted overflow-hidden">
-                        <div
-                          className={`h-full transition-all ${item.status === "gifted" ? "bg-[#22c55e]" : "bg-accent"}`}
-                          style={{ width: `${progress}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Actions */}
-                  {item.status === "active" ? (
-                    <button
-                      onClick={() => handleTipItem(item.id)}
-                      className="w-full py-2 bg-[#22c55e] hover:bg-[#16a34a] text-white text-[11px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5"
-                    >
-                      <Zap className="w-3.5 h-3.5" />
-                      Contribute
-                    </button>
-                  ) : (
+                  {/* Status text */}
+                  {item.status === "gifted" && (
                     <p className="text-subtle text-xs text-center py-2">
-                      Gifted by {item.giftedBy}
+                      Funded by {item.giftedBy}
                     </p>
                   )}
                 </div>
               </motion.div>
-            );
-          })}
+          ))}
         </div>
       </div>
 
-      {/* Quick Tip Modal */}
+      {/* Donate to Project Modal */}
       {showQuickTip && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -257,9 +230,9 @@ export default function PublicWishlist({
                 >
                   <Check className="w-8 h-8 text-white" />
                 </motion.div>
-                <h3 className="text-lg font-black text-foreground mb-1">Tip Sent!</h3>
+                <h3 className="text-lg font-black text-foreground mb-1">Donation Sent!</h3>
                 <p className="text-subtle text-sm">
-                  Your contribution to {items.find(i => i.id === selectedTipItem)?.title ?? "this item"} has been recorded.
+                  Your contribution to {projectName} has been recorded.
                 </p>
               </div>
             ) : (
@@ -272,9 +245,9 @@ export default function PublicWishlist({
                     </div>
                     <div>
                       <h3 className="text-sm font-black text-foreground">
-                        {items.find(i => i.id === selectedTipItem)?.title ?? "Quick Tip"}
+                        {projectName}
                       </h3>
-                      <p className="text-xs text-subtle">Support {creatorName}</p>
+                      <p className="text-xs text-subtle">Donate to {creatorName}'s project</p>
                     </div>
                   </div>
                   <button
@@ -287,7 +260,7 @@ export default function PublicWishlist({
 
                 {/* Select Amount */}
                 <div className="p-5 border-b border-border">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">Tip amount</div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">Donation amount</div>
                   <div className="flex flex-wrap gap-2 mb-3">
                     {[5, 10, 25, 50, 100].map((amount) => (
                       <button
@@ -326,9 +299,9 @@ export default function PublicWishlist({
                   >
                     <Zap className="w-4 h-4" />
                     {selectedTipAmount
-                      ? `Send $${selectedTipAmount} Tip`
+                      ? `Donate $${selectedTipAmount}`
                       : customTipAmount
-                        ? `Send $${parseFloat(customTipAmount).toFixed(2)} Tip`
+                        ? `Donate $${parseFloat(customTipAmount).toFixed(2)}`
                         : "Select Amount"}
                   </button>
                 </div>

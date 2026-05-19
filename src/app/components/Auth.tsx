@@ -112,7 +112,7 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
           <div className="relative z-10">
             <div className="text-2xl font-black text-white mb-8 tracking-tight">TipFlow</div>
             <h2 className="text-5xl font-black text-white mb-6 leading-tight tracking-tight">
-              Your wishlist,<br />
+              Your project,<br />
               <span style={{ color: "oklch(65.6% 0.241 354.308)" }}>funded.</span>
             </h2>
             <p className="text-lg text-white/60 max-w-md mx-auto leading-relaxed">

@@ -1,17 +1,17 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect } from "react";
-import { Plus, User, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, ChevronDown, List, ShoppingBag, Trophy, Loader2 } from "lucide-react";
+import { Plus, User, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, ChevronDown, List, ShoppingBag, Trophy, Loader2, Trash2, X } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
-import { wishlistApi, giftApi } from "../../lib/api";
-import type { WishlistResponse, RecentSupporterResponse, TopSupporterResponse } from "../../lib/api";
+import { projectApi, giftApi } from "../../lib/api";
+import type { ProjectResponse, RecentSupporterResponse, TopSupporterResponse } from "../../lib/api";
 
 interface CreatorDashboardProps {
   username?: string;
-  initialWishlistId?: number | null;
+  initialProjectId?: number | null;
   creditBalance?: number;
   shopifyStore?: { name: string; url: string } | null;
   onLogout?: () => void;
-  onCreateWishlist?: () => void;
+  onCreateProject?: () => void;
   onAddItem?: () => void;
   onViewProject?: () => void;
   onViewAnalytics?: () => void;
@@ -28,7 +28,8 @@ interface Supporter {
   timeAgo: string;
 }
 
-interface WishlistItem {
+interface ProjectItem {
+  id: string;
   title: string;
   description: string;
   goal: string;
@@ -38,96 +39,143 @@ interface WishlistItem {
   thumbnail?: string | null;
 }
 
-interface Wishlist {
+interface DashboardProject {
   id: string;
   name: string;
   description: string;
   coverImage?: string | null;
-  items: WishlistItem[];
+  items: ProjectItem[];
 }
 
 function getInitials(name: string): string {
   return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
-export default function CreatorDashboard({ username: propUsername, initialWishlistId = null, shopifyStore = null, onCreateWishlist, onAddItem }: CreatorDashboardProps) {
+export default function CreatorDashboard({ username: propUsername, initialProjectId = null, shopifyStore = null, onCreateProject, onAddItem }: CreatorDashboardProps) {
   const { user } = useAuth();
   const username = user?.username ?? propUsername ?? "Username";
 
-  const [selectedWishlistId, setSelectedWishlistId] = useState<string | null>(initialWishlistId?.toString() ?? null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(initialProjectId?.toString() ?? null);
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
   const [itemTab, setItemTab] = useState<"active" | "completed" | "all">("active");
   const [dataLoading, setDataLoading] = useState(true);
+  const [dataError, setDataError] = useState<string | null>(null);
+
+  // Delete confirmation state
+  const [deleteTarget, setDeleteTarget] = useState<{ type: "project"; projectId: string } | { type: "item"; projectId: string; itemId: string } | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  async function handleDelete() {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+    try {
+      if (deleteTarget.type === "project") {
+        const res = await projectApi.delete(deleteTarget.projectId);
+        if (res.success) {
+          setProjects(prev => prev.filter(p => p.id !== deleteTarget.projectId));
+          if (selectedProjectId === deleteTarget.projectId) {
+            setSelectedProjectId(null);
+            setSelectedItemIndex(null);
+          }
+        }
+      } else {
+        const res = await projectApi.deleteItem(deleteTarget.projectId, deleteTarget.itemId);
+        if (res.success) {
+          setProjects(prev => prev.map(p =>
+            p.id === deleteTarget.projectId
+              ? { ...p, items: p.items.filter(i => i.id !== deleteTarget.itemId) }
+              : p
+          ));
+          if (selectedItemIndex !== null) setSelectedItemIndex(null);
+        }
+      }
+    } catch {
+      // silently fail — could add toast later
+    }
+    setDeleteLoading(false);
+    setDeleteTarget(null);
+  }
 
   // Dynamic data from API
-  const [wishlists, setWishlists] = useState<Wishlist[]>([]);
+  const [projects, setProjects] = useState<DashboardProject[]>([]);
   const [recentSupporters, setRecentSupporters] = useState<Supporter[]>([]);
   const [topSupportersLeaderboard, setTopSupportersLeaderboard] = useState<
     { rank: number; name: string; initials: string; totalAmount: string; contributions: number }[]
   >([]);
 
   useEffect(() => {
+    let cancelled = false;
     async function loadData() {
       setDataLoading(true);
-      const [wishlistRes, recentRes, topRes] = await Promise.all([
-        wishlistApi.getMyWishlists(),
-        giftApi.getRecentSupporters(username, 5),
-        giftApi.getTopSupporters(username, 10),
-      ]);
+      setDataError(null);
 
-      if (wishlistRes.success && wishlistRes.data) {
-        setWishlists(
-          wishlistRes.data.map((w: WishlistResponse) => ({
-            id: w.id,
-            name: w.name,
-            description: w.description,
-            coverImage: w.coverImageUrl,
-            items: w.items.map((item) => ({
-              title: item.title,
-              description: item.description,
-              goal: `$${item.goalAmount.toLocaleString()}`,
-              raised: `$${item.raisedAmount.toLocaleString()}`,
-              progress: item.progress,
-              status: item.status === "ACTIVE" ? "active" as const : "completed" as const,
-              thumbnail: item.thumbnailUrl,
-            })),
-          }))
-        );
+      try {
+        const [projectRes, recentRes, topRes] = await Promise.all([
+          projectApi.getMyProjects(),
+          giftApi.getRecentSupporters(username, 5),
+          giftApi.getTopSupporters(username, 10),
+        ]);
+
+        if (cancelled) return;
+
+        if (projectRes.success && projectRes.data) {
+          setProjects(
+            projectRes.data.map((w: ProjectResponse) => ({
+              id: w.id,
+              name: w.name,
+              description: w.description,
+              coverImage: w.coverImageUrl,
+              items: w.items.map((item) => ({
+                id: item.id,
+                title: item.title,
+                description: item.description,
+                goal: `$${item.goalAmount.toLocaleString()}`,
+                raised: `$${item.raisedAmount.toLocaleString()}`,
+                progress: item.progress,
+                status: item.status === "ACTIVE" ? "active" as const : "completed" as const,
+                thumbnail: item.thumbnailUrl,
+              })),
+            }))
+          );
+        }
+
+        if (recentRes.success && recentRes.data) {
+          setRecentSupporters(
+            recentRes.data.map((s: RecentSupporterResponse) => ({
+              name: s.supporterDisplayName,
+              amount: `$${s.amount.toLocaleString()}`,
+              initials: s.supporterInitials,
+              timeAgo: s.timeAgo,
+            }))
+          );
+        }
+
+        if (topRes.success && topRes.data) {
+          setTopSupportersLeaderboard(
+            topRes.data.map((s: TopSupporterResponse) => ({
+              rank: s.rank,
+              name: s.supporterDisplayName,
+              initials: s.supporterInitials,
+              totalAmount: `$${s.totalAmount.toLocaleString()}`,
+              contributions: s.contributionCount,
+            }))
+          );
+        }
+      } catch {
+        if (!cancelled) setDataError("Failed to load dashboard data. Please refresh.");
       }
 
-      if (recentRes.success && recentRes.data) {
-        setRecentSupporters(
-          recentRes.data.map((s: RecentSupporterResponse) => ({
-            name: s.supporterDisplayName,
-            amount: `$${s.amount.toLocaleString()}`,
-            initials: s.supporterInitials,
-            timeAgo: s.timeAgo,
-          }))
-        );
-      }
-
-      if (topRes.success && topRes.data) {
-        setTopSupportersLeaderboard(
-          topRes.data.map((s: TopSupporterResponse) => ({
-            rank: s.rank,
-            name: s.supporterDisplayName,
-            initials: s.supporterInitials,
-            totalAmount: `$${s.totalAmount.toLocaleString()}`,
-            contributions: s.contributionCount,
-          }))
-        );
-      }
-
-      setDataLoading(false);
+      if (!cancelled) setDataLoading(false);
     }
     loadData();
+    return () => { cancelled = true; };
   }, [username]);
 
-  const totalRaised = `$${wishlists
+  const totalRaised = `$${projects
     .flatMap((w) => w.items)
     .reduce((sum, i) => sum + parseFloat(i.raised.replace(/[$,]/g, "") || "0"), 0)
     .toLocaleString()}`;
-  const totalActiveItems = wishlists.flatMap(w => w.items).filter(i => i.status === "active").length;
+  const totalActiveItems = projects.flatMap(w => w.items).filter(i => i.status === "active").length;
   const totalSupporters = recentSupporters.length;
 
   if (dataLoading) {
@@ -280,19 +328,24 @@ export default function CreatorDashboard({ username: propUsername, initialWishli
               transition={{ duration: 0.5, delay: 0.35 }}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.99 }}
-              onClick={onCreateWishlist}
+              onClick={onCreateProject}
               className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-border bg-background hover:bg-muted text-foreground font-bold text-xs uppercase tracking-wide transition-colors"
             >
               <List className="w-4 h-4" />
-              New List
+              New Project
             </motion.button>
           </div>
         </aside>
 
         {/* Main Content */}
         <main className="flex-1 p-8 bg-background">
+          {dataError && (
+            <div className="mb-6 p-4 border border-red-300 bg-red-50 text-red-700 text-sm font-medium">
+              {dataError}
+            </div>
+          )}
           <AnimatePresence mode="wait">
-            {selectedWishlistId === null ? (
+            {selectedProjectId === null ? (
               <motion.div
                 key="grid"
                 initial={{ opacity: 0, y: 16 }}
@@ -302,41 +355,45 @@ export default function CreatorDashboard({ username: propUsername, initialWishli
               >
                 <div className="flex items-center justify-between mb-8">
                   <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-black text-foreground tracking-tight">My Wishlists</h2>
-                    <span className="px-2 py-0.5 border border-border text-subtle text-xs font-bold">{wishlists.length}</span>
+                    <h2 className="text-2xl font-black text-foreground tracking-tight">My Projects</h2>
+                    <span className="px-2 py-0.5 border border-border text-subtle text-xs font-bold">{projects.length}</span>
                   </div>
                   <motion.button
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
-                    onClick={onCreateWishlist}
+                    onClick={onCreateProject}
                     className="hidden sm:flex items-center gap-2 px-4 py-2 border border-border hover:bg-muted text-foreground font-bold text-xs uppercase tracking-wide transition-colors"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    New List
+                    New Project
                   </motion.button>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {wishlists.map((wishlist, wIndex) => {
-                    const activeCount = wishlist.items.filter(i => i.status === "active").length;
-                    const totalRaisedAmt = wishlist.items.reduce((sum, i) => {
+                  {projects.map((project, wIndex) => {
+                    const activeCount = project.items.filter(i => i.status === "active").length;
+                    const totalGoalAmt = project.items.reduce((sum, i) => {
+                      const n = parseFloat(i.goal.replace(/[$,]/g, ""));
+                      return sum + (isNaN(n) ? 0 : n);
+                    }, 0);
+                    const totalRaisedAmt = project.items.reduce((sum, i) => {
                       const n = parseFloat(i.raised.replace(/[$,]/g, ""));
                       return sum + (isNaN(n) ? 0 : n);
                     }, 0);
 
                     return (
                       <motion.div
-                        key={wishlist.id}
+                        key={project.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.35, delay: wIndex * 0.07 }}
                         whileHover={{ y: -2 }}
-                        onClick={() => { setSelectedWishlistId(wishlist.id); setSelectedItemIndex(null); setItemTab("active"); }}
+                        onClick={() => { setSelectedProjectId(project.id); setSelectedItemIndex(null); setItemTab("active"); }}
                         className="bg-background border border-border rounded-xl overflow-hidden cursor-pointer group card-game"
                       >
                         <div className="relative h-32 overflow-hidden bg-muted">
-                          {wishlist.coverImage ? (
-                            <img src={wishlist.coverImage} alt={wishlist.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          {project.coverImage ? (
+                            <img src={project.coverImage} alt={project.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center gap-3">
                               {[...Array(3)].map((_, i) => (
@@ -346,16 +403,23 @@ export default function CreatorDashboard({ username: propUsername, initialWishli
                               ))}
                             </div>
                           )}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: "project", projectId: project.id }); }}
+                            className="absolute top-2 left-2 w-7 h-7 bg-background/80 backdrop-blur-sm border border-border hover:bg-red-500 hover:border-red-500 hover:text-white text-subtle flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                            title="Delete project"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                           <div className="absolute top-2 right-2 px-2 py-0.5 bg-background border border-border text-[10px] font-black uppercase tracking-wide text-muted-foreground">
-                            {wishlist.items.length} {wishlist.items.length === 1 ? "item" : "items"}
+                            {project.items.length} {project.items.length === 1 ? "item" : "items"}
                           </div>
                         </div>
 
                         <div className="p-5">
                           <h3 className="text-base font-black text-foreground mb-1 group-hover:text-accent transition-colors">
-                            {wishlist.name}
+                            {project.name}
                           </h3>
-                          <p className="text-muted-foreground text-xs mb-4 line-clamp-2">{wishlist.description}</p>
+                          <p className="text-muted-foreground text-xs mb-4 line-clamp-2">{project.description}</p>
 
                           <div className="flex items-center gap-4 text-[10px] text-subtle mb-3 font-bold uppercase tracking-wide">
                             <span className="flex items-center gap-1">
@@ -364,14 +428,17 @@ export default function CreatorDashboard({ username: propUsername, initialWishli
                             </span>
                             <span className="flex items-center gap-1">
                               <span className="w-1.5 h-1.5 rounded-full bg-[#059669] inline-block" />
-                              {wishlist.items.filter(i => i.status === "completed").length} funded
+                              {project.items.filter(i => i.status === "completed").length} funded
                             </span>
-                            <span className="ml-auto font-black text-foreground">${totalRaisedAmt.toLocaleString()}</span>
+                          </div>
+
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-subtle">Funding Goal</span>
+                            <span className="text-foreground font-black text-sm">${totalGoalAmt.toLocaleString()}</span>
                           </div>
 
                           {(() => {
-                            const totalGoal = wishlist.items.reduce((s, i) => s + parseFloat(i.goal.replace(/[$,]/g, "") || "0"), 0);
-                            const pct = totalGoal > 0 ? Math.min(100, Math.round((totalRaisedAmt / totalGoal) * 100)) : 0;
+                            const pct = totalGoalAmt > 0 ? Math.min(100, Math.round((totalRaisedAmt / totalGoalAmt) * 100)) : 0;
                             return (
                               <div>
                                 <div className="w-full h-1 bg-secondary overflow-hidden">
@@ -382,7 +449,10 @@ export default function CreatorDashboard({ username: propUsername, initialWishli
                                     style={{ background: "oklch(65.6% 0.241 354.308)" }}
                                   />
                                 </div>
-                                <p className="text-right text-[10px] text-subtle mt-1 font-bold">{pct}% funded</p>
+                                <div className="flex items-center justify-between mt-1">
+                                  <span className="text-[10px] text-subtle font-bold">${totalRaisedAmt.toLocaleString()} raised</span>
+                                  <span className="text-[10px] text-subtle font-bold">{pct}%</span>
+                                </div>
                               </div>
                             );
                           })()}
@@ -453,20 +523,20 @@ export default function CreatorDashboard({ username: propUsername, initialWishli
               </motion.div>
             ) : selectedItemIndex !== null ? (
               (() => {
-                const wishlist = wishlists.find(w => w.id === selectedWishlistId)!;
-                const item = wishlist.items[selectedItemIndex];
+                const currentProject = projects.find(w => w.id === selectedProjectId)!;
+                const item = currentProject.items[selectedItemIndex];
                 return (
                   <motion.div
-                    key={`item-${selectedWishlistId}-${selectedItemIndex}`}
+                    key={`item-${selectedProjectId}-${selectedItemIndex}`}
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
                     transition={{ duration: 0.3 }}
                   >
                     <div className="flex items-center gap-2 mb-8 text-sm">
-                      <button onClick={() => setSelectedWishlistId(null)} className="text-subtle hover:text-foreground transition-colors font-medium">My Wishlists</button>
+                      <button onClick={() => setSelectedProjectId(null)} className="text-subtle hover:text-foreground transition-colors font-medium">My Projects</button>
                       <span className="text-subtle">/</span>
-                      <button onClick={() => setSelectedItemIndex(null)} className="text-subtle hover:text-foreground transition-colors font-medium">{wishlist.name}</button>
+                      <button onClick={() => setSelectedItemIndex(null)} className="text-subtle hover:text-foreground transition-colors font-medium">{currentProject.name}</button>
                       <span className="text-subtle">/</span>
                       <span className="text-foreground font-bold truncate max-w-[200px]">{item.title}</span>
                     </div>
@@ -492,31 +562,10 @@ export default function CreatorDashboard({ username: propUsername, initialWishli
                         </div>
                         <p className="text-muted-foreground mb-6 leading-relaxed text-sm">{item.description}</p>
                         <div className="p-4 bg-muted border border-border">
-                          <div className="flex items-center justify-between mb-3">
-                            <span className="text-2xl font-black text-foreground">{item.raised}</span>
-                            <span className="text-subtle text-sm">of {item.goal}</span>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-subtle">Funding Goal</span>
+                            <span className="text-2xl font-black text-foreground">{item.goal}</span>
                           </div>
-                          <div
-                            className={`w-full overflow-hidden mb-2 ${item.progress > 100 ? "h-3 rounded-full" : "h-2"}`}
-                            style={item.progress > 100 ? { boxShadow: "0 0 12px oklch(65.6% 0.241 354.308 / 0.6), 0 0 30px oklch(65.6% 0.241 354.308 / 0.25)" } : {}}
-                          >
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${Math.min(item.progress, 100)}%` }}
-                              transition={{ duration: 1, ease: "easeOut" }}
-                              className="h-full"
-                              style={{
-                                borderRadius: item.progress > 100 ? "9999px" : undefined,
-                                background: item.progress > 100
-                                  ? "linear-gradient(90deg, oklch(65.6% 0.241 354.308) 0%, oklch(70% 0.22 340) 40%, oklch(75% 0.28 350) 75%, #fff 100%)"
-                                  : "oklch(65.6% 0.241 354.308)",
-                                animation: item.progress > 100 ? "overfill-pulse 1.5s ease-in-out infinite" : undefined,
-                              }}
-                            />
-                          </div>
-                          <p className={`text-right text-xs font-bold ${item.progress > 100 ? "text-accent" : "text-subtle"}`}>
-                            {item.progress}% funded{item.progress > 100 && " — Overfilled!"}
-                          </p>
                         </div>
                       </div>
                     </div>
@@ -554,8 +603,8 @@ export default function CreatorDashboard({ username: propUsername, initialWishli
               })()
             ) : (
               (() => {
-                const wishlist = wishlists.find(w => w.id === selectedWishlistId)!;
-                const filteredItems = wishlist.items.filter(item => {
+                const currentProject = projects.find(w => w.id === selectedProjectId)!;
+                const filteredItems = currentProject.items.filter(item => {
                   if (itemTab === "active") return item.status === "active";
                   if (itemTab === "completed") return item.status === "completed";
                   return true;
@@ -571,29 +620,40 @@ export default function CreatorDashboard({ username: propUsername, initialWishli
                     <div className="flex items-center justify-between mb-8">
                       <div className="flex items-center gap-2 min-w-0">
                         <button
-                          onClick={() => { setSelectedWishlistId(null); setSelectedItemIndex(null); }}
+                          onClick={() => { setSelectedProjectId(null); setSelectedItemIndex(null); }}
                           className="flex items-center gap-1.5 text-subtle hover:text-foreground transition-colors text-sm font-medium flex-shrink-0"
                         >
                           <ChevronDown className="w-4 h-4 rotate-90" />
-                          My Wishlists
+                          My Projects
                         </button>
                         <span className="text-subtle">/</span>
-                        <span className="text-foreground font-bold text-sm truncate">{wishlist.name}</span>
+                        <span className="text-foreground font-bold text-sm truncate">{currentProject.name}</span>
                       </div>
-                      <motion.button
-                        whileHover={{ scale: 1.01 }}
-                        whileTap={{ scale: 0.99 }}
-                        onClick={onAddItem}
-                        className="hidden sm:flex items-center gap-2 px-4 py-2 btn-cta text-white font-bold text-xs uppercase tracking-wide"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        Add Item
-                      </motion.button>
+                      <div className="hidden sm:flex items-center gap-2">
+                        <motion.button
+                          whileHover={{ scale: 1.01 }}
+                          whileTap={{ scale: 0.99 }}
+                          onClick={() => setDeleteTarget({ type: "project", projectId: currentProject.id })}
+                          className="flex items-center gap-2 px-4 py-2 border border-border hover:bg-red-500 hover:border-red-500 hover:text-white text-subtle font-bold text-xs uppercase tracking-wide transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Delete
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.01 }}
+                          whileTap={{ scale: 0.99 }}
+                          onClick={onAddItem}
+                          className="flex items-center gap-2 px-4 py-2 btn-cta text-white font-bold text-xs uppercase tracking-wide"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          Add Item
+                        </motion.button>
+                      </div>
                     </div>
 
                     <div className="mb-8">
-                      <h2 className="text-3xl font-black text-foreground mb-1 tracking-tight">{wishlist.name}</h2>
-                      <p className="text-muted-foreground text-sm">{wishlist.description}</p>
+                      <h2 className="text-3xl font-black text-foreground mb-1 tracking-tight">{currentProject.name}</h2>
+                      <p className="text-muted-foreground text-sm">{currentProject.description}</p>
                     </div>
 
                     <div className="flex gap-6 mb-8 border-b border-border">
@@ -614,7 +674,7 @@ export default function CreatorDashboard({ username: propUsername, initialWishli
                     </div>
 
                     {filteredItems.length === 0 ? (
-                      <div className="py-20 text-center text-subtle text-sm">No {itemTab === "all" ? "" : itemTab} items in this list.</div>
+                      <div className="py-20 text-center text-subtle text-sm">No {itemTab === "all" ? "" : itemTab} items in this project.</div>
                     ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                         {filteredItems.map((item, index) => (
@@ -624,11 +684,18 @@ export default function CreatorDashboard({ username: propUsername, initialWishli
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.3, delay: index * 0.05 }}
                             whileHover={{ y: -2 }}
-                            onClick={() => setSelectedItemIndex(wishlist.items.indexOf(item))}
+                            onClick={() => setSelectedItemIndex(currentProject.items.indexOf(item))}
                             className="bg-background border border-border rounded-xl overflow-hidden cursor-pointer group card-game"
                           >
                             <div className="relative w-full h-36 flex items-center justify-center bg-muted">
                               <Gift className="w-12 h-12 text-subtle" />
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: "item", projectId: currentProject.id, itemId: item.id }); }}
+                                className="absolute top-2 left-2 w-7 h-7 bg-background/80 backdrop-blur-sm border border-border hover:bg-red-500 hover:border-red-500 hover:text-white text-subtle flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                                title="Delete item"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
                               <div className={`absolute top-2 right-2 px-2 py-1 flex items-center gap-1 border text-[10px] font-black uppercase tracking-widest ${
                                 item.status === "completed"
                                   ? "bg-[#f0faf5] border-[#22c55e] text-[#16a34a]"
@@ -643,31 +710,10 @@ export default function CreatorDashboard({ username: propUsername, initialWishli
                                 {item.title}
                               </h4>
                               <p className="text-subtle text-xs mb-4 line-clamp-2">{item.description}</p>
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="text-foreground font-black text-sm">{item.raised}</span>
-                                <span className="text-subtle text-xs">of {item.goal}</span>
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-subtle">Goal</span>
+                                <span className="text-foreground font-black text-sm">{item.goal}</span>
                               </div>
-                              <div
-                                className={`w-full overflow-hidden ${item.progress > 100 ? "h-2 rounded-full" : "h-1"}`}
-                                style={item.progress > 100 ? { boxShadow: "0 0 10px oklch(65.6% 0.241 354.308 / 0.6), 0 0 24px oklch(65.6% 0.241 354.308 / 0.25)" } : {}}
-                              >
-                                <motion.div
-                                  initial={{ width: 0 }}
-                                  animate={{ width: `${Math.min(item.progress, 100)}%` }}
-                                  transition={{ duration: 1, delay: 0.2 + index * 0.1 }}
-                                  className="h-full"
-                                  style={{
-                                    borderRadius: item.progress > 100 ? "9999px" : undefined,
-                                    background: item.progress > 100
-                                      ? "linear-gradient(90deg, oklch(65.6% 0.241 354.308) 0%, oklch(70% 0.22 340) 40%, oklch(75% 0.28 350) 75%, #fff 100%)"
-                                      : "oklch(65.6% 0.241 354.308)",
-                                    animation: item.progress > 100 ? "overfill-pulse 1.5s ease-in-out infinite" : undefined,
-                                  }}
-                                />
-                              </div>
-                              <p className={`text-right text-[10px] mt-1 font-bold ${item.progress > 100 ? "text-accent" : "text-subtle"}`}>
-                                {item.progress}%{item.progress > 100 && " Overfilled!"}
-                              </p>
                             </div>
                           </motion.div>
                         ))}
@@ -680,6 +726,73 @@ export default function CreatorDashboard({ username: propUsername, initialWishli
           </AnimatePresence>
         </main>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteTarget && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => !deleteLoading && setDeleteTarget(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.2 }}
+              className="bg-background border border-border w-full max-w-sm overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between p-5 border-b border-border">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-red-500/10 flex items-center justify-center">
+                    <Trash2 className="w-4 h-4 text-red-500" />
+                  </div>
+                  <h3 className="text-sm font-black text-foreground">
+                    Delete {deleteTarget.type === "project" ? "Project" : "Item"}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setDeleteTarget(null)}
+                  disabled={deleteLoading}
+                  className="w-8 h-8 flex items-center justify-center text-subtle hover:text-foreground"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-5">
+                <p className="text-sm text-muted-foreground mb-1">
+                  Are you sure you want to delete this {deleteTarget.type}?
+                </p>
+                <p className="text-xs text-subtle">
+                  {deleteTarget.type === "project"
+                    ? "All items in this project will also be deleted. This cannot be undone."
+                    : "This cannot be undone."}
+                </p>
+              </div>
+              <div className="flex gap-2 p-5 pt-0">
+                <button
+                  onClick={() => setDeleteTarget(null)}
+                  disabled={deleteLoading}
+                  className="flex-1 py-2.5 border border-border text-foreground text-xs font-bold uppercase tracking-widest hover:bg-muted transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleteLoading}
+                  className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                >
+                  {deleteLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                  {deleteLoading ? "Deleting..." : "Delete"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

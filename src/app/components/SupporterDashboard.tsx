@@ -116,7 +116,7 @@ export default function SupporterDashboard({ username: propUsername, onViewProje
 
   // For the global tab "Trending Projects" — use leaderboard data as proxy
   const topProjects: Project[] = topCreators.slice(0, 5).map((c) => ({
-    name: `${c.name}'s Wishlist`,
+    name: `${c.name}'s Project`,
     creator: c.name,
     raised: c.totalRaised,
     progress: Math.min(100, Math.round(Math.random() * 60 + 30)),

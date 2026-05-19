@@ -342,7 +342,7 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
                   <Heart className="w-5 h-5 text-blue-400" />
                 </div>
                 <div className="text-sm text-gray-400">
-                  {userType === "creator" ? "Active Projects" : "Wishlists Viewed"}
+                  {userType === "creator" ? "Active Projects" : "Projects Viewed"}
                 </div>
               </div>
               <div className="text-3xl font-bold text-white">0</div>
@@ -365,7 +365,7 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
                   <div className="w-1.5 h-1.5 rounded-full bg-pink-500 mt-1.5"></div>
                   <span>
                     {userType === "creator"
-                      ? "Share your wishlist on social media"
+                      ? "Share your project on social media"
                       : "Check out trending projects"}
                   </span>
                 </div>

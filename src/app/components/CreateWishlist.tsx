@@ -1,16 +1,19 @@
 import { motion } from "motion/react";
 import { useState, useRef } from "react";
-import { Upload, X, ImageIcon } from "lucide-react";
+import { Upload, X, ImageIcon, Loader2 } from "lucide-react";
+import { projectApi } from "../../lib/api";
 
-interface CreateWishlistProps {
+interface CreateProjectListProps {
   onBack?: () => void;
-  onCreateWishlist?: () => void;
+  onCreateProject?: () => void;
 }
 
-export default function CreateWishlist({ onBack, onCreateWishlist }: CreateWishlistProps) {
+export default function CreateWishlist({ onBack, onCreateProject }: CreateProjectListProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,6 +30,30 @@ export default function CreateWishlist({ onBack, onCreateWishlist }: CreateWishl
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const handleSubmit = async () => {
+    if (!name.trim() || submitting) return;
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const res = await projectApi.create({
+        name: name.trim(),
+        description: description.trim() || undefined,
+        isPublic: true,
+      });
+
+      if (res.success) {
+        onCreateProject?.();
+      } else {
+        setError(res.error?.message ?? "Failed to create project");
+        setSubmitting(false);
+      }
+    } catch {
+      setError("Network error — please check your connection and try again.");
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Main Content */}
@@ -38,10 +65,10 @@ export default function CreateWishlist({ onBack, onCreateWishlist }: CreateWishl
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="mb-12"
           >
-            <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">New Wishlist</div>
-            <h1 className="text-5xl font-black text-foreground mb-3 tracking-tight">Create a List</h1>
+            <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">New Project</div>
+            <h1 className="text-5xl font-black text-foreground mb-3 tracking-tight">Create a Project</h1>
             <p className="text-lg text-muted-foreground">
-              A wishlist is a curated collection of items for your fans to fund. Add items after creating the list.
+              A project has a funding goal made up of the items needed to achieve it. Fans donate directly to the project.
             </p>
           </motion.div>
 
@@ -91,7 +118,7 @@ export default function CreateWishlist({ onBack, onCreateWishlist }: CreateWishl
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
-                List Name <span className="text-accent">*</span>
+                Project Name <span className="text-accent">*</span>
               </label>
               <input
                 type="text"
@@ -107,7 +134,7 @@ export default function CreateWishlist({ onBack, onCreateWishlist }: CreateWishl
                 Description <span className="text-subtle font-normal normal-case tracking-normal">optional</span>
               </label>
               <textarea
-                placeholder="Tell fans what this list is about..."
+                placeholder="Tell fans what this project is about..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
@@ -115,11 +142,18 @@ export default function CreateWishlist({ onBack, onCreateWishlist }: CreateWishl
               />
             </div>
 
+            {error && (
+              <div className="p-3 border border-red-300 bg-red-50 text-red-700 text-sm">
+                {error}
+              </div>
+            )}
+
             <div className="flex justify-end gap-3 pt-2">
               <motion.button
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
                 onClick={onBack}
+                disabled={submitting}
                 className="px-8 py-3 border border-border text-foreground font-bold text-sm uppercase tracking-wide hover:bg-muted transition-colors"
               >
                 Cancel
@@ -127,11 +161,12 @@ export default function CreateWishlist({ onBack, onCreateWishlist }: CreateWishl
               <motion.button
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
-                onClick={onCreateWishlist}
-                disabled={!name.trim()}
-                className="px-8 py-3 bg-accent hover:bg-[#c9164f] disabled:opacity-40 disabled:cursor-not-allowed text-white font-black text-sm uppercase tracking-widest transition-colors"
+                onClick={handleSubmit}
+                disabled={!name.trim() || submitting}
+                className="px-8 py-3 bg-accent hover:bg-[#c9164f] disabled:opacity-40 disabled:cursor-not-allowed text-white font-black text-sm uppercase tracking-widest transition-colors flex items-center gap-2"
               >
-                Create List
+                {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                {submitting ? "Creating..." : "Create Project"}
               </motion.button>
             </div>
           </motion.div>

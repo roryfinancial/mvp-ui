@@ -7,13 +7,13 @@ import {
   Edit2, Settings, LogIn, Loader2,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
-import { userApi, wishlistApi, followApi } from "../../lib/api";
-import type { PublicUserResponse, WishlistResponse } from "../../lib/api";
+import { userApi, projectApi, followApi } from "../../lib/api";
+import type { PublicUserResponse, ProjectResponse } from "../../lib/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface WishlistItem { id: string; title: string; thumbnail?: string }
-interface Wishlist { id: string; name: string; description?: string; coverImage?: string; items: WishlistItem[] }
+interface ProjectItem { id: string; title: string; thumbnail?: string }
+interface CreatorProject { id: string; name: string; description?: string; coverImage?: string; items: ProjectItem[] }
 interface RecentEvent { title: string; thumbnail?: string }
 interface FeedItem {
   platform: "youtube" | "twitch" | "twitter" | "instagram" | "tiktok";
@@ -34,9 +34,9 @@ interface CreatorProfileProps {
   profileImage?: string;
   recentEvents?: RecentEvent[];
   feedItems?: FeedItem[];
-  wishlists?: Wishlist[];
+  projects?: CreatorProject[];
   connectedPlatforms?: ConnectedPlatform[];
-  onViewWishlist?: (wishlistId: string) => void;
+  onViewProject?: (projectId: string) => void;
 }
 
 // ─── Static config ────────────────────────────────────────────────────────────
@@ -70,7 +70,7 @@ const DEFAULT_FEED: FeedItem[] = [
   { platform: "youtube",   type: "video",      title: "I Tried Every Standing Desk Under $300",             timestamp: "2 weeks ago",  views: "89.1K", likes: "5.6K",  comments: "673" },
 ];
 
-const DEFAULT_WISHLISTS: Wishlist[] = [
+const DEFAULT_PROJECTS: CreatorProject[] = [
   { id: "studio-gear",  name: "Studio Gear",      description: "Everything I need to level up my recording setup",  items: [{ id: "1", title: "Ableton Push 3" }, { id: "2", title: "Universal Audio Apollo X4" }, { id: "3", title: "Bose Solo Soundbar" }] },
   { id: "dream-items",  name: "Dream Items",       description: "Big ticket items on my bucket list",                items: [{ id: "4", title: "Cybertruck" }, { id: "5", title: "Rolex Submariner" }] },
   { id: "fitness",      name: "Fitness & Health",  items: [{ id: "6", title: "Pull-up Bar Station" }, { id: "7", title: "Theragun Pro" }, { id: "8", title: "Adjustable Dumbbell Set" }] },
@@ -94,9 +94,9 @@ export default function CreatorProfile({
   profileImage,
   recentEvents = [{ title: "Stream VOD" }, { title: "Studio Tour" }, { title: "Unboxing" }, { title: "Q&A" }, { title: "Collab" }],
   feedItems = DEFAULT_FEED,
-  wishlists: propWishlists,
+  projects: propProjects,
   connectedPlatforms: propConnectedPlatforms,
-  onViewWishlist,
+  onViewProject,
 }: CreatorProfileProps) {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
@@ -106,7 +106,7 @@ export default function CreatorProfile({
   const [creatorName, setCreatorName] = useState(propCreatorName ?? "");
   const [rank, setRank] = useState(propRank ?? 0);
   const [description, setDescription] = useState(propDescription ?? "");
-  const [wishlists, setWishlists] = useState<Wishlist[]>(propWishlists ?? DEFAULT_WISHLISTS);
+  const [projects, setProjects] = useState<CreatorProject[]>(propProjects ?? DEFAULT_PROJECTS);
   const [connectedPlatforms, setConnectedPlatforms] = useState<ConnectedPlatform[]>(propConnectedPlatforms ?? DEFAULT_PLATFORMS);
   const [followerCount, setFollowerCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -116,9 +116,9 @@ export default function CreatorProfile({
 
     async function loadProfile() {
       setProfileLoading(true);
-      const [profileRes, wishlistRes, followCountRes] = await Promise.all([
+      const [profileRes, projectRes, followCountRes] = await Promise.all([
         userApi.getPublicProfile(routeUsername),
-        wishlistApi.getByCreator(routeUsername),
+        projectApi.getByCreator(routeUsername),
         followApi.getFollowerCount(routeUsername),
       ]);
 
@@ -136,9 +136,9 @@ export default function CreatorProfile({
         );
       }
 
-      if (wishlistRes.success && wishlistRes.data) {
-        setWishlists(
-          wishlistRes.data.map((w: WishlistResponse) => ({
+      if (projectRes.success && projectRes.data) {
+        setProjects(
+          projectRes.data.map((w: ProjectResponse) => ({
             id: w.id,
             name: w.name,
             description: w.description,
@@ -184,14 +184,14 @@ export default function CreatorProfile({
 
   // Quick Tip modal state
   const [showQuickTip, setShowQuickTip] = useState(false);
-  const [selectedWishlistId, setSelectedWishlistId] = useState<string | null>(null);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [selectedTipItem, setSelectedTipItem] = useState<string | null>(null);
   const [selectedTipAmount, setSelectedTipAmount] = useState<number>(10);
   const [customTipAmount, setCustomTipAmount] = useState("");
   const [tipConfirmed, setTipConfirmed] = useState(false);
 
-  const selectedWishlist = wishlists.find((w) => w.id === selectedWishlistId);
-  const itemsInSelected = selectedWishlist?.items ?? [];
+  const selectedProject = projects.find((w) => w.id === selectedProjectId);
+  const itemsInSelected = selectedProject?.items ?? [];
 
   function handleConfirmTip() {
     const amount = selectedTipAmount || (customTipAmount ? parseFloat(customTipAmount) : 0);
@@ -200,7 +200,7 @@ export default function CreatorProfile({
     setTimeout(() => {
       setTipConfirmed(false);
       setShowQuickTip(false);
-      setSelectedWishlistId(null);
+      setSelectedProjectId(null);
       setSelectedTipItem(null);
       setSelectedTipAmount(10);
       setCustomTipAmount("");
@@ -253,7 +253,7 @@ export default function CreatorProfile({
           >
             <div className="text-xl font-black text-white tracking-tight">TipFlow</div>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-white/50 hidden sm:block">Create a wishlist. Get funded. Zero fees.</span>
+              <span className="text-sm text-white/50 hidden sm:block">Create a project. Get funded. Zero fees.</span>
               <button
                 onClick={() => navigate("/auth")}
                 className="flex items-center gap-2 px-4 py-2 btn-cta text-white text-xs font-black uppercase tracking-widest"
@@ -296,13 +296,13 @@ export default function CreatorProfile({
               {/* Action buttons — change based on auth state */}
               <div className="flex items-center gap-3 flex-wrap">
                 {isOwnProfile ? (
-                  // Own profile: manage wishlist CTA
+                  // Own profile: manage project CTA
                   <button
                     onClick={() => navigate("/dashboard")}
                     className="px-6 py-2.5 text-sm font-black btn-cta text-white uppercase tracking-wider flex items-center gap-2"
                   >
                     <List className="w-4 h-4" />
-                    Manage Wishlists
+                    Manage Projects
                   </button>
                 ) : isGuest ? (
                   // Guest: gated CTA
@@ -464,31 +464,31 @@ export default function CreatorProfile({
           )}
         </motion.section>
 
-        {/* Wishlists */}
-        {wishlists.map((wishlist, wi) => (
+        {/* Projects */}
+        {projects.map((project, wi) => (
           <motion.section
-            key={wishlist.id}
+            key={project.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 + wi * 0.05 }}
           >
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-xs font-black uppercase tracking-widest text-subtle mb-1">{wishlist.name}</h2>
-                <p className="text-[11px] text-subtle">{wishlist.items.length} items{wishlist.description ? ` · ${wishlist.description}` : ""}</p>
+                <h2 className="text-xs font-black uppercase tracking-widest text-subtle mb-1">{project.name}</h2>
+                <p className="text-[11px] text-subtle">{project.items.length} items{project.description ? ` · ${project.description}` : ""}</p>
               </div>
               <button
-                onClick={() => onViewWishlist?.(wishlist.id)}
+                onClick={() => onViewProject?.(project.id)}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-subtle hover:text-foreground border border-border hover:border-accent/40 transition-colors"
               >
                 View All <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
             <div className="flex gap-4 overflow-x-auto pb-2">
-              {wishlist.items.map((item, ii) => (
+              {project.items.map((item, ii) => (
                 <div
                   key={item.id}
-                  onClick={() => onViewWishlist?.(wishlist.id)}
+                  onClick={() => onViewProject?.(project.id)}
                   className="flex-shrink-0 w-44 bg-background border border-border overflow-hidden cursor-pointer group hover:border-accent/50 hover:shadow-md transition-all"
                 >
                   <div className="relative w-full h-32 bg-muted flex items-center justify-center">
@@ -528,7 +528,7 @@ export default function CreatorProfile({
         <div className="border-t border-border bg-muted py-16 px-6 text-center">
           <p className="text-[10px] font-black uppercase tracking-widest text-subtle mb-4">Want to support {creatorName}?</p>
           <h3 className="text-3xl font-black text-foreground mb-4 tracking-tight">Create a free account.</h3>
-          <p className="text-muted-foreground mb-8 max-w-md mx-auto">Gift items from their wishlist. Zero platform fees. Creators keep 100%.</p>
+          <p className="text-muted-foreground mb-8 max-w-md mx-auto">Donate to their project. Zero platform fees. Creators keep 100%.</p>
           <button
             onClick={() => navigate("/auth")}
             className="px-8 py-3 btn-cta text-white font-black text-sm uppercase tracking-widest inline-flex items-center gap-2"
@@ -586,29 +586,29 @@ export default function CreatorProfile({
                   </button>
                 </div>
 
-                {/* Step 1: Select Wishlist */}
+                {/* Step 1: Select Project */}
                 <div className="p-5 border-b border-border">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">1. Choose a wishlist</div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">1. Choose a project</div>
                   <div className="space-y-2 max-h-36 overflow-y-auto">
-                    {wishlists.map((w) => (
+                    {projects.map((w) => (
                       <button
                         key={w.id}
-                        onClick={() => { setSelectedWishlistId(w.id); setSelectedTipItem(null); }}
-                        className={`w-full text-left p-3 border transition-colors flex items-center gap-3 ${selectedWishlistId === w.id ? "border-accent bg-accent/5" : "border-border hover:border-accent/40"}`}
+                        onClick={() => { setSelectedProjectId(w.id); setSelectedTipItem(null); }}
+                        className={`w-full text-left p-3 border transition-colors flex items-center gap-3 ${selectedProjectId === w.id ? "border-accent bg-accent/5" : "border-border hover:border-accent/40"}`}
                       >
                         <div className="w-8 h-8 bg-muted flex items-center justify-center flex-shrink-0"><List className="w-3.5 h-3.5 text-accent" /></div>
                         <div className="flex-1 min-w-0">
                           <span className="text-sm font-bold text-foreground block truncate">{w.name}</span>
                           <span className="text-[11px] text-subtle">{w.items.length} items</span>
                         </div>
-                        {selectedWishlistId === w.id && <Check className="w-4 h-4 text-accent flex-shrink-0" />}
+                        {selectedProjectId === w.id && <Check className="w-4 h-4 text-accent flex-shrink-0" />}
                       </button>
                     ))}
                   </div>
                 </div>
 
                 {/* Step 2: Select Item */}
-                <div className={`p-5 border-b border-border ${!selectedWishlistId ? "opacity-40 pointer-events-none" : ""}`}>
+                <div className={`p-5 border-b border-border ${!selectedProjectId ? "opacity-40 pointer-events-none" : ""}`}>
                   <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">2. Choose an item</div>
                   <div className="space-y-2 max-h-36 overflow-y-auto">
                     {itemsInSelected.map((item) => (
@@ -622,7 +622,7 @@ export default function CreatorProfile({
                         {selectedTipItem === item.id && <Check className="w-4 h-4 text-accent ml-auto flex-shrink-0" />}
                       </button>
                     ))}
-                    {itemsInSelected.length === 0 && <p className="text-subtle text-sm text-center py-4">Select a wishlist first.</p>}
+                    {itemsInSelected.length === 0 && <p className="text-subtle text-sm text-center py-4">Select a project first.</p>}
                   </div>
                 </div>
 

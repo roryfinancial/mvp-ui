@@ -112,7 +112,7 @@ export default function OnboardingChoice({ userType: initialUserType, onBack, on
               }`}
             >
               <p className="text-lg font-black text-foreground mb-1">Creator</p>
-              <p className="text-sm text-muted-foreground">Share your wishlist and receive gifts from supporters.</p>
+              <p className="text-sm text-muted-foreground">Share your project and receive donations from supporters.</p>
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.01 }}
@@ -125,7 +125,7 @@ export default function OnboardingChoice({ userType: initialUserType, onBack, on
               }`}
             >
               <p className="text-lg font-black text-foreground mb-1">Supporter</p>
-              <p className="text-sm text-muted-foreground">Discover creators and fund items from their wishlists.</p>
+              <p className="text-sm text-muted-foreground">Discover creators and donate to their projects.</p>
             </motion.button>
           </div>
 
@@ -271,7 +271,7 @@ export default function OnboardingChoice({ userType: initialUserType, onBack, on
             {userType === "creator" ? "Set up your profile." : "Find creators to support."}
           </h1>
           <p className="text-muted-foreground text-sm">
-            {userType === "creator" ? "Add your first wishlist item to get started." : "Discover creators and start gifting."}
+            {userType === "creator" ? "Create your first project to get started." : "Discover creators and start gifting."}
           </p>
         </motion.div>
 
@@ -290,7 +290,7 @@ export default function OnboardingChoice({ userType: initialUserType, onBack, on
               className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-accent hover:bg-[#c9164f] text-white font-black text-sm uppercase tracking-widest transition-colors"
             >
               <Plus className="w-4 h-4" />
-              Add a Wishlist Item
+              Create a Project
             </motion.button>
 
             {displayCreators.length > 0 && displayCreators[0].name !== "Loading..." && (
