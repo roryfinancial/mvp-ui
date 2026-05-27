@@ -44,7 +44,7 @@ export function constantTimeEqual(a: string, b: string): boolean {
 // Demo-only password storage. Structure mirrors where bcrypt.compare() would
 // live on the server. Never use btoa for real passwords.
 export function hashPassword(plain: string): string {
-  return btoa(`tipflow:${plain}:v1`);
+  return btoa(`rory:${plain}:v1`);
 }
 
 export function verifyPassword(plain: string, storedHash: string): boolean {

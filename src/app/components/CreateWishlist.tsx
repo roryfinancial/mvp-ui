@@ -175,7 +175,7 @@ export default function CreateWishlist({ onBack, onCreateProject }: CreateProjec
 
       <footer className="py-10 px-6 border-t border-border">
         <div className="max-w-7xl mx-auto text-center text-subtle text-sm">
-          <p>© 2026 TipFlow. All rights reserved.</p>
+          <p>© 2026 Rory. All rights reserved.</p>
         </div>
       </footer>
     </div>

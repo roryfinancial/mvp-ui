@@ -13,6 +13,7 @@ export interface User {
   creditBalance: number;
   referralCode: string | null;
   stripeOnboardingComplete: boolean;
+  communities: string[];
   isProfileComplete: boolean; // true if username is not provisional (user_xxxx)
   createdAt: string; // ISO 8601
 }

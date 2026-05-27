@@ -1,5 +1,5 @@
 // All sounds procedurally generated via Web Audio API — zero bundle size.
-// Mute state stored in localStorage key "tipflow_sounds".
+// Mute state stored in localStorage key "rory_sounds".
 
 let _ctx: AudioContext | null = null;
 
@@ -10,12 +10,12 @@ function ctx(): AudioContext {
 }
 
 function isMuted(): boolean {
-  return localStorage.getItem("tipflow_sounds") === "muted";
+  return localStorage.getItem("rory_sounds") === "muted";
 }
 
 export function toggleMute(): boolean {
   const nowMuted = !isMuted();
-  localStorage.setItem("tipflow_sounds", nowMuted ? "muted" : "on");
+  localStorage.setItem("rory_sounds", nowMuted ? "muted" : "on");
   return nowMuted;
 }
 

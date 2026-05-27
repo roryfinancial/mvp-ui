@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { Sounds } from "../../lib/sounds";
 import ConfettiBurst from "./Confetti";
 import { Plus, User, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, ChevronDown, List, ShoppingBag, Trophy, Loader2, Trash2, X } from "lucide-react";
@@ -11,7 +12,7 @@ interface CreatorDashboardProps {
   initialProjectId?: number | null;
   creditBalance?: number;
   shopifyStore?: { name: string; url: string } | null;
-  onLogout?: () => void;
+  onLogout?: () => void
   onCreateProject?: () => void;
   onAddItem?: () => void;
 }
@@ -56,54 +57,6 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
   const [confettiTitle, setConfettiTitle] = useState<string | null>(null);
   const firedFunded = useRef(false);
 
-  const recentSupporters: Supporter[] = [
-    { name: "Sarah Johnson", amount: "$250", initials: "SJ", timeAgo: "2h ago" },
-    { name: "Mike Chen", amount: "$180", initials: "MC", timeAgo: "5h ago" },
-    { name: "Emily Rodriguez", amount: "$120", initials: "ER", timeAgo: "1d ago" },
-    { name: "Alex Thompson", amount: "$95", initials: "AT", timeAgo: "2d ago" },
-    { name: "Jordan Lee", amount: "$75", initials: "JL", timeAgo: "3d ago" },
-  ];
-
-  const wishlists: Wishlist[] = [
-    {
-      id: 1,
-      name: "Creator Essentials",
-      description: "Everything I need to level up my content",
-      items: [
-        { title: "New Streaming Setup", description: "Upgrading for better quality streams", goal: "$2,500", raised: "$1,890", progress: 76, status: "active" },
-        { title: "Art Supplies Collection", description: "Professional grade materials for commissions", goal: "$800", raised: "$520", progress: 65, status: "active" },
-        { title: "Coffee Fund", description: "Fuel the creative process", goal: "$200", raised: "$340", progress: 170, status: "completed" },
-      ],
-    },
-  ];
-
-  // Fire funded sound + confetti once on mount for any completed items
-  useEffect(() => {
-    if (firedFunded.current) return;
-    const funded = wishlists.flatMap((w) => w.items).find((i) => i.status === "completed");
-    if (funded) {
-      firedFunded.current = true;
-      // Softer funded sound for creator (not as jarring as supporter's casino version)
-      setTimeout(() => Sounds.achievement(), 300);
-      setTimeout(() => Sounds.funded(), 800);
-      setConfettiTitle(funded.title);
-      setTimeout(() => setConfettiTitle(null), 3500);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const topSupportersLeaderboard = [
-    { rank: 1, name: "Sarah Johnson", initials: "SJ", totalAmount: "$1,250", contributions: 8 },
-    { rank: 2, name: "Mike Chen", initials: "MC", totalAmount: "$980", contributions: 12 },
-    { rank: 3, name: "Emily Rodriguez", initials: "ER", totalAmount: "$720", contributions: 5 },
-    { rank: 4, name: "Alex Thompson", initials: "AT", totalAmount: "$495", contributions: 6 },
-    { rank: 5, name: "Jordan Lee", initials: "JL", totalAmount: "$375", contributions: 4 },
-    { rank: 6, name: "Taylor Kim", initials: "TK", totalAmount: "$310", contributions: 3 },
-    { rank: 7, name: "Casey Nguyen", initials: "CN", totalAmount: "$245", contributions: 7 },
-    { rank: 8, name: "Morgan Davis", initials: "MD", totalAmount: "$190", contributions: 2 },
-    { rank: 9, name: "Riley Parker", initials: "RP", totalAmount: "$150", contributions: 3 },
-    { rank: 10, name: "Quinn Foster", initials: "QF", totalAmount: "$120", contributions: 1 },
-  ];
   const [dataLoading, setDataLoading] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
 
@@ -148,6 +101,20 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
   const [topSupportersLeaderboard, setTopSupportersLeaderboard] = useState<
     { rank: number; name: string; initials: string; totalAmount: string; contributions: number }[]
   >([]);
+
+  // Fire funded sound + confetti once when projects load with a completed item
+  useEffect(() => {
+    if (firedFunded.current) return;
+    const funded = projects.flatMap((p) => p.items).find((i) => i.status === "completed");
+    if (funded) {
+      firedFunded.current = true;
+      setTimeout(() => Sounds.achievement(), 300);
+      setTimeout(() => Sounds.funded(), 800);
+      setConfettiTitle(funded.title);
+      setTimeout(() => setConfettiTitle(null), 3500);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projects]);
 
   useEffect(() => {
     let cancelled = false;

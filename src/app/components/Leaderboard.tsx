@@ -92,7 +92,7 @@ export default function Leaderboard({ onViewCreator }: LeaderboardProps) {
             <Trophy className="w-8 h-8 text-accent" />
             <h1 className="text-3xl font-black tracking-tight">Leaderboard</h1>
           </div>
-          <p className="text-muted-foreground text-sm">Top creators and supporters on TipFlow</p>
+          <p className="text-muted-foreground text-sm">Top creators and supporters on Rory</p>
         </motion.div>
 
         {/* Tabs */}

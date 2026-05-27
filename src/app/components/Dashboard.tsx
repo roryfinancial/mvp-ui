@@ -67,7 +67,7 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
       <div className="border-b border-white/10 bg-[#0a0a0a]/80 backdrop-blur-lg">
         <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
           <div className="text-2xl font-bold text-purple-400">
-            TipFlow
+            Rory
           </div>
           <div className="flex items-center gap-4">
             <button className="text-gray-300 hover:text-white transition-colors font-medium">

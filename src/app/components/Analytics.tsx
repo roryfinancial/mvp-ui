@@ -12,7 +12,7 @@ type Metric = "revenue" | "supporters" | "gifts" | "avgContribution" | "referral
 type TimePeriod = "week" | "month" | "year";
 
 const metricConfig: Record<Metric, { label: string; color: string; accentClass: string; borderClass: string; badgeClass: string; iconColor: string }> = {
-  revenue:          { label: "Revenue Over Time",             color: "oklch(65.6% 0.241 354.308)",   accentClass: "bg-purple-600/10",   borderClass: "border-purple-500/20", badgeClass: "text-purple-400 bg-purple-600/20", iconColor: "text-purple-400" },
+  revenue:          { label: "Net Revenue Over Time",          color: "oklch(65.6% 0.241 354.308)",   accentClass: "bg-purple-600/10",   borderClass: "border-purple-500/20", badgeClass: "text-purple-400 bg-purple-600/20", iconColor: "text-purple-400" },
   supporters:       { label: "Supporter Growth",              color: "oklch(72% 0.2 350)",            accentClass: "bg-pink-600/10",     borderClass: "border-pink-500/20",   badgeClass: "text-pink-400 bg-pink-600/20",     iconColor: "text-pink-400" },
   gifts:            { label: "Gifts Over Time",               color: "oklch(60% 0.2 250)",            accentClass: "bg-blue-600/10",     borderClass: "border-blue-500/20",   badgeClass: "text-blue-400 bg-blue-600/20",     iconColor: "text-blue-400" },
   avgContribution:  { label: "Avg. Contribution Over Time",   color: "oklch(65% 0.18 155)",           accentClass: "bg-green-600/10",    borderClass: "border-green-500/20",  badgeClass: "text-green-400 bg-green-600/20",   iconColor: "text-green-400" },
@@ -34,9 +34,8 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
   useEffect(() => {
     async function loadData() {
       setDataLoading(true);
-      const period = timePeriod === "week" ? "month" : timePeriod === "month" ? "month" : "year";
       const [analyticsRes, referralRes] = await Promise.all([
-        analyticsApi.get(period as "month" | "year" | "all-time"),
+        analyticsApi.get(timePeriod),
         referralApi.getStats(),
       ]);
 
@@ -65,14 +64,14 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
   // Build chart and stats from API data (with fallbacks)
   const apiStats = analyticsData?.stats;
   const stats = {
-    revenue: apiStats ? `$${apiStats.totalRevenue.toLocaleString()}` : "$0",
-    revenueChange: apiStats ? `${apiStats.revenueChange >= 0 ? "+" : ""}${apiStats.revenueChange}%` : "0%",
+    revenue: apiStats ? `$${apiStats.netRevenue.toLocaleString()}` : "$0",
+    revenueChange: apiStats ? `${apiStats.revenueChange >= 0 ? "+" : ""}${apiStats.revenueChange.toFixed(1)}%` : "0%",
     supporters: apiStats?.totalSupporters ?? 0,
-    supportersChange: apiStats ? `${apiStats.supportersChange >= 0 ? "+" : ""}${apiStats.supportersChange}` : "0",
+    supportersChange: apiStats ? `${apiStats.supportersChange >= 0 ? "+" : ""}${apiStats.supportersChange.toFixed(1)}` : "0",
     gifts: apiStats?.totalGifts ?? 0,
-    giftsChange: apiStats ? `${apiStats.giftsChange >= 0 ? "+" : ""}${apiStats.giftsChange}` : "0",
+    giftsChange: apiStats ? `${apiStats.giftsChange >= 0 ? "+" : ""}${apiStats.giftsChange.toFixed(1)}` : "0",
     avg: apiStats ? `$${apiStats.avgContribution.toFixed(2)}` : "$0",
-    avgChange: apiStats ? `${apiStats.avgContributionChange >= 0 ? "+" : ""}${apiStats.avgContributionChange}%` : "0%",
+    avgChange: apiStats ? `${apiStats.avgContributionChange >= 0 ? "+" : ""}${apiStats.avgContributionChange.toFixed(1)}%` : "0%",
     referralEarnings: referralStats ? `$${referralStats.totalCommissionEarned.toLocaleString()}` : "$0",
     referralEarningsChange: referralStats ? `+${Math.round((referralStats.commissionThisMonth / Math.max(1, referralStats.totalCommissionEarned)) * 100)}%` : "0%",
     commissionEarned: referralStats ? `$${referralStats.commissionThisMonth.toLocaleString()}` : "$0",
@@ -81,12 +80,12 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
 
   const chartDataFromApi = analyticsData?.chartData;
   const chartDataMap: Record<Metric, { values: number[]; labels: string[]; format: (n: number) => string }> = {
-    revenue:          { values: chartDataFromApi?.revenue ?? [], labels: chartDataFromApi?.labels ?? [], format: n => `$${n}` },
+    revenue:          { values: chartDataFromApi?.netRevenue ?? [], labels: chartDataFromApi?.labels ?? [], format: n => `$${n.toFixed(2)}` },
     supporters:       { values: chartDataFromApi?.supporters ?? [], labels: chartDataFromApi?.labels ?? [], format: n => `${n}` },
     gifts:            { values: chartDataFromApi?.gifts ?? [], labels: chartDataFromApi?.labels ?? [], format: n => `${n}` },
-    avgContribution:  { values: chartDataFromApi?.avgContribution ?? [], labels: chartDataFromApi?.labels ?? [], format: n => `$${n}` },
-    referralEarnings: { values: chartDataFromApi?.revenue.map(v => Math.round(v * 0.05)) ?? [], labels: chartDataFromApi?.labels ?? [], format: n => `$${n}` },
-    commissionEarned: { values: chartDataFromApi?.revenue.map(v => Math.round(v * 0.025)) ?? [], labels: chartDataFromApi?.labels ?? [], format: n => `$${n}` },
+    avgContribution:  { values: chartDataFromApi?.avgContribution ?? [], labels: chartDataFromApi?.labels ?? [], format: n => `$${n.toFixed(2)}` },
+    referralEarnings: { values: chartDataFromApi?.revenue?.map(v => Math.round(v * 0.05)) ?? [], labels: chartDataFromApi?.labels ?? [], format: n => `$${n}` },
+    commissionEarned: { values: chartDataFromApi?.revenue?.map(v => Math.round(v * 0.025)) ?? [], labels: chartDataFromApi?.labels ?? [], format: n => `$${n}` },
   };
 
   const chart = chartDataMap[selectedMetric];
@@ -95,7 +94,7 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
   const chartKey = `${selectedMetric}-${timePeriod}`;
 
   const statCards: { metric: Metric; icon: React.ReactNode; label: string; value: string; change: string }[] = [
-    { metric: "revenue",          icon: <DollarSign className="w-10 h-10 text-purple-400" />, label: "Total Revenue",        value: stats.revenue,                    change: stats.revenueChange },
+    { metric: "revenue",          icon: <DollarSign className="w-10 h-10 text-purple-400" />, label: "Net Revenue",          value: stats.revenue,                    change: stats.revenueChange },
     { metric: "supporters",       icon: <Users className="w-10 h-10 text-pink-400" />,        label: "Total Supporters",     value: String(stats.supporters),         change: stats.supportersChange },
     { metric: "gifts",            icon: <Gift className="w-10 h-10 text-blue-400" />,         label: "Gifts Received",       value: String(stats.gifts),              change: stats.giftsChange },
     { metric: "avgContribution",  icon: <TrendingUp className="w-10 h-10 text-green-400" />,  label: "Avg. Contribution",    value: stats.avg,                        change: stats.avgChange },
@@ -372,64 +371,44 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
           </div>
 
           {/* Top Projects */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="mt-6 border border-border bg-background p-8"
-          >
-            <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-6">Top Performing Items</div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {([
-                { name: "New Streaming Setup",     revenue: { week: "$680", month: "$1,890", year: "$8,400" }, supporters: { week: 9,  month: 28, year: 94 } },
-                { name: "Art Supplies Collection", revenue: { week: "$255", month: "$520",   year: "$5,200" }, supporters: { week: 6,  month: 15, year: 52 } },
-                { name: "Coffee Fund",             revenue: { week: "$75",  month: "$200",   year: "$1,840" }, supporters: { week: 5,  month: 12, year: 40 } },
-              ] as const).map((project, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.8 + index * 0.1 }}
-                  whileHover={{ y: -2 }}
-                  className="p-5 border border-border bg-muted hover:bg-background hover:shadow-sm transition-all cursor-pointer"
-                >
-                  <h3 className="text-sm font-black text-foreground mb-4 truncate">{project.name}</h3>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-subtle text-xs font-bold uppercase tracking-widest">Revenue</span>
-                      <AnimatePresence mode="wait">
-                        <motion.span
-                          key={timePeriod + project.name + "r"}
-                          initial={{ opacity: 0, y: -4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 4 }}
-                          transition={{ duration: 0.2 }}
-                          className="text-accent font-black text-sm"
-                        >
-                          {project.revenue[timePeriod]}
-                        </motion.span>
-                      </AnimatePresence>
+          {analyticsData?.topProjects && analyticsData.topProjects.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="mt-6 border border-border bg-background p-8"
+            >
+              <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-6">Top Performing Projects</div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {analyticsData.topProjects.map((project, index) => (
+                  <motion.div
+                    key={project.projectId}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.8 + index * 0.1 }}
+                    whileHover={{ y: -2 }}
+                    className="p-5 border border-border bg-muted hover:bg-background hover:shadow-sm transition-all cursor-pointer"
+                  >
+                    <h3 className="text-sm font-black text-foreground mb-4 truncate">{project.name}</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-subtle text-xs font-bold uppercase tracking-widest">Revenue</span>
+                        <span className="text-accent font-black text-sm">
+                          ${project.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-subtle text-xs font-bold uppercase tracking-widest">Fans</span>
+                        <span className="text-foreground font-black text-sm">
+                          {project.supporterCount}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-subtle text-xs font-bold uppercase tracking-widest">Fans</span>
-                      <AnimatePresence mode="wait">
-                        <motion.span
-                          key={timePeriod + project.name + "s"}
-                          initial={{ opacity: 0, y: -4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 4 }}
-                          transition={{ duration: 0.2 }}
-                          className="text-foreground font-black text-sm"
-                        >
-                          {project.supporters[timePeriod]}
-                        </motion.span>
-                      </AnimatePresence>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
 
           {/* Referral Overview Panel */}
           <motion.div
@@ -441,7 +420,7 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
             <div className="flex items-start justify-between flex-wrap gap-4 mb-6">
               <div>
                 <h2 className="text-2xl font-bold text-foreground">Referral Overview</h2>
-                <p className="text-muted-foreground text-sm mt-1">Earnings from creators you've referred to TipFlow</p>
+                <p className="text-muted-foreground text-sm mt-1">Earnings from creators you've referred to Rory</p>
               </div>
               <motion.button
                 whileHover={{ scale: 1.04 }}
@@ -500,7 +479,7 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
 
       <footer className="py-10 px-6 border-t border-border">
         <div className="max-w-7xl mx-auto text-center text-subtle text-sm">
-          <p>© 2026 TipFlow. All rights reserved.</p>
+          <p>© 2026 Rory. All rights reserved.</p>
         </div>
       </footer>
     </div>

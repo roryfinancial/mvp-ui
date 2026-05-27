@@ -1,5 +1,7 @@
+import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { User, Zap } from "lucide-react";
+import { User, Zap, Loader2 } from "lucide-react";
+import { followApi } from "../../lib/api";
 
 interface FollowedCreator {
   id: string;
@@ -39,16 +41,7 @@ export default function SupporterProfile({
   totalContributed = "$4,699.79",
   creatorsFollowing = 8,
   bestRank = "#1",
-  followedCreators = [
-    { id: "clavicular", name: "Clavicular", username: "@clavicular", initials: "CL", rank: 10, isLive: true },
-    { id: "alexcreative", name: "Alex Creative", username: "@alexcreative", initials: "AC", rank: 24 },
-    { id: "sarahdesigns", name: "Sarah Designs", username: "@sarahdesigns", initials: "SD", rank: 42 },
-    { id: "mikestudios", name: "Mike Studios", username: "@mikestudios", initials: "MS", rank: 67 },
-    { id: "jordanlee", name: "Jordan Lee", username: "@jordanlee", initials: "JL", rank: 89 },
-    { id: "emmavision", name: "Emma Vision", username: "@emmavision", initials: "EV", rank: 105 },
-    { id: "ryanbeats", name: "Ryan Beats", username: "@ryanbeats", initials: "RB", rank: 131 },
-    { id: "lilycraft", name: "Lily Craft", username: "@lilycraft", initials: "LC", rank: 200 },
-  ],
+  followedCreators: followedCreatorsProp,
   contributions = [
     { creatorName: "Clavicular", creatorInitials: "CL", itemTitle: "Ableton Push 3", amount: "$250", timestamp: "2 days ago", rank: 1 },
     { creatorName: "Alex Creative", creatorInitials: "AC", itemTitle: "New Streaming Setup", amount: "$150", timestamp: "1 week ago", rank: 2 },
@@ -58,6 +51,26 @@ export default function SupporterProfile({
   ],
   onViewCreator,
 }: SupporterProfileProps) {
+  const [fetchedCreators, setFetchedCreators] = useState<FollowedCreator[]>([]);
+  const [loadingFollowing, setLoadingFollowing] = useState(!followedCreatorsProp);
+
+  useEffect(() => {
+    if (followedCreatorsProp) return;
+    followApi.getFollowing().then(res => {
+      if (res.success && res.data) {
+        setFetchedCreators(res.data.map(c => ({
+          id: c.creatorUsername,
+          name: c.creatorDisplayName,
+          username: `@${c.creatorUsername}`,
+          initials: c.creatorInitials,
+          profileImage: c.creatorAvatarUrl ?? undefined,
+        })));
+      }
+    }).catch(() => {}).finally(() => setLoadingFollowing(false));
+  }, [followedCreatorsProp]);
+
+  const followedCreators = followedCreatorsProp ?? fetchedCreators;
+
   const getRankColor = (rank: number) => {
     if (rank === 1) return "#FFD700";
     if (rank === 2) return "#C0C0C0";
@@ -104,7 +117,7 @@ export default function SupporterProfile({
                   </div>
                   <div className="w-px h-10 bg-white/20" />
                   <div className="text-center">
-                    <p className="text-2xl font-black text-white">{creatorsFollowing}</p>
+                    <p className="text-2xl font-black text-white">{followedCreators.length || creatorsFollowing}</p>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-white/50">Following</p>
                   </div>
                   <div className="w-px h-10 bg-white/20" />
@@ -128,7 +141,7 @@ export default function SupporterProfile({
             <p className="text-[10px] font-bold uppercase tracking-widest text-subtle">Gifted</p>
           </div>
           <div className="flex-1 p-4 bg-muted border border-border text-center">
-            <p className="text-lg font-black text-foreground">{creatorsFollowing}</p>
+            <p className="text-lg font-black text-foreground">{followedCreators.length || creatorsFollowing}</p>
             <p className="text-[10px] font-bold uppercase tracking-widest text-subtle">Following</p>
           </div>
           <div className="flex-1 p-4 bg-muted border border-border text-center">
@@ -144,6 +157,13 @@ export default function SupporterProfile({
           transition={{ duration: 0.5, delay: 0.1 }}
         >
           <h2 className="text-xs font-black uppercase tracking-widest text-subtle mb-4">Following</h2>
+          {loadingFollowing ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : followedCreators.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">Not following any creators yet.</p>
+          ) : (
           <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
             {followedCreators.map((creator, index) => (
               <motion.div
@@ -180,6 +200,7 @@ export default function SupporterProfile({
               </motion.div>
             ))}
           </div>
+          )}
         </motion.section>
 
         {/* Contribution History */}

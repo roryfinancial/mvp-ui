@@ -1,11 +1,11 @@
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { Routes, Route, useNavigate, useLocation, useParams, useSearchParams, Outlet, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Loader2 } from "lucide-react";
 import Navbar from "./components/Navbar";
 import { useAuth } from "../contexts/AuthContext";
-import { Store } from "../lib/store";
-import type { GamificationState } from "../lib/types";
+import { gamificationApi } from "../lib/api";
+import type { GamificationState, LeagueTier, BadgeId } from "../lib/types";
 
 import Home from "./pages/Home";
 import Auth from "./components/Auth";
@@ -14,7 +14,7 @@ import OnboardingChoice from "./components/OnboardingChoice";
 import CreatorDashboard from "./components/CreatorDashboard";
 import CommunityHub from "./components/CommunityHub";
 import CreateProject from "./components/CreateProject";
-import CreateWishlist from "./components/CreateWishlist";
+import CreateProjectPage from "./components/CreateProjectPage";
 import ProjectOverview from "./components/ProjectOverview";
 import CreatorProfile from "./components/CreatorProfile";
 import Settings from "./components/Settings";
@@ -48,7 +48,7 @@ function RequireAuth({ children }: { children: ReactNode }) {
 }
 
 // ─── Layout: always requires auth, always shows Navbar ───────────────────────
-function AuthenticatedLayout({ creditBalance, userType }: { creditBalance: number; userType: UserType }) {
+function AuthenticatedLayout({ creditBalance, userType, gamification }: { creditBalance: number; userType: UserType; gamification?: GamificationState }) {
   const { isAuthenticated, loading, user } = useAuth();
   if (loading) return <AuthLoading />;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
@@ -80,9 +80,9 @@ function HomeRoute() {
   return (
     <>
       <Helmet>
-        <title>TipFlow — Fan Gifts. Zero Fees.</title>
-        <meta name="description" content="TipFlow lets fans fund the gear, software, and essentials creators actually need — with zero platform fees." />
-        <link rel="canonical" href="https://tipflow.com/" />
+        <title>Rory — Fan Gifts. Zero Fees.</title>
+        <meta name="description" content="Rory lets fans fund the gear, software, and essentials creators actually need — with zero platform fees." />
+        <link rel="canonical" href="https://rory.com/" />
       </Helmet>
       <Home
         onNavigateToAuth={() => navigate("/login")}
@@ -106,8 +106,8 @@ function LoginRoute() {
   return (
     <>
       <Helmet>
-        <title>Log In — TipFlow</title>
-        <meta name="description" content="Sign in to your TipFlow account." />
+        <title>Log In — Rory</title>
+        <meta name="description" content="Sign in to your Rory account." />
       </Helmet>
       <Auth
         mode="login"
@@ -124,8 +124,8 @@ function SignUpRoute() {
   return (
     <>
       <Helmet>
-        <title>Sign Up — TipFlow</title>
-        <meta name="description" content="Create your TipFlow account to start gifting or building your project." />
+        <title>Sign Up — Rory</title>
+        <meta name="description" content="Create your Rory account to start gifting or building your project." />
       </Helmet>
       <Auth
         mode="signup"
@@ -142,7 +142,7 @@ function ConnectPlatformsRoute({ userType }: { userType: UserType }) {
   return (
     <>
       <Helmet>
-        <title>Connect Platforms — TipFlow</title>
+        <title>Connect Platforms — Rory</title>
       </Helmet>
       <ConnectPlatforms
         userType={userType}
@@ -158,7 +158,7 @@ function OnboardingRoute({ userType }: { userType: UserType }) {
   return (
     <>
       <Helmet>
-        <title>Get Started — TipFlow</title>
+        <title>Get Started — Rory</title>
       </Helmet>
       <OnboardingChoice
         userType={userType}
@@ -177,7 +177,7 @@ function CreatorDashboardRoute() {
   return (
     <>
       <Helmet>
-        <title>Dashboard — TipFlow</title>
+        <title>Dashboard — Rory</title>
         <meta name="robots" content="noindex" />
       </Helmet>
       <CreatorDashboard
@@ -200,7 +200,7 @@ function CommunityHubRoute({
   return (
     <>
       <Helmet>
-        <title>Community — TipFlow</title>
+        <title>Community — Rory</title>
         <meta name="robots" content="noindex" />
       </Helmet>
       <CommunityHub gamification={gamification} onGamificationUpdate={onGamificationUpdate} />
@@ -213,12 +213,12 @@ function CreateProjectListRoute() {
   return (
     <>
       <Helmet>
-        <title>New Project — TipFlow</title>
+        <title>New Project — Rory</title>
         <meta name="robots" content="noindex" />
       </Helmet>
-      <CreateWishlist
+      <CreateProjectPage
         onBack={() => navigate("/dashboard")}
-        onCreateProject={() => navigate("/dashboard")}
+        onComplete={() => navigate("/dashboard")}
       />
     </>
   );
@@ -229,7 +229,7 @@ function CreateProjectRoute() {
   return (
     <>
       <Helmet>
-        <title>Add Item — TipFlow</title>
+        <title>Add Item — Rory</title>
         <meta name="robots" content="noindex" />
       </Helmet>
       <CreateProject
@@ -245,8 +245,8 @@ function ProjectOverviewRoute({ userType }: { userType: UserType }) {
   return (
     <>
       <Helmet>
-        <title>Project — TipFlow</title>
-        <meta name="description" content="Support this creator's project on TipFlow." />
+        <title>Project — Rory</title>
+        <meta name="description" content="Support this creator's project on Rory." />
       </Helmet>
       <ProjectOverview
         onBack={() => navigate(-1 as never)}
@@ -263,8 +263,8 @@ function CreatorProfileRoute() {
   return (
     <>
       <Helmet>
-        <title>Creator Profile — TipFlow</title>
-        <meta name="description" content="Support this creator on TipFlow — donate to their projects." />
+        <title>Creator Profile — Rory</title>
+        <meta name="description" content="Support this creator on Rory — donate to their projects." />
       </Helmet>
       <CreatorProfile
         routeUsername={username ?? ""}
@@ -276,15 +276,18 @@ function CreatorProfileRoute() {
 
 function PublicProjectRoute() {
   const navigate = useNavigate();
+  const { username, projectId } = useParams<{ username: string; projectId: string }>();
   return (
     <>
       <Helmet>
-        <title>Project — TipFlow</title>
+        <title>Project — Rory</title>
         <meta name="description" content="Browse and donate to this creator's project." />
       </Helmet>
       <PublicWishlist
+        projectId={projectId ?? ""}
+        creatorUsername={username ?? ""}
         onBack={() => navigate(-1 as never)}
-        onViewCreator={() => navigate(-1 as never)}
+        onViewCreator={() => navigate(`/creator/${username}`)}
         onViewProject={(itemId) => navigate(`/project/${itemId}`)}
       />
     </>
@@ -304,7 +307,7 @@ function SettingsRoute({
   return (
     <>
       <Helmet>
-        <title>Settings — TipFlow</title>
+        <title>Settings — Rory</title>
         <meta name="robots" content="noindex" />
       </Helmet>
       <Settings
@@ -321,7 +324,7 @@ function AnalyticsRoute() {
   return (
     <>
       <Helmet>
-        <title>Analytics — TipFlow</title>
+        <title>Analytics — Rory</title>
         <meta name="robots" content="noindex" />
       </Helmet>
       <Analytics />
@@ -333,7 +336,7 @@ function ReferralsRoute() {
   return (
     <>
       <Helmet>
-        <title>Referrals — TipFlow</title>
+        <title>Referrals — Rory</title>
         <meta name="robots" content="noindex" />
       </Helmet>
       <Referrals />
@@ -346,8 +349,8 @@ function LeaderboardRoute() {
   return (
     <>
       <Helmet>
-        <title>Leaderboard — TipFlow</title>
-        <meta name="description" content="See the top creators and supporters on TipFlow." />
+        <title>Leaderboard — Rory</title>
+        <meta name="description" content="See the top creators and supporters on Rory." />
       </Helmet>
       <Leaderboard
         onViewCreator={(username) => navigate(`/creator/${username}`)}
@@ -380,8 +383,8 @@ function SupporterProfileRoute() {
   return (
     <>
       <Helmet>
-        <title>Supporter Profile — TipFlow</title>
-        <meta name="description" content="See what this supporter is following and contributing to on TipFlow." />
+        <title>Supporter Profile — Rory</title>
+        <meta name="description" content="See what this supporter is following and contributing to on Rory." />
       </Helmet>
       <SupporterProfile
         onViewCreator={(creatorId) => navigate(`/creator/${creatorId}`)}
@@ -390,22 +393,42 @@ function SupporterProfileRoute() {
   );
 }
 
+const DEFAULT_GAMIFICATION: GamificationState = {
+  xp: 0, level: 1, streakDays: 0, lastActivityDate: "",
+  leagueTier: "bronze", weeklyGifted: 0, badges: [], questsCompletedToday: [],
+};
+
 export default function App() {
-  const { user, updateBalance } = useAuth();
+  const { user, isAuthenticated, updateBalance } = useAuth();
   const userType: UserType = user?.role ?? "creator";
   const creditBalance = user?.creditBalance ?? 0;
-  const [gamification, setGamification] = useState<GamificationState>(() => {
+  const [gamification, setGamification] = useState<GamificationState>(DEFAULT_GAMIFICATION);
+
+  const refreshGamification = useCallback(async () => {
     try {
-      const saved = localStorage.getItem("tipflow_gamification");
-      return saved ? (JSON.parse(saved) as GamificationState) : Store.getGamificationState();
+      const res = await gamificationApi.getState();
+      if (res.success && res.data) {
+        setGamification({
+          xp: res.data.xp,
+          level: res.data.level,
+          streakDays: res.data.streakDays,
+          lastActivityDate: res.data.lastActivityDate ?? "",
+          leagueTier: (res.data.leagueTier as LeagueTier) ?? "bronze",
+          weeklyGifted: res.data.weeklyGifted,
+          badges: res.data.badges as BadgeId[],
+          questsCompletedToday: res.data.questsCompletedToday,
+        });
+      }
     } catch {
-      return Store.getGamificationState();
+      // Backend unavailable — keep current state
     }
-  });
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem("tipflow_gamification", JSON.stringify(gamification));
-  }, [gamification]);
+    if (isAuthenticated) {
+      refreshGamification();
+    }
+  }, [isAuthenticated, refreshGamification]);
 
   return (
     <>
@@ -431,7 +454,8 @@ export default function App() {
         <Route element={<AuthenticatedLayout creditBalance={creditBalance} userType={userType} gamification={userType === "supporter" ? gamification : undefined} />}>
           <Route path="/dashboard" element={<CreatorDashboardRoute />} />
           <Route path="/supporter" element={<CommunityHubRoute gamification={gamification} onGamificationUpdate={setGamification} />} />
-          <Route path="/dashboard/new-wishlist" element={<CreateWishlistRoute />} />
+          <Route path="/dashboard/new-wishlist" element={<CreateProjectListRoute />} />
+          <Route path="/dashboard/new-project" element={<CreateProjectListRoute />} />
           <Route path="/dashboard/new-item" element={<CreateProjectRoute />} />
           <Route path="/project/:id" element={<ProjectOverviewRoute userType={userType} />} />
           <Route path="/settings" element={<SettingsRoute creditBalance={creditBalance} onUpdateBalance={updateBalance} />} />

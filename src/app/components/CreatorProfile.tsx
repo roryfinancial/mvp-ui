@@ -4,15 +4,15 @@ import { useNavigate } from "react-router-dom";
 import {
   User, Check, Zap, X, DollarSign, ArrowUp, Twitter, Youtube, Twitch,
   Play, Eye, Heart, MessageCircle, ChevronRight, List, ExternalLink,
-  Edit2, Settings, LogIn, Loader2,
+  Edit2, Settings, LogIn, Loader2, Target,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
-import { userApi, projectApi, followApi } from "../../lib/api";
+import { userApi, projectApi, followApi, giftApi } from "../../lib/api";
 import type { PublicUserResponse, ProjectResponse } from "../../lib/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface ProjectItem { id: string; title: string; thumbnail?: string }
+interface ProjectItem { id: string; title: string; description?: string; goalAmount?: number; raisedAmount?: number; status?: string; thumbnail?: string }
 interface CreatorProject { id: string; name: string; description?: string; coverImage?: string; items: ProjectItem[] }
 interface RecentEvent { title: string; thumbnail?: string }
 interface FeedItem {
@@ -71,9 +71,20 @@ const DEFAULT_FEED: FeedItem[] = [
 ];
 
 const DEFAULT_PROJECTS: CreatorProject[] = [
-  { id: "studio-gear",  name: "Studio Gear",      description: "Everything I need to level up my recording setup",  items: [{ id: "1", title: "Ableton Push 3" }, { id: "2", title: "Universal Audio Apollo X4" }, { id: "3", title: "Bose Solo Soundbar" }] },
-  { id: "dream-items",  name: "Dream Items",       description: "Big ticket items on my bucket list",                items: [{ id: "4", title: "Cybertruck" }, { id: "5", title: "Rolex Submariner" }] },
-  { id: "fitness",      name: "Fitness & Health",  items: [{ id: "6", title: "Pull-up Bar Station" }, { id: "7", title: "Theragun Pro" }, { id: "8", title: "Adjustable Dumbbell Set" }] },
+  { id: "studio-gear", name: "Studio Gear", description: "Everything I need to level up my recording setup", items: [
+    { id: "1", title: "Ableton Push 3", description: "MIDI controller for live production on stream", goalAmount: 1200, raisedAmount: 340, status: "ACTIVE" },
+    { id: "2", title: "Universal Audio Apollo X4", description: "Pro audio interface for studio-quality sound", goalAmount: 1800, raisedAmount: 200, status: "ACTIVE" },
+    { id: "3", title: "Bose Solo Soundbar", description: "Better monitoring for music reviews", goalAmount: 250, raisedAmount: 250, status: "COMPLETED" },
+  ]},
+  { id: "dream-items", name: "Dream Items", description: "Big ticket items on my bucket list", items: [
+    { id: "4", title: "Cybertruck", description: "The ultimate content creation vehicle", goalAmount: 50000, raisedAmount: 1200, status: "ACTIVE" },
+    { id: "5", title: "Rolex Submariner", description: "Milestone reward for hitting 1M subs", goalAmount: 12000, raisedAmount: 0, status: "ACTIVE" },
+  ]},
+  { id: "fitness", name: "Fitness & Health", items: [
+    { id: "6", title: "Pull-up Bar Station", description: "Home gym setup for stream break workouts", goalAmount: 300, raisedAmount: 150, status: "ACTIVE" },
+    { id: "7", title: "Theragun Pro", description: "Recovery after long streaming sessions", goalAmount: 400, raisedAmount: 400, status: "COMPLETED" },
+    { id: "8", title: "Adjustable Dumbbell Set", description: "Space-efficient weights for the office", goalAmount: 350, raisedAmount: 80, status: "ACTIVE" },
+  ]},
 ];
 
 const DEFAULT_PLATFORMS: ConnectedPlatform[] = [
@@ -99,7 +110,7 @@ export default function CreatorProfile({
   onViewProject,
 }: CreatorProfileProps) {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, refreshUser } = useAuth();
 
   // Dynamic state loaded from API
   const [profileLoading, setProfileLoading] = useState(true);
@@ -146,6 +157,10 @@ export default function CreatorProfile({
             items: w.items.map(item => ({
               id: item.id,
               title: item.title,
+              description: item.description ?? undefined,
+              goalAmount: item.goalAmount,
+              raisedAmount: item.raisedAmount,
+              status: item.status,
               thumbnail: item.thumbnailUrl ?? undefined,
             })),
           }))
@@ -156,10 +171,17 @@ export default function CreatorProfile({
         setFollowerCount((followCountRes.data as { count: number }).count);
       }
 
+      if (isAuthenticated) {
+        const statusRes = await followApi.isFollowing(routeUsername);
+        if (statusRes.success && statusRes.data) {
+          setIsFollowing((statusRes.data as { following: boolean }).following);
+        }
+      }
+
       setProfileLoading(false);
     }
     loadProfile();
-  }, [routeUsername]);
+  }, [routeUsername, isAuthenticated]);
 
   // Auth-derived view modes
   const isOwnProfile = isAuthenticated && !!user && user.username.toLowerCase() === routeUsername.toLowerCase();
@@ -185,26 +207,32 @@ export default function CreatorProfile({
   // Quick Tip modal state
   const [showQuickTip, setShowQuickTip] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
-  const [selectedTipItem, setSelectedTipItem] = useState<string | null>(null);
   const [selectedTipAmount, setSelectedTipAmount] = useState<number>(10);
   const [customTipAmount, setCustomTipAmount] = useState("");
   const [tipConfirmed, setTipConfirmed] = useState(false);
+  const [tipLoading, setTipLoading] = useState(false);
+  const [tipError, setTipError] = useState("");
 
-  const selectedProject = projects.find((w) => w.id === selectedProjectId);
-  const itemsInSelected = selectedProject?.items ?? [];
-
-  function handleConfirmTip() {
+  async function handleConfirmTip() {
     const amount = selectedTipAmount || (customTipAmount ? parseFloat(customTipAmount) : 0);
-    if (!selectedTipItem || amount <= 0) return;
-    setTipConfirmed(true);
-    setTimeout(() => {
-      setTipConfirmed(false);
-      setShowQuickTip(false);
-      setSelectedProjectId(null);
-      setSelectedTipItem(null);
-      setSelectedTipAmount(10);
-      setCustomTipAmount("");
-    }, 2000);
+    if (!selectedProjectId || amount <= 0) return;
+    setTipLoading(true);
+    setTipError("");
+    const res = await giftApi.create({ projectId: selectedProjectId, amount });
+    setTipLoading(false);
+    if (res.success) {
+      setTipConfirmed(true);
+      refreshUser();
+      setTimeout(() => {
+        setTipConfirmed(false);
+        setShowQuickTip(false);
+        setSelectedProjectId(null);
+        setSelectedTipAmount(10);
+        setCustomTipAmount("");
+      }, 2000);
+    } else {
+      setTipError(res.error?.message ?? "Donation failed. Please try again.");
+    }
   }
 
   function requireAuth(action: () => void) {
@@ -251,7 +279,7 @@ export default function CreatorProfile({
             exit={{ y: -40, opacity: 0 }}
             className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e0e] border-b border-border px-6 py-3 flex items-center justify-between"
           >
-            <div className="text-xl font-black text-white tracking-tight">TipFlow</div>
+            <div className="text-xl font-black text-white tracking-tight">Rory</div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-white/50 hidden sm:block">Create a project. Get funded. Zero fees.</span>
               <button
@@ -323,8 +351,11 @@ export default function CreatorProfile({
                       <Zap className="w-4 h-4" />
                       Quick Tip
                     </button>
-                    <button className="px-5 py-2.5 text-sm font-black border-2 border-white bg-transparent text-white hover:bg-white hover:text-black transition-all uppercase tracking-wider">
-                      Follow
+                    <button
+                      onClick={handleFollow}
+                      className={`px-5 py-2.5 text-sm font-black border-2 transition-all uppercase tracking-wider ${isFollowing ? "border-accent bg-accent text-white hover:bg-transparent hover:text-white hover:border-white" : "border-white bg-transparent text-white hover:bg-white hover:text-black"}`}
+                    >
+                      {isFollowing ? "Following" : "Follow"}
                     </button>
                   </>
                 )}
@@ -534,7 +565,7 @@ export default function CreatorProfile({
             className="px-8 py-3 btn-cta text-white font-black text-sm uppercase tracking-widest inline-flex items-center gap-2"
           >
             <LogIn className="w-4 h-4" />
-            Join TipFlow
+            Join Rory
           </button>
         </div>
       )}
@@ -542,7 +573,7 @@ export default function CreatorProfile({
       {/* ── Footer (guest only — authenticated users have Navbar) ─────────── */}
       {isGuest && (
         <footer className="py-8 px-6 border-t border-border">
-          <div className="max-w-7xl mx-auto text-center text-subtle text-sm">© 2026 TipFlow. All rights reserved.</div>
+          <div className="max-w-7xl mx-auto text-center text-subtle text-sm">© 2026 Rory. All rights reserved.</div>
         </footer>
       )}
 
@@ -589,46 +620,68 @@ export default function CreatorProfile({
                 {/* Step 1: Select Project */}
                 <div className="p-5 border-b border-border">
                   <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">1. Choose a project</div>
-                  <div className="space-y-2 max-h-36 overflow-y-auto">
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
                     {projects.map((w) => (
-                      <button
-                        key={w.id}
-                        onClick={() => { setSelectedProjectId(w.id); setSelectedTipItem(null); }}
-                        className={`w-full text-left p-3 border transition-colors flex items-center gap-3 ${selectedProjectId === w.id ? "border-accent bg-accent/5" : "border-border hover:border-accent/40"}`}
-                      >
-                        <div className="w-8 h-8 bg-muted flex items-center justify-center flex-shrink-0"><List className="w-3.5 h-3.5 text-accent" /></div>
-                        <div className="flex-1 min-w-0">
-                          <span className="text-sm font-bold text-foreground block truncate">{w.name}</span>
-                          <span className="text-[11px] text-subtle">{w.items.length} items</span>
-                        </div>
-                        {selectedProjectId === w.id && <Check className="w-4 h-4 text-accent flex-shrink-0" />}
-                      </button>
+                      <div key={w.id}>
+                        <button
+                          onClick={() => setSelectedProjectId(selectedProjectId === w.id ? null : w.id)}
+                          className={`w-full text-left p-3 border transition-colors flex items-center gap-3 ${selectedProjectId === w.id ? "border-accent bg-accent/5" : "border-border hover:border-accent/40"}`}
+                        >
+                          <div className="w-8 h-8 bg-muted flex items-center justify-center flex-shrink-0"><List className="w-3.5 h-3.5 text-accent" /></div>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-sm font-bold text-foreground block truncate">{w.name}</span>
+                            <span className="text-[11px] text-subtle">{w.items.length} goals</span>
+                          </div>
+                          {selectedProjectId === w.id && <Check className="w-4 h-4 text-accent flex-shrink-0" />}
+                        </button>
+                        {selectedProjectId === w.id && w.items.length > 0 && (
+                          <div className="ml-4 mt-1 mb-1 space-y-1">
+                            {w.items.map((item) => {
+                              const pct = item.goalAmount && item.goalAmount > 0
+                                ? Math.min(100, Math.round(((item.raisedAmount ?? 0) / item.goalAmount) * 100))
+                                : 0;
+                              const isFunded = item.status === "COMPLETED" || item.status === "GIFTED";
+                              return (
+                                <div key={item.id} className="p-2.5 border border-border bg-muted/50">
+                                  <div className="flex items-center justify-between mb-0.5">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      <Target className="w-3 h-3 text-accent flex-shrink-0" />
+                                      <span className="text-xs font-bold text-foreground truncate">{item.title}</span>
+                                    </div>
+                                    {isFunded ? (
+                                      <span className="text-[10px] font-black uppercase tracking-widest text-[#16a34a] flex-shrink-0">Funded</span>
+                                    ) : item.goalAmount ? (
+                                      <span className="text-[10px] font-bold text-subtle flex-shrink-0">
+                                        ${(item.raisedAmount ?? 0).toLocaleString()} / ${item.goalAmount.toLocaleString()}
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                  {item.description && (
+                                    <p className="text-[11px] text-muted-foreground pl-5 mb-1.5">{item.description}</p>
+                                  )}
+                                  {item.goalAmount && !isFunded && (
+                                    <div className="pl-5">
+                                      <div className="w-full h-1 bg-secondary overflow-hidden">
+                                        <div
+                                          className="h-full transition-all"
+                                          style={{ width: `${pct}%`, background: "oklch(65.6% 0.241 354.308)" }}
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Step 2: Select Item */}
+                {/* Step 2: Amount */}
                 <div className={`p-5 border-b border-border ${!selectedProjectId ? "opacity-40 pointer-events-none" : ""}`}>
-                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">2. Choose an item</div>
-                  <div className="space-y-2 max-h-36 overflow-y-auto">
-                    {itemsInSelected.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => setSelectedTipItem(item.id)}
-                        className={`w-full text-left p-3 border transition-colors flex items-center gap-3 ${selectedTipItem === item.id ? "border-accent bg-accent/5" : "border-border hover:border-accent/40"}`}
-                      >
-                        <div className="w-8 h-8 bg-muted flex items-center justify-center flex-shrink-0"><ArrowUp className="w-3.5 h-3.5 text-accent" /></div>
-                        <span className="text-sm font-bold text-foreground truncate flex-1">{item.title}</span>
-                        {selectedTipItem === item.id && <Check className="w-4 h-4 text-accent ml-auto flex-shrink-0" />}
-                      </button>
-                    ))}
-                    {itemsInSelected.length === 0 && <p className="text-subtle text-sm text-center py-4">Select a project first.</p>}
-                  </div>
-                </div>
-
-                {/* Step 3: Amount */}
-                <div className={`p-5 border-b border-border ${!selectedTipItem ? "opacity-40 pointer-events-none" : ""}`}>
-                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">3. Tip amount</div>
+                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">2. Tip amount</div>
                   <div className="flex flex-wrap gap-2 mb-3">
                     {[5, 10, 25, 50, 100].map((amt) => (
                       <button
@@ -653,17 +706,26 @@ export default function CreatorProfile({
 
                 {/* Confirm */}
                 <div className="p-5">
+                  {tipError && (
+                    <p className="text-red-500 text-xs font-medium mb-3">{tipError}</p>
+                  )}
                   <button
                     onClick={handleConfirmTip}
-                    disabled={!selectedTipItem || (!selectedTipAmount && !customTipAmount)}
+                    disabled={!selectedProjectId || (!selectedTipAmount && !customTipAmount) || tipLoading}
                     className="w-full py-3 bg-[#22c55e] hover:bg-[#16a34a] disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
                   >
-                    <Zap className="w-4 h-4" />
-                    {selectedTipAmount && !customTipAmount
-                      ? `Send $${selectedTipAmount} Tip`
-                      : customTipAmount
-                        ? `Send $${parseFloat(customTipAmount).toFixed(2)} Tip`
-                        : "Select Amount"}
+                    {tipLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Zap className="w-4 h-4" />
+                    )}
+                    {tipLoading
+                      ? "Processing..."
+                      : selectedTipAmount && !customTipAmount
+                        ? `Send $${selectedTipAmount} Tip`
+                        : customTipAmount
+                          ? `Send $${parseFloat(customTipAmount).toFixed(2)} Tip`
+                          : "Select Amount"}
                   </button>
                 </div>
               </>

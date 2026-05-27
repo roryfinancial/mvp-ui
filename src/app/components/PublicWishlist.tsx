@@ -1,67 +1,110 @@
 import { motion } from "motion/react";
-import { useState } from "react";
-import { User, Check, Zap, X, DollarSign, ArrowUp, ArrowLeft } from "lucide-react";
-
-interface ProjectItem {
-  id: string;
-  title: string;
-  status: "active" | "gifted";
-  giftedBy?: string;
-  thumbnail?: string;
-}
+import { useEffect, useState } from "react";
+import { User, Check, Zap, X, DollarSign, ArrowUp, ArrowLeft, Loader2 } from "lucide-react";
+import { projectApi, giftApi } from "../../lib/api";
+import type { ProjectResponse } from "../../lib/api";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface PublicProjectProps {
-  projectName?: string;
-  projectDescription?: string;
-  coverImage?: string;
-  creatorName?: string;
+  projectId: string;
   creatorUsername?: string;
-  items?: ProjectItem[];
-  totalFunded?: number;
-  totalGoal?: number;
   onBack?: () => void;
   onViewCreator?: () => void;
   onViewProject?: (itemId: string) => void;
 }
 
 export default function PublicWishlist({
-  projectName = "Studio Gear",
-  projectDescription = "Everything I need to level up my recording setup. Help me build the ultimate creative workspace!",
-  coverImage,
-  creatorName = "Clavicular",
-  creatorUsername = "clavicular",
-  items = [
-    { id: "1", title: "Ableton Push 3", status: "active" as const },
-    { id: "2", title: "Universal Audio Apollo X4 Gen 2", status: "active" as const },
-    { id: "3", title: "Bose Solo Soundbar Series II", status: "gifted" as const, giftedBy: "Anonymous" },
-    { id: "4", title: "Audio-Technica AT2020 Mic", status: "active" as const },
-    { id: "5", title: "Elgato Stream Deck MK.2", status: "active" as const },
-    { id: "6", title: "Sony MDR-7506 Headphones", status: "gifted" as const, giftedBy: "boogerbill01" },
-  ],
-  totalFunded = 823,
-  totalGoal = 4034,
+  projectId,
+  creatorUsername = "",
   onBack,
   onViewCreator,
   onViewProject,
 }: PublicProjectProps) {
+  const { refreshUser } = useAuth();
+  const [project, setProject] = useState<ProjectResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [showQuickTip, setShowQuickTip] = useState(false);
   const [selectedTipAmount, setSelectedTipAmount] = useState<number>(10);
   const [customTipAmount, setCustomTipAmount] = useState("");
   const [tipConfirmed, setTipConfirmed] = useState(false);
+  const [tipLoading, setTipLoading] = useState(false);
+  const [tipError, setTipError] = useState("");
+
+  useEffect(() => {
+    async function fetchProject() {
+      setLoading(true);
+      const res = await projectApi.getById(projectId);
+      if (res.success && res.data) {
+        setProject(res.data);
+      } else {
+        setError(res.error?.message ?? "Failed to load project");
+      }
+      setLoading(false);
+    }
+    fetchProject();
+  }, [projectId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+      </div>
+    );
+  }
+
+  if (error || !project) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+        <div className="text-center">
+          <p className="text-lg font-bold mb-2">Project not found</p>
+          <p className="text-subtle text-sm mb-4">{error}</p>
+          <button onClick={onBack} className="text-accent hover:underline text-sm">Go back</button>
+        </div>
+      </div>
+    );
+  }
+
+  const projectName = project.name;
+  const projectDescription = project.description;
+  const coverImage = project.coverImageUrl;
+  const totalFunded = project.raisedAmount;
+  const totalGoal = project.goalAmount;
+  const items = project.items.map(item => ({
+    id: item.id,
+    title: item.title,
+    status: (item.status === "GIFTED" ? "gifted" : "active") as "active" | "gifted",
+    giftedBy: item.giftedByUsername ?? undefined,
+    thumbnail: item.thumbnailUrl ?? undefined,
+  }));
 
   const activeItems = items.filter(i => i.status === "active");
   const giftedCount = items.filter(i => i.status === "gifted").length;
 
-  const handleConfirmTip = () => {
+  const handleConfirmTip = async () => {
     const amount = selectedTipAmount ?? (customTipAmount ? parseFloat(customTipAmount) : 0);
     if (amount <= 0) return;
-    setTipConfirmed(true);
-    setTimeout(() => {
-      setTipConfirmed(false);
-      setShowQuickTip(false);
-      setSelectedTipAmount(10);
-      setCustomTipAmount("");
-    }, 2000);
+    setTipLoading(true);
+    setTipError("");
+    const res = await giftApi.create({ projectId, amount });
+    setTipLoading(false);
+    if (res.success) {
+      setTipConfirmed(true);
+      // Refresh user balance in navbar and project data
+      refreshUser();
+      const refreshed = await projectApi.getById(projectId);
+      if (refreshed.success && refreshed.data) {
+        setProject(refreshed.data);
+      }
+      setTimeout(() => {
+        setTipConfirmed(false);
+        setShowQuickTip(false);
+        setSelectedTipAmount(10);
+        setCustomTipAmount("");
+      }, 2000);
+    } else {
+      setTipError(res.error?.message ?? "Donation failed. Please try again.");
+    }
   };
 
   return (
@@ -97,7 +140,7 @@ export default function PublicWishlist({
                 onClick={onViewCreator}
                 className="text-subtle hover:text-foreground transition-colors"
               >
-                {creatorName}
+                {creatorUsername}
               </button>
               <span className="text-subtle">/</span>
               <span className="text-foreground font-bold">{projectName}</span>
@@ -247,7 +290,7 @@ export default function PublicWishlist({
                       <h3 className="text-sm font-black text-foreground">
                         {projectName}
                       </h3>
-                      <p className="text-xs text-subtle">Donate to {creatorName}'s project</p>
+                      <p className="text-xs text-subtle">Donate to {creatorUsername}'s project</p>
                     </div>
                   </div>
                   <button
@@ -292,17 +335,26 @@ export default function PublicWishlist({
 
                 {/* Confirm */}
                 <div className="p-5">
+                  {tipError && (
+                    <p className="text-red-500 text-xs font-medium mb-3">{tipError}</p>
+                  )}
                   <button
                     onClick={handleConfirmTip}
-                    disabled={!selectedTipAmount && !customTipAmount}
+                    disabled={(!selectedTipAmount && !customTipAmount) || tipLoading}
                     className="w-full py-3 bg-[#22c55e] hover:bg-[#16a34a] disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
                   >
-                    <Zap className="w-4 h-4" />
-                    {selectedTipAmount
-                      ? `Donate $${selectedTipAmount}`
-                      : customTipAmount
-                        ? `Donate $${parseFloat(customTipAmount).toFixed(2)}`
-                        : "Select Amount"}
+                    {tipLoading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Zap className="w-4 h-4" />
+                    )}
+                    {tipLoading
+                      ? "Processing..."
+                      : selectedTipAmount
+                        ? `Donate $${selectedTipAmount}`
+                        : customTipAmount
+                          ? `Donate $${parseFloat(customTipAmount).toFixed(2)}`
+                          : "Select Amount"}
                   </button>
                 </div>
               </>

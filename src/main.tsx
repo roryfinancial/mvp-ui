@@ -14,7 +14,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         attribute="class"
         defaultTheme="light"
         enableSystem
-        storageKey="tipflow-theme"
+        storageKey="rory-theme"
         disableTransitionOnChange={false}
       >
         <BrowserRouter>

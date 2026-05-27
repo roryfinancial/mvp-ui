@@ -8,8 +8,9 @@ import { AuthService } from "../../lib/auth";
 import { Sounds } from "../../lib/sounds";
 import type { UserRole } from "../../lib/types";
 
-type Step = "entry" | "password";
+type Step = "entry" | "password" | "code";
 type AuthMode = "login" | "signup";
+type Channel = "email" | "phone";
 
 interface AuthProps {
   mode?: AuthMode;
@@ -27,6 +28,11 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState<UserRole>("creator");
   const [emailSent, setEmailSent] = useState(false);
+  const [channel, setChannel] = useState<Channel>("email");
+  const [codeSent, setCodeSent] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const N = 6;
+  const [digits, setDigits] = useState<string[]>(Array(N).fill(""));
   const codeInputs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -100,6 +106,38 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
     catch { setError("Social login failed"); setLoading(false); }
   }
 
+  // ── OTC verify + resend ──────────────────────────────────────────────────────
+
+  async function handleCode() {
+    setError(null);
+    const code = digits.join("");
+    if (code.length < N) return;
+    setLoading(true);
+    try {
+      const { data, error: verifyErr } = channel === "email"
+        ? await (await import("../../lib/supabase")).supabase.auth.verifyOtp({ email: identifier, token: code, type: "email" })
+        : await (await import("../../lib/supabase")).supabase.auth.verifyOtp({ phone: identifier, token: code, type: "sms" });
+      setLoading(false);
+      if (verifyErr) { setError(verifyErr.message); return; }
+      if (data?.user) done({ role: data.user.user_metadata?.role ?? "supporter" });
+    } catch {
+      setLoading(false);
+      setError("Verification failed");
+    }
+  }
+
+  async function handleResend() {
+    setError(null);
+    setLoading(true);
+    const res = channel === "email"
+      ? await AuthService.sendOtp(identifier)
+      : await AuthService.sendPhoneOtp(identifier);
+    setLoading(false);
+    if (!res.ok) { setError(res.error ?? "Failed to resend code"); return; }
+    setCountdown(30);
+    setDigits(Array(N).fill(""));
+  }
+
   // ── OTC digit inputs ─────────────────────────────────────────────────────────
 
   function onDigit(i: number, val: string) {
@@ -158,7 +196,7 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
             style={{ background: "radial-gradient(ellipse 70% 60% at 50% 70%, oklch(65.6% 0.241 354.308 / 0.1) 0%, transparent 70%)" }}
           />
           <div className="relative z-10">
-            <div className="text-2xl font-black text-white mb-8 tracking-tight">TipFlow</div>
+            <div className="text-2xl font-black text-white mb-8 tracking-tight">Rory</div>
             <h2 className="text-5xl font-black text-white mb-6 leading-tight tracking-tight">
               Your project,<br />
               <span style={{ color: "oklch(65.6% 0.241 354.308)" }}>funded.</span>
@@ -259,22 +297,8 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
                   {mode === "signup" ? "Create your account." : "Welcome back."}
                 </h1>
                 <p className="text-sm text-subtle mb-8">
-                  {mode === "signup" ? "Sign up to get started with TipFlow." : "Sign in to your TipFlow account."}
+                  {mode === "signup" ? "Sign up to get started with Rory." : "Sign in to your Rory account."}
                 </p>
-
-                {mode === "signup" && (
-                  <div className="flex mb-6 border border-border overflow-hidden">
-                    {(["creator", "supporter"] as UserRole[]).map((r, i) => (
-                      <button
-                        key={r}
-                        onClick={() => { Sounds.softClick(); setRole(r); }}
-                        className={`flex-1 py-3 px-4 text-sm font-bold uppercase tracking-wide transition-colors ${i > 0 ? "border-l border-border" : ""} ${role === r ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted"}`}
-                      >
-                        {r === "creator" ? "I'm a Creator" : "I'm a Supporter"}
-                      </button>
-                    ))}
-                  </div>
-                )}
 
                 <div className="flex mb-6 border border-border overflow-hidden">
                   {(["email", "phone"] as Channel[]).map((ch, i) => (
@@ -345,12 +369,12 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
                       {icon}
                       <span>{label}</span>
                       <span className="text-[10px] font-black uppercase tracking-widest ml-1">— Coming soon</span>
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
 
                 <p className="text-xs text-subtle text-center mt-6">
-                  By continuing, you agree to TipFlow's{" "}
+                  By continuing, you agree to Rory's{" "}
                   <a href="#" className="hover:underline font-medium text-accent">Terms</a>{" "}and{" "}
                   <a href="#" className="hover:underline font-medium text-accent">Privacy Policy</a>.
                 </p>

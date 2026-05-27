@@ -5,16 +5,12 @@ import {
   Check,
   Users,
   DollarSign,
-  MousePointerClick,
   UserCheck,
   TrendingUp,
   ChevronDown,
   Share2,
   Loader2,
 } from "lucide-react";
-import { referralApi } from "../../lib/api";
-import type { ReferralResponse, ReferralLinkResponse, ReferralStatsResponse } from "../../lib/api";
-
 interface ReferralsProps {}
 
 interface ReferredCreator {
@@ -28,6 +24,66 @@ interface ReferredCreator {
   status: "active" | "inactive" | "pending";
   tipsThisMonth: string;
 }
+
+const mockReferralLink = "rory.app/ref/alexchen42";
+
+const mockReferredCreators: ReferredCreator[] = [
+  {
+    name: "Jordan Rivera",
+    username: "@jordanrivera",
+    initials: "JR",
+    joinedDate: "Mar 12, 2026",
+    totalTips: "$4,820",
+    yourCommission: "$241.00",
+    commissionRate: 5,
+    status: "active",
+    tipsThisMonth: "$620",
+  },
+  {
+    name: "Maya Thompson",
+    username: "@mayathompson",
+    initials: "MT",
+    joinedDate: "Jan 8, 2026",
+    totalTips: "$3,150",
+    yourCommission: "$157.50",
+    commissionRate: 5,
+    status: "active",
+    tipsThisMonth: "$410",
+  },
+  {
+    name: "Liam Nguyen",
+    username: "@liamnguyen",
+    initials: "LN",
+    joinedDate: "Apr 22, 2026",
+    totalTips: "$1,900",
+    yourCommission: "$95.00",
+    commissionRate: 5,
+    status: "active",
+    tipsThisMonth: "$340",
+  },
+  {
+    name: "Priya Sharma",
+    username: "@priyasharma",
+    initials: "PS",
+    joinedDate: "May 1, 2026",
+    totalTips: "$680",
+    yourCommission: "$34.00",
+    commissionRate: 5,
+    status: "pending",
+    tipsThisMonth: "$680",
+  },
+  {
+    name: "Ethan Brooks",
+    username: "@ethanbrooks",
+    initials: "EB",
+    joinedDate: "Dec 15, 2025",
+    totalTips: "$2,400",
+    yourCommission: "$120.00",
+    commissionRate: 5,
+    status: "inactive",
+    tipsThisMonth: "$0",
+  },
+];
 
 const commissionTiers = [
   { label: "Starter", range: "0–5 referrals", rate: "5%", color: "bg-purple-600/15", border: "border-purple-500/30", badge: "text-purple-400 bg-purple-500/20", active: false },
@@ -48,41 +104,19 @@ export default function Referrals(_: ReferralsProps) {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
 
-  // Dynamic API data
+  // Mock data
   const [referredCreators, setReferredCreators] = useState<ReferredCreator[]>([]);
-  const [referralLink, setReferralLink] = useState<string>("tipflow.app/ref/...");
+  const [referralLink, setReferralLink] = useState<string>("rory.app/ref/...");
 
   useEffect(() => {
-    async function loadData() {
-      setDataLoading(true);
-      const [referralsRes, linkRes] = await Promise.all([
-        referralApi.getMyReferrals(),
-        referralApi.getLink(),
-      ]);
-
-      if (referralsRes.success && referralsRes.data) {
-        setReferredCreators(
-          referralsRes.data.map((r: ReferralResponse) => ({
-            name: r.referredUsername,
-            username: `@${r.referredUsername}`,
-            initials: r.referredUsername.slice(0, 2).toUpperCase(),
-            joinedDate: new Date(r.joinedDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-            totalTips: `$${r.totalTipsGenerated.toLocaleString()}`,
-            yourCommission: `$${r.yourCommission.toLocaleString()}`,
-            commissionRate: r.commissionRate,
-            status: r.status.toLowerCase() as "active" | "inactive" | "pending",
-            tipsThisMonth: `$${r.tipsThisMonth.toLocaleString()}`,
-          }))
-        );
-      }
-
-      if (linkRes.success && linkRes.data) {
-        setReferralLink(linkRes.data.referralLink);
-      }
-
+    setDataLoading(true);
+    // Simulate brief loading delay
+    const timer = setTimeout(() => {
+      setReferredCreators(mockReferredCreators);
+      setReferralLink(mockReferralLink);
       setDataLoading(false);
-    }
-    loadData();
+    }, 400);
+    return () => clearTimeout(timer);
   }, []);
 
   const REFERRAL_LINK = referralLink;
@@ -121,13 +155,13 @@ export default function Referrals(_: ReferralsProps) {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
-            className="mb-12 flex items-start justify-between flex-wrap gap-4"
+            className="mb-12 flex flex-col items-center text-center gap-4"
           >
             <div>
               <h1 className="text-5xl font-black text-foreground tracking-tight mb-2">
                 Referrals
               </h1>
-              <p className="text-muted-foreground text-lg">Earn commission by inviting other creators to TipFlow</p>
+              <p className="text-muted-foreground text-lg">Earn commission by inviting other creators to Rory</p>
             </div>
 
             {/* Share CTA */}
@@ -148,7 +182,7 @@ export default function Referrals(_: ReferralsProps) {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mb-10 p-6 bg-purple-600/10 border border-purple-500/20"
           >
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
+            <div className="flex flex-col items-center gap-4 text-center">
               <div>
                 <p className="text-muted-foreground text-xs mb-1 uppercase tracking-wider font-medium">Your Referral Link</p>
                 <p className="text-foreground font-mono text-base">{REFERRAL_LINK}</p>
@@ -191,18 +225,8 @@ export default function Referrals(_: ReferralsProps) {
           </motion.div>
 
           {/* KPI Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
             {[
-              {
-                icon: <MousePointerClick className="w-8 h-8 text-purple-400" />,
-                label: "Link Clicks",
-                value: "1,248",
-                change: "+18%",
-                badgeClass: "text-purple-400 bg-purple-500/20",
-                border: "border-purple-500/20",
-                bg: "bg-purple-600/10",
-                delay: 0.1,
-              },
               {
                 icon: <UserCheck className="w-8 h-8 text-pink-400" />,
                 label: "Total Sign-Ups",
@@ -211,7 +235,7 @@ export default function Referrals(_: ReferralsProps) {
                 badgeClass: "text-pink-400 bg-pink-500/20",
                 border: "border-pink-500/20",
                 bg: "bg-pink-600/10",
-                delay: 0.18,
+                delay: 0.1,
               },
               {
                 icon: <Users className="w-8 h-8 text-amber-400" />,
@@ -393,7 +417,7 @@ export default function Referrals(_: ReferralsProps) {
 
       <footer className="py-16 px-6 border-t border-border">
         <div className="max-w-7xl mx-auto text-center text-subtle">
-          <p>© 2026 TipFlow. All rights reserved.</p>
+          <p>© 2026 Rory. All rights reserved.</p>
         </div>
       </footer>
     </div>

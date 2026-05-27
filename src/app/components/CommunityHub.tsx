@@ -1,29 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect } from "react";
 import type { GamificationState, DailyQuest } from "../../lib/types";
-import { Store } from "../../lib/store";
-import { Sounds } from "../../lib/sounds";
-import { levelFromXp } from "../../lib/gamification";
+import { gamificationApi } from "../../lib/api";
 
-function todayKey() {
-  return `tipflow_quests_${new Date().toISOString().slice(0, 10)}`;
-}
-
-function loadQuests(): DailyQuest[] {
-  try {
-    const saved = localStorage.getItem(todayKey());
-    return saved ? (JSON.parse(saved) as DailyQuest[]) : Store.getDailyQuests();
-  } catch {
-    return Store.getDailyQuests();
-  }
-}
-
-function saveQuests(quests: DailyQuest[]) {
-  localStorage.setItem(todayKey(), JSON.stringify(quests));
-}
-import LiveTicker from "./LiveTicker";
 import DailyQuests from "./DailyQuests";
 import CommunityFeed from "./CommunityFeed";
 import GamificationSidebar from "./GamificationSidebar";
+import RecommendedCreators from "./RecommendedCreators";
 import ConfettiBurst from "./Confetti";
 import { ToastStack, useToasts } from "./Toast";
 
@@ -33,79 +15,46 @@ interface CommunityHubProps {
 }
 
 export default function CommunityHub({ gamification, onGamificationUpdate }: CommunityHubProps) {
-  const feedEvents = Store.getFeedEvents();
-  const [quests, setQuests] = useState<DailyQuest[]>(loadQuests);
-  const [showLevelUpConfetti, setShowLevelUpConfetti] = useState(false);
+  const [quests, setQuests] = useState<DailyQuest[]>([]);
   const { toasts, push: pushToast, dismiss } = useToasts();
 
-  const handleQuestComplete = useCallback((questId: string) => {
-    const quest = quests.find((q) => q.id === questId);
-    if (!quest || quest.completed || quest.locked) return;
-
-    const updated = quests.map((q) => {
-      if (q.id === questId) return { ...q, completed: true };
-      if (q.difficulty === "hard" && questId === "quest-easy") return { ...q, locked: false };
-      return q;
-    });
-    setQuests(updated);
-    saveQuests(updated);
-
-    const allDone = updated.every((q) => q.completed);
-    const xpGained = quest.xpReward + (allDone ? 50 : 0);
-    const newXp = gamification.xp + xpGained;
-    const oldLevel = gamification.level;
-    const newLevel = levelFromXp(newXp);
-    const didLevelUp = newLevel > oldLevel;
-
-    onGamificationUpdate({
-      ...gamification,
-      xp: newXp,
-      level: newLevel,
-      questsCompletedToday: [...gamification.questsCompletedToday, questId],
-    });
-
-    Sounds.xp();
-    pushToast("xp", `+${xpGained} XP`);
-
-    if (didLevelUp) {
-      setTimeout(() => {
-        Sounds.levelup();
-        pushToast("levelup", `🎉 Level Up! You're now Level ${newLevel}`);
-        setShowLevelUpConfetti(true);
-        setTimeout(() => setShowLevelUpConfetti(false), 3000);
-      }, 300);
-    }
-
-    if (allDone) {
-      setTimeout(() => Sounds.badge(), 400);
-    }
-  }, [quests, gamification, onGamificationUpdate, pushToast]);
+  // Fetch quests from backend on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await gamificationApi.getDailyQuests();
+        if (res.success && res.data) {
+          setQuests(res.data.map((q) => ({
+            id: q.id,
+            difficulty: q.difficulty,
+            label: q.label,
+            xpReward: q.xpReward,
+            completed: q.completed,
+            locked: q.locked,
+          })));
+        }
+      } catch {
+        // Backend unavailable — show empty quests
+      }
+    })();
+  }, []);
 
   return (
-    <div className="min-h-screen bg-background pt-16">
-      {/* Fullscreen level-up confetti */}
-      <ConfettiBurst active={showLevelUpConfetti} mode="fullscreen" count={60} />
-
-      {/* Live Ticker */}
-      <LiveTicker events={feedEvents} />
-
-      {/* Body */}
-      <div className="max-w-6xl mx-auto px-6 py-6 flex gap-6">
-        {/* Main area */}
-        <div className="flex-1 min-w-0 space-y-6">
-          <DailyQuests
-            quests={quests}
-            onQuestComplete={handleQuestComplete}
-            onToast={pushToast}
-          />
+    <div className="min-h-screen bg-background pt-[57px]">
+      <div className="max-w-7xl mx-auto flex gap-0">
+        {/* Main feed column */}
+        <div className="flex-1 min-w-0 max-w-[640px] mx-auto border-x border-border">
           <CommunityFeed onToast={pushToast} />
         </div>
 
-        {/* Sidebar */}
-        <GamificationSidebar gamification={gamification} onToast={pushToast} />
+        {/* Right sidebar — gamification + quests */}
+        <div className="hidden xl:block w-[320px] flex-shrink-0 sticky top-[57px] h-[calc(100vh-57px)] overflow-y-auto p-5 space-y-5">
+          <RecommendedCreators onToast={pushToast} />
+          <DailyQuests quests={quests} />
+          <GamificationSidebar gamification={gamification} onToast={pushToast} />
+        </div>
       </div>
 
-      {/* Toast notifications */}
       <ToastStack toasts={toasts} onDismiss={dismiss} />
     </div>
   );

@@ -16,7 +16,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e0e] border-b border-accent/40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="text-xl font-black text-white tracking-tight">TipFlow</div>
+          <div className="text-xl font-black text-white tracking-tight">Rory</div>
           <div className="flex items-center gap-8">
             <a href="#features" className="text-white/50 hover:text-white transition-colors text-sm font-medium">Features</a>
             <a href="#pricing" className="text-white/50 hover:text-white transition-colors text-sm font-medium">Pricing</a>
@@ -342,7 +342,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-5 gap-12 mb-12">
             <div className="md:col-span-2">
-              <div className="text-xl font-black text-white mb-4">TipFlow</div>
+              <div className="text-xl font-black text-white mb-4">Rory</div>
               <p className="text-white/40 mb-6 max-w-xs text-sm leading-relaxed">
                 The funding platform for creators. Get exactly what you need. Zero fees, ever.
               </p>
@@ -363,7 +363,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
             ))}
           </div>
           <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-white/30">
-            <p>© 2026 TipFlow. All rights reserved.</p>
+            <p>© 2026 Rory. All rights reserved.</p>
             <div className="flex gap-6">
               {["Privacy", "Terms", "Cookies"].map((l) => (
                 <a key={l} href="#" className="hover:text-white/60 transition-colors">{l}</a>

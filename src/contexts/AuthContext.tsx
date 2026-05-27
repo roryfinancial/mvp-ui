@@ -12,7 +12,7 @@ interface AuthContextValue {
   signUp: (email: string, password: string, role?: UserRole) => Promise<SignUpResult>;
   signInWithProvider: (provider: "google" | "twitch" | "twitter") => Promise<void>;
   logout: () => Promise<void>;
-  completeProfile: (username: string, displayName: string, userType: UserRole, referralCode?: string) => Promise<{ ok: boolean; error?: string }>;
+  completeProfile: (username: string, displayName: string, userType: UserRole, referralCode?: string, communities?: string[]) => Promise<{ ok: boolean; error?: string }>;
   updateBalance: (balance: number) => void;
   refreshUser: () => Promise<void>;
 }
@@ -32,6 +32,7 @@ function mapProfileToUser(profile: UserProfileResponse): User {
     creditBalance: profile.creditBalance,
     referralCode: profile.referralCode,
     stripeOnboardingComplete: profile.stripeOnboardingComplete,
+    communities: profile.communities ?? [],
     isProfileComplete: !isProvisional,
     createdAt: profile.createdAt,
   };
@@ -138,6 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         creditBalance: 0,
         referralCode: null,
         stripeOnboardingComplete: false,
+        communities: [],
         isProfileComplete: false,
         createdAt: data.user.created_at,
       },
@@ -162,13 +164,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     username: string,
     displayName: string,
     userType: UserRole,
-    referralCode?: string
+    referralCode?: string,
+    communities?: string[]
   ): Promise<{ ok: boolean; error?: string }> => {
     const res = await authApi.completeProfile({
       username,
       displayName: displayName || undefined,
       userType: userType.toUpperCase() as "CREATOR" | "SUPPORTER",
       referralCode: referralCode || undefined,
+      communities: communities?.length ? communities : undefined,
     });
 
     if (res.success && res.data) {

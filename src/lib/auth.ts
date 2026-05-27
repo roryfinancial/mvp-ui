@@ -13,6 +13,18 @@ export const AuthService = {
     if (error) throw error;
   },
 
+  async sendOtp(email: string): Promise<{ ok: boolean; error?: string }> {
+    const { error } = await supabase.auth.signInWithOtp({ email });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  },
+
+  async sendPhoneOtp(phone: string): Promise<{ ok: boolean; error?: string }> {
+    const { error } = await supabase.auth.signInWithOtp({ phone });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  },
+
   async logout(): Promise<void> {
     await supabase.auth.signOut();
   },

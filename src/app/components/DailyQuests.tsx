@@ -1,36 +1,32 @@
 import { motion } from "motion/react";
 import type { DailyQuest } from "../../lib/types";
-import { Sounds } from "../../lib/sounds";
-import type { ToastKind } from "./Toast";
 
 interface DailyQuestsProps {
   quests: DailyQuest[];
-  onQuestComplete?: (questId: string) => void;
-  onToast?: (kind: ToastKind, message: string) => void;
 }
 
 const DIFFICULTY_COLORS: Record<DailyQuest["difficulty"], string> = {
-  easy:   "text-green-400 border-green-400/30 bg-green-400/10",
-  medium: "text-yellow-400 border-yellow-400/30 bg-yellow-400/10",
-  hard:   "text-red-400 border-red-400/30 bg-red-400/10",
+  easy:   "text-green-500 border-green-500/30 bg-green-500/10",
+  medium: "text-yellow-500 border-yellow-500/30 bg-yellow-500/10",
+  hard:   "text-red-500 border-red-500/30 bg-red-500/10",
 };
 
-export default function DailyQuests({ quests, onQuestComplete, onToast }: DailyQuestsProps) {
+export default function DailyQuests({ quests }: DailyQuestsProps) {
   const completedCount = quests.filter((q) => q.completed).length;
-  const allDone = completedCount === 3;
+  const allDone = quests.length > 0 && completedCount === quests.length;
 
   return (
-    <div className="bg-white/5 border border-white/10 p-4 space-y-3">
+    <div className="bg-muted border border-border rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-black uppercase tracking-widest text-white">Daily Quests</h3>
-        <span className="text-xs text-white/40">{completedCount}/3 complete</span>
+        <h3 className="text-sm font-black uppercase tracking-widest text-foreground">Daily Quests</h3>
+        <span className="text-xs text-muted-foreground">{completedCount}/{quests.length} complete</span>
       </div>
 
       {/* Progress bar */}
-      <div className="h-1.5 bg-white/10">
+      <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
         <motion.div
-          className="h-full bg-accent"
-          animate={{ width: `${(completedCount / 3) * 100}%` }}
+          className="h-full bg-accent rounded-full"
+          animate={{ width: `${quests.length > 0 ? (completedCount / quests.length) * 100 : 0}%` }}
           transition={{ duration: 0.4 }}
         />
       </div>
@@ -40,33 +36,23 @@ export default function DailyQuests({ quests, onQuestComplete, onToast }: DailyQ
         {quests.map((quest) => (
           <div
             key={quest.id}
-            onClick={() => {
-              if (!quest.locked && !quest.completed && onQuestComplete) {
-                Sounds.quest();
-                onQuestComplete(quest.id);
-                onToast?.("quest", `✅ Quest done! +${quest.xpReward} XP`);
-                if (completedCount + 1 === 3) {
-                  setTimeout(() => onToast?.("badge", "🏆 All quests done! +50 XP bonus"), 600);
-                }
-              }
-            }}
-            className={`flex items-center gap-3 p-3 border transition-all ${
+            className={`flex items-center gap-3 p-3 border rounded transition-all ${
               quest.locked
-                ? "opacity-40 border-white/10 bg-white/5 cursor-not-allowed"
+                ? "opacity-40 border-border bg-secondary"
                 : quest.completed
-                ? "border-green-400/30 bg-green-400/5"
-                : "border-white/10 bg-white/5 cursor-pointer hover:bg-white/10"
+                ? "border-green-500/30 bg-green-500/5"
+                : "border-border bg-background"
             }`}
           >
-            <div className={`w-5 h-5 border-2 flex items-center justify-center flex-shrink-0 ${quest.completed ? "border-green-400 bg-green-400" : "border-white/30"}`}>
-              {quest.completed && <span className="text-black text-xs font-black">✓</span>}
+            <div className={`w-5 h-5 border-2 flex items-center justify-center flex-shrink-0 rounded-sm ${quest.completed ? "border-green-500 bg-green-500" : "border-muted-foreground/30"}`}>
+              {quest.completed && <span className="text-white text-xs font-black">✓</span>}
             </div>
             <div className="flex-1 min-w-0">
-              <p className={`text-sm font-medium ${quest.locked ? "text-white/30" : "text-white"}`}>
+              <p className={`text-sm font-medium ${quest.locked ? "text-muted-foreground/50" : "text-foreground"}`}>
                 {quest.locked ? "🔒 " : ""}{quest.label}
               </p>
             </div>
-            <span className={`text-xs font-bold px-2 py-0.5 border ${DIFFICULTY_COLORS[quest.difficulty]}`}>
+            <span className={`text-xs font-bold px-2 py-0.5 border rounded ${DIFFICULTY_COLORS[quest.difficulty]}`}>
               {quest.difficulty.charAt(0).toUpperCase() + quest.difficulty.slice(1)}
             </span>
             <span className="text-xs font-black text-accent flex-shrink-0">+{quest.xpReward} XP</span>
@@ -75,8 +61,8 @@ export default function DailyQuests({ quests, onQuestComplete, onToast }: DailyQ
       </div>
 
       {allDone && (
-        <div className="text-center text-xs font-black text-yellow-400 py-2 border border-yellow-400/30 bg-yellow-400/5">
-          🏆 All quests complete! +50 XP bonus earned
+        <div className="text-center text-xs font-black text-yellow-500 py-2 border border-yellow-500/30 bg-yellow-500/5 rounded">
+          All quests complete! +50 XP bonus earned
         </div>
       )}
     </div>

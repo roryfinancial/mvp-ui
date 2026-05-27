@@ -1,5 +1,5 @@
 // ─── API Client ────────────────────────────────────────────────────────────────
-// Communicates with the tipflow-api backend. Uses the Supabase JWT for auth.
+// Communicates with the rory-api backend. Uses the Supabase JWT for auth.
 
 import { supabase } from "./supabase";
 
@@ -19,6 +19,8 @@ export interface PagedResponse<T> {
   size: number;
   totalElements: number;
   totalPages: number;
+  last: boolean;
+  first: boolean;
 }
 
 export interface UserProfileResponse {
@@ -32,6 +34,7 @@ export interface UserProfileResponse {
   creditBalance: number;
   stripeOnboardingComplete: boolean;
   referralCode: string | null;
+  communities: string[];
   settings: UserSettings;
   connectedPlatforms: ConnectedPlatform[];
   createdAt: string;
@@ -61,6 +64,7 @@ export interface PublicUserResponse {
   totalGifted: number | null;
   creatorsSupported: number | null;
   itemsSupported: number | null;
+  communities: string[];
   connectedPlatforms: ConnectedPlatform[];
   createdAt: string;
 }
@@ -78,6 +82,7 @@ export interface CompleteProfileRequest {
   displayName?: string;
   userType: "CREATOR" | "SUPPORTER";
   referralCode?: string;
+  communities?: string[];
 }
 
 export interface ProjectResponse {
@@ -157,18 +162,22 @@ export interface AnalyticsResponse {
   chartData: {
     labels: string[];
     revenue: number[];
+    netRevenue: number[];
     supporters: number[];
     gifts: number[];
     avgContribution: number[];
+    netAvgContribution: number[];
   };
   stats: {
     totalRevenue: number;
+    netRevenue: number;
     revenueChange: number;
     totalSupporters: number;
     supportersChange: number;
     totalGifts: number;
     giftsChange: number;
     avgContribution: number;
+    netAvgContribution: number;
     avgContributionChange: number;
   };
   recentActivity: {
@@ -176,6 +185,13 @@ export interface AnalyticsResponse {
     amount: number;
     itemTitle: string;
     timeAgo: string;
+  }[];
+  topProjects: {
+    projectId: string;
+    name: string;
+    totalRevenue: number;
+    netRevenue: number;
+    supporterCount: number;
   }[];
 }
 
@@ -327,6 +343,12 @@ export const userApi = {
 
   disconnectPlatform: (username: string, platform: PlatformType) =>
     apiFetch<void>(`/api/users/${username}/platforms/${platform}`, { method: "DELETE" }),
+
+  updateCommunities: (username: string, communities: string[]) =>
+    apiFetch<UserProfileResponse>(`/api/users/${username}/communities`, {
+      method: "PUT",
+      body: JSON.stringify(communities),
+    }),
 };
 
 // ─── Project endpoints ──────────────────────────────────────────────────────
@@ -402,6 +424,9 @@ export const followApi = {
 
   getFollowerCount: (username: string) =>
     apiFetch<{ count: number }>(`/api/follows/creator/${username}/count`),
+
+  isFollowing: (creatorUsername: string) =>
+    apiFetch<{ following: boolean }>(`/api/follows/${creatorUsername}/status`),
 };
 
 // ─── Leaderboard endpoints ───────────────────────────────────────────────────
@@ -417,7 +442,7 @@ export const leaderboardApi = {
 // ─── Analytics endpoints ─────────────────────────────────────────────────────
 
 export const analyticsApi = {
-  get: (period: "month" | "year" | "all-time" = "month") =>
+  get: (period: "week" | "month" | "year" = "month") =>
     apiFetch<AnalyticsResponse>(`/api/analytics?period=${period}`),
 };
 
@@ -437,11 +462,176 @@ export const referralApi = {
     }),
 };
 
+// ─── Feed / Post types ──────────────────────────────────────────────────────
+
+export interface FeedPostResponse {
+  id: string;
+  authorUsername: string;
+  authorDisplayName: string;
+  authorAvatarUrl: string | null;
+  platform: "YOUTUBE" | "TWITCH" | "TWITTER" | "INSTAGRAM" | "TIKTOK";
+  platformUrl: string | null;
+  contentType: "IMAGE" | "VIDEO" | "TEXT" | "REEL" | "STREAM" | "SHORT";
+  caption: string | null;
+  imageUrl: string | null;
+  videoUrl: string | null;
+  thumbnailUrl: string | null;
+  platformLikes: number;
+  platformComments: number;
+  platformViews: number;
+  likeCount: number;
+  commentCount: number;
+  likedByMe: boolean;
+  linkedProject: {
+    projectId: string;
+    projectName: string;
+    itemTitle: string | null;
+    goalAmount: number;
+    raisedAmount: number;
+    progress: number;
+  } | null;
+  platformCreatedAt: string | null;
+  createdAt: string;
+}
+
+export interface FeedCreatorStory {
+  username: string;
+  displayName: string;
+  avatarUrl: string | null;
+  hasNewPosts: boolean;
+  platforms: string[];
+}
+
+// ─── Feed endpoints ─────────────────────────────────────────────────────────
+
+export const feedApi = {
+  getFeed: (page = 0, size = 20) =>
+    apiFetch<PagedResponse<FeedPostResponse>>(`/api/feed?page=${page}&size=${size}`),
+
+  getFollowingFeed: (page = 0, size = 20) =>
+    apiFetch<PagedResponse<FeedPostResponse>>(`/api/feed/following?page=${page}&size=${size}`),
+
+  getTrendingFeed: (page = 0, size = 20) =>
+    apiFetch<PagedResponse<FeedPostResponse>>(`/api/feed/trending?page=${page}&size=${size}`),
+
+  getCreatorPosts: (username: string, page = 0, size = 20) =>
+    apiFetch<PagedResponse<FeedPostResponse>>(`/api/feed/creator/${username}?page=${page}&size=${size}`),
+
+  getStoryCreators: () =>
+    apiFetch<FeedCreatorStory[]>("/api/feed/stories"),
+
+  toggleLike: (postId: string) =>
+    apiFetch<{ liked: boolean }>(`/api/feed/${postId}/like`, { method: "POST" }),
+};
+
+// ─── Recommendation types & endpoints ────────────────────────────────────────
+
+export interface RecommendedCreatorResponse {
+  username: string;
+  displayName: string;
+  initials: string;
+  avatarUrl: string | null;
+  bio: string | null;
+  followerCount: number;
+  reason: string;
+  reasonType: "FOLLOW_GRAPH" | "COMMUNITY";
+  score: number;
+}
+
+export const recommendationApi = {
+  getRecommendations: (limit = 10) =>
+    apiFetch<RecommendedCreatorResponse[]>(`/api/recommendations?limit=${limit}`),
+};
+
 // ─── Search endpoints ────────────────────────────────────────────────────────
 
 export const searchApi = {
   search: (query: string, type?: "creator" | "supporter") =>
     apiFetch<SearchResultResponse>(`/api/search?q=${encodeURIComponent(query)}${type ? `&type=${type}` : ""}`),
+};
+
+// ─── Gamification endpoints ─────────────────────────────────────────────────
+
+export interface GamificationStateResponse {
+  xp: number;
+  level: number;
+  streakDays: number;
+  lastActivityDate: string | null;
+  leagueTier: string;
+  weeklyGifted: number;
+  badges: string[];
+  questsCompletedToday: string[];
+}
+
+export interface DailyQuestResponse {
+  id: string;
+  difficulty: "easy" | "medium" | "hard";
+  label: string;
+  xpReward: number;
+  completed: boolean;
+  locked: boolean;
+}
+
+export interface WeeklyLeaderboardEntry {
+  rank: number;
+  username: string;
+  displayName: string;
+  amount: number;
+  isCurrentUser: boolean;
+}
+
+export const gamificationApi = {
+  getState: () =>
+    apiFetch<GamificationStateResponse>("/api/gamification/state"),
+
+  getDailyQuests: () =>
+    apiFetch<DailyQuestResponse[]>("/api/gamification/quests"),
+
+  getWeeklyLeaderboard: (limit = 5) =>
+    apiFetch<WeeklyLeaderboardEntry[]>(`/api/gamification/weekly-leaderboard?limit=${limit}`),
+};
+
+// ─── Wallet endpoints ───────────────────────────────────────────────────────
+
+export interface DepositResponse {
+  depositId: string;
+  checkoutUrl: string;
+  amount: number;
+}
+
+export interface WalletSummaryResponse {
+  creditBalance: number;
+  totalDeposited: number;
+  totalSpent: number;
+  totalReceived: number;
+  giftsSentCount: number;
+}
+
+export interface TransactionResponse {
+  id: string;
+  type: "DEPOSIT" | "GIFT_SENT" | "GIFT_RECEIVED" | "REFUND";
+  amount: number;
+  balanceAfter: number;
+  referenceId: string | null;
+  stripePaymentIntentId: string | null;
+  description: string;
+  createdAt: string;
+}
+
+export const walletApi = {
+  createDeposit: (amount: number) =>
+    apiFetch<DepositResponse>("/api/wallet/deposit", {
+      method: "POST",
+      body: JSON.stringify({ amount }),
+    }),
+
+  getSummary: () =>
+    apiFetch<WalletSummaryResponse>("/api/wallet/summary"),
+
+  getTransactions: (type?: string, page = 0, size = 20) =>
+    apiFetch<PagedResponse<TransactionResponse>>(
+      `/api/wallet/transactions?page=${page}&size=${size}${type ? `&type=${type}` : ""}`
+    ),
 };
 
 // ─── Stripe endpoints ────────────────────────────────────────────────────────

@@ -81,7 +81,7 @@ export default function Navbar({ creditBalance, userType, gamification }: Navbar
     <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e0e] border-b border-accent/40">
       <div className="max-w-full mx-auto px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <div className="text-xl font-black text-white tracking-tight">TipFlow</div>
+          <img src="/rory-word.svg" alt="Rory" className="h-9" />
           <div className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => {
               const isActive = path === link.path
