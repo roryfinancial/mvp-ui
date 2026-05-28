@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useRef, useEffect } from "react";
-import { Mail, Phone, Lock, ArrowLeft, AlertCircle, Loader2, Pencil, Zap } from "lucide-react";
+import { Mail, Lock, ArrowLeft, AlertCircle, Loader2, Pencil, Zap } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { validateEmail } from "../../lib/security";
 import { DEMO_CREDENTIALS } from "../../lib/store";
@@ -196,7 +196,7 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
             style={{ background: "radial-gradient(ellipse 70% 60% at 50% 70%, oklch(65.6% 0.241 354.308 / 0.1) 0%, transparent 70%)" }}
           />
           <div className="relative z-10">
-            <div className="text-2xl font-black text-white mb-8 tracking-tight">Rory</div>
+            <img src="/rory-word.svg" alt="Rory" className="h-8 mb-8 mx-auto" />
             <h2 className="text-5xl font-black text-white mb-6 leading-tight tracking-tight">
               Your project,<br />
               <span style={{ color: "oklch(65.6% 0.241 354.308)" }}>funded.</span>
@@ -300,18 +300,7 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
                   {mode === "signup" ? "Sign up to get started with Rory." : "Sign in to your Rory account."}
                 </p>
 
-                <div className="flex mb-6 border border-border overflow-hidden">
-                  {(["email", "phone"] as Channel[]).map((ch, i) => (
-                    <button
-                      key={ch}
-                      onClick={() => { Sounds.softClick(); setChannel(ch); setError(null); }}
-                      className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-bold uppercase tracking-wide transition-colors ${i > 0 ? "border-l border-border" : ""} ${channel === ch ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted"}`}
-                    >
-                      {ch === "email" ? <Mail className="w-4 h-4" /> : <Phone className="w-4 h-4" />}
-                      {ch === "email" ? "Email" : "Phone"}
-                    </button>
-                  ))}
-                </div>
+                {/* Email-only for now — phone login disabled */}
 
                 <div className="relative mb-6">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-subtle" />
@@ -368,7 +357,6 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
                     >
                       {icon}
                       <span>{label}</span>
-                      <span className="text-[10px] font-black uppercase tracking-widest ml-1">— Coming soon</span>
                     </motion.button>
                   ))}
                 </div>

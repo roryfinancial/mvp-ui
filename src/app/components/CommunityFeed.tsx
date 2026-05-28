@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Heart, MessageCircle, Share2, Gift, ExternalLink, Eye, Play, Loader2, TrendingUp, Sparkles, Users } from "lucide-react";
+import { Heart, MessageCircle, Share2, ExternalLink, Eye, Play, Loader2, TrendingUp, Sparkles, Users } from "lucide-react";
 import { Sounds } from "../../lib/sounds";
 import { feedApi } from "../../lib/api";
 import type { FeedPostResponse } from "../../lib/api";
@@ -381,15 +381,6 @@ function PostCard({ post, index, onLike, onGift, onNavigate }: PostCardProps) {
           </button>
         </div>
         <div className="flex-1" />
-        <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => onGift(post)}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-accent text-white hover:brightness-110 transition-all"
-        >
-          <Gift className="w-3.5 h-3.5" />
-          <span className="text-xs font-black uppercase tracking-wider">Gift</span>
-        </motion.button>
       </div>
 
       {/* Linked project (funding CTA) */}
