@@ -23,6 +23,7 @@ import Referrals from "./components/Referrals";
 import Leaderboard from "./components/Leaderboard";
 import PublicWishlist from "./components/PublicWishlist";
 import SupporterProfile from "./components/SupporterProfile";
+import CreateEventPage from "./components/CreateEventPage";
 
 type UserType = "creator" | "supporter";
 
@@ -185,6 +186,7 @@ function CreatorDashboardRoute() {
         shopifyStore={{ name: "My Creator Store", url: "https://my-creator-store.myshopify.com" }}
         onCreateProject={() => navigate("/dashboard/new-project")}
         onAddItem={() => navigate("/dashboard/new-item")}
+        onCreateEvent={() => navigate("/dashboard/new-event")}
       />
     </>
   );
@@ -235,6 +237,22 @@ function CreateProjectRoute() {
       <CreateProject
         onBack={() => navigate("/dashboard")}
         onCreateProject={() => navigate("/dashboard")}
+      />
+    </>
+  );
+}
+
+function CreateEventRoute() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Helmet>
+        <title>New Event — Rory</title>
+        <meta name="robots" content="noindex" />
+      </Helmet>
+      <CreateEventPage
+        onBack={() => navigate("/dashboard")}
+        onComplete={() => navigate("/dashboard")}
       />
     </>
   );
@@ -457,6 +475,7 @@ export default function App() {
           <Route path="/dashboard/new-wishlist" element={<CreateProjectListRoute />} />
           <Route path="/dashboard/new-project" element={<CreateProjectListRoute />} />
           <Route path="/dashboard/new-item" element={<CreateProjectRoute />} />
+          <Route path="/dashboard/new-event" element={<CreateEventRoute />} />
           <Route path="/project/:id" element={<ProjectOverviewRoute userType={userType} />} />
           <Route path="/settings" element={<SettingsRoute creditBalance={creditBalance} onUpdateBalance={updateBalance} />} />
           <Route path="/analytics" element={<AnalyticsRoute />} />

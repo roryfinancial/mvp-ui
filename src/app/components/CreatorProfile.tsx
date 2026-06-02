@@ -4,17 +4,16 @@ import { useNavigate } from "react-router-dom";
 import {
   User, Check, Zap, X, DollarSign, ArrowUp, Twitter, Youtube, Twitch,
   Play, Eye, Heart, MessageCircle, ChevronRight, List, ExternalLink,
-  Edit2, Settings, LogIn, Loader2, Target,
+  Edit2, Settings, LogIn, Loader2, Target, Calendar, Clock, MapPin,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
-import { userApi, projectApi, followApi, giftApi } from "../../lib/api";
-import type { PublicUserResponse, ProjectResponse } from "../../lib/api";
+import { userApi, projectApi, followApi, giftApi, eventApi } from "../../lib/api";
+import type { PublicUserResponse, ProjectResponse, EventResponse } from "../../lib/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface ProjectItem { id: string; title: string; description?: string; goalAmount?: number; raisedAmount?: number; status?: string; thumbnail?: string }
 interface CreatorProject { id: string; name: string; description?: string; coverImage?: string; items: ProjectItem[] }
-interface RecentEvent { title: string; thumbnail?: string }
 interface FeedItem {
   platform: "youtube" | "twitch" | "twitter" | "instagram" | "tiktok";
   type: "video" | "livestream" | "post" | "clip";
@@ -32,7 +31,6 @@ interface CreatorProfileProps {
   rank?: number;
   description?: string;
   profileImage?: string;
-  recentEvents?: RecentEvent[];
   feedItems?: FeedItem[];
   projects?: CreatorProject[];
   connectedPlatforms?: ConnectedPlatform[];
@@ -103,7 +101,6 @@ export default function CreatorProfile({
   rank: propRank,
   description: propDescription,
   profileImage,
-  recentEvents = [{ title: "Stream VOD" }, { title: "Studio Tour" }, { title: "Unboxing" }, { title: "Q&A" }, { title: "Collab" }],
   feedItems = DEFAULT_FEED,
   projects: propProjects,
   connectedPlatforms: propConnectedPlatforms,
@@ -119,6 +116,7 @@ export default function CreatorProfile({
   const [description, setDescription] = useState(propDescription ?? "");
   const [projects, setProjects] = useState<CreatorProject[]>(propProjects ?? DEFAULT_PROJECTS);
   const [connectedPlatforms, setConnectedPlatforms] = useState<ConnectedPlatform[]>(propConnectedPlatforms ?? DEFAULT_PLATFORMS);
+  const [creatorEvents, setCreatorEvents] = useState<EventResponse[]>([]);
   const [followerCount, setFollowerCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
 
@@ -127,10 +125,11 @@ export default function CreatorProfile({
 
     async function loadProfile() {
       setProfileLoading(true);
-      const [profileRes, projectRes, followCountRes] = await Promise.all([
+      const [profileRes, projectRes, followCountRes, eventRes] = await Promise.all([
         userApi.getPublicProfile(routeUsername),
         projectApi.getByCreator(routeUsername),
         followApi.getFollowerCount(routeUsername),
+        eventApi.getByCreator(routeUsername),
       ]);
 
       if (profileRes.success && profileRes.data) {
@@ -169,6 +168,10 @@ export default function CreatorProfile({
 
       if (followCountRes.success && followCountRes.data) {
         setFollowerCount((followCountRes.data as { count: number }).count);
+      }
+
+      if (eventRes.success && eventRes.data) {
+        setCreatorEvents(eventRes.data);
       }
 
       if (isAuthenticated) {
@@ -393,26 +396,66 @@ export default function CreatorProfile({
       {/* ── Content ─────────────────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-10">
 
-        {/* Recent Events */}
-        <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
-          <h2 className="text-xs font-black uppercase tracking-widest text-subtle mb-4">Recent Events</h2>
-          <div className="flex gap-4 overflow-x-auto pb-2">
-            {recentEvents.map((event, i) => (
-              <div
-                key={i}
-                className="flex-shrink-0 w-40 h-28 bg-muted border border-border overflow-hidden cursor-pointer group hover:border-accent/50 transition-colors"
-              >
-                {event.thumbnail ? (
-                  <img src={event.thumbnail} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-muted to-secondary flex items-center justify-center">
-                    <User className="w-10 h-10 text-subtle" />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </motion.section>
+        {/* Upcoming Events */}
+        {creatorEvents.length > 0 && (
+          <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
+            <h2 className="text-xs font-black uppercase tracking-widest text-subtle mb-4">Upcoming Events</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {creatorEvents.map((event, i) => {
+                const eventDate = new Date(event.eventDate + "T00:00:00");
+                const isPast = eventDate < new Date(new Date().toDateString());
+                return (
+                  <motion.div
+                    key={event.id}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: i * 0.05 }}
+                    className={`bg-background border border-border overflow-hidden group hover:border-accent/40 hover:shadow-md transition-all ${isPast ? "opacity-50" : ""}`}
+                  >
+                    <div className="relative w-full h-32 bg-muted flex items-center justify-center">
+                      {event.imageUrl ? (
+                        <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-accent/10 to-accent/5 flex items-center justify-center">
+                          <Calendar className="w-10 h-10 text-accent/30" />
+                        </div>
+                      )}
+                      {isPast && (
+                        <div className="absolute top-2 right-2 px-2 py-0.5 bg-muted border border-border text-[10px] font-black uppercase tracking-wide text-subtle">
+                          Past
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-sm font-bold text-foreground leading-tight mb-2 group-hover:text-accent transition-colors">{event.title}</h3>
+                      <div className="space-y-1 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="w-3 h-3 text-accent" />
+                          {eventDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
+                        </div>
+                        {event.eventTime && (
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="w-3 h-3 text-accent" />
+                            {event.eventTime}
+                          </div>
+                        )}
+                        {event.location && (
+                          <div className="flex items-center gap-1.5">
+                            <MapPin className="w-3 h-3 text-accent" />
+                            {event.location}
+                          </div>
+                        )}
+                      </div>
+                      {event.description && (
+                        <p className="text-xs text-subtle mt-2 line-clamp-2">{event.description}</p>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.section>
+        )}
 
         {/* Feed */}
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>

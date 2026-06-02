@@ -634,6 +634,54 @@ export const walletApi = {
     ),
 };
 
+// ─── Event types & endpoints ────────────────────────────────────────────────
+
+export interface EventResponse {
+  id: string;
+  title: string;
+  description: string | null;
+  eventDate: string;
+  eventTime: string | null;
+  location: string | null;
+  imageUrl: string | null;
+  isPublic: boolean;
+  createdAt: string;
+}
+
+export interface CreateEventRequest {
+  title: string;
+  description?: string;
+  eventDate: string;
+  eventTime?: string;
+  location?: string;
+  imageUrl?: string;
+  isPublic?: boolean;
+}
+
+export const eventApi = {
+  getMyEvents: () => apiFetch<EventResponse[]>("/api/events"),
+
+  getById: (id: string) => apiFetch<EventResponse>(`/api/events/${id}`),
+
+  getByCreator: (username: string) =>
+    apiFetch<EventResponse[]>(`/api/events/creator/${username}`),
+
+  create: (body: CreateEventRequest) =>
+    apiFetch<EventResponse>("/api/events", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  update: (id: string, body: Partial<CreateEventRequest>) =>
+    apiFetch<EventResponse>(`/api/events/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    }),
+
+  delete: (id: string) =>
+    apiFetch<void>(`/api/events/${id}`, { method: "DELETE" }),
+};
+
 // ─── Stripe endpoints ────────────────────────────────────────────────────────
 
 export const stripeApi = {

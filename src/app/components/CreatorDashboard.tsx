@@ -2,10 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Sounds } from "../../lib/sounds";
 import ConfettiBurst from "./Confetti";
-import { Plus, User, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, ChevronDown, List, ShoppingBag, Trophy, Loader2, Trash2, X } from "lucide-react";
+import { Plus, User, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, ChevronDown, List, ShoppingBag, Trophy, Loader2, Trash2, X, Calendar, Clock, MapPin } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
-import { projectApi, giftApi } from "../../lib/api";
-import type { ProjectResponse, RecentSupporterResponse, TopSupporterResponse } from "../../lib/api";
+import { projectApi, giftApi, eventApi } from "../../lib/api";
+import type { ProjectResponse, RecentSupporterResponse, TopSupporterResponse, EventResponse } from "../../lib/api";
 
 interface CreatorDashboardProps {
   username?: string;
@@ -15,6 +15,7 @@ interface CreatorDashboardProps {
   onLogout?: () => void
   onCreateProject?: () => void;
   onAddItem?: () => void;
+  onCreateEvent?: () => void;
 }
 
 interface Supporter {
@@ -47,7 +48,7 @@ function getInitials(name: string): string {
   return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
-export default function CreatorDashboard({ username: propUsername, initialProjectId = null, shopifyStore = null, onCreateProject, onAddItem }: CreatorDashboardProps) {
+export default function CreatorDashboard({ username: propUsername, initialProjectId = null, shopifyStore = null, onCreateProject, onAddItem, onCreateEvent }: CreatorDashboardProps) {
   const { user } = useAuth();
   const username = user?.username ?? propUsername ?? "Username";
 
@@ -97,6 +98,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
 
   // Dynamic data from API
   const [projects, setProjects] = useState<DashboardProject[]>([]);
+  const [events, setEvents] = useState<EventResponse[]>([]);
   const [recentSupporters, setRecentSupporters] = useState<Supporter[]>([]);
   const [topSupportersLeaderboard, setTopSupportersLeaderboard] = useState<
     { rank: number; name: string; initials: string; totalAmount: string; contributions: number }[]
@@ -123,10 +125,11 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
       setDataError(null);
 
       try {
-        const [projectRes, recentRes, topRes] = await Promise.all([
+        const [projectRes, recentRes, topRes, eventRes] = await Promise.all([
           projectApi.getMyProjects(),
           giftApi.getRecentSupporters(username, 5),
           giftApi.getTopSupporters(username, 10),
+          eventApi.getMyEvents(),
         ]);
 
         if (cancelled) return;
@@ -173,6 +176,10 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
               contributions: s.contributionCount,
             }))
           );
+        }
+
+        if (eventRes.success && eventRes.data) {
+          setEvents(eventRes.data);
         }
       } catch {
         if (!cancelled) setDataError("Failed to load dashboard data. Please refresh.");
@@ -346,6 +353,18 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
             >
               <List className="w-4 h-4" />
               New Project
+            </motion.button>
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              onClick={() => { Sounds.softClick(); onCreateEvent?.(); }}
+              className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-border bg-background hover:bg-muted text-foreground font-bold text-xs uppercase tracking-wide transition-colors"
+            >
+              <Calendar className="w-4 h-4" />
+              New Event
             </motion.button>
           </div>
         </aside>
@@ -532,6 +551,107 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                       );
                     })}
                   </div>
+                </motion.div>
+
+                {/* My Events */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  className="mt-10"
+                >
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <Calendar className="w-5 h-5 text-accent" />
+                      <h2 className="text-2xl font-black text-foreground tracking-tight">My Events</h2>
+                      <span className="px-2 py-0.5 border border-border text-subtle text-xs font-bold">{events.length}</span>
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      onClick={onCreateEvent}
+                      className="hidden sm:flex items-center gap-2 px-4 py-2 border border-border hover:bg-muted text-foreground font-bold text-xs uppercase tracking-wide transition-colors"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      New Event
+                    </motion.button>
+                  </div>
+
+                  {events.length === 0 ? (
+                    <div className="py-12 text-center border border-dashed border-border">
+                      <Calendar className="w-10 h-10 text-subtle mx-auto mb-3" />
+                      <p className="text-sm text-muted-foreground mb-1">No events yet</p>
+                      <p className="text-xs text-subtle">Create an event to show on your public profile.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                      {events.map((event, eIndex) => {
+                        const eventDate = new Date(event.eventDate + "T00:00:00");
+                        const isPast = eventDate < new Date(new Date().toDateString());
+                        return (
+                          <motion.div
+                            key={event.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.35, delay: eIndex * 0.07 }}
+                            className={`bg-background border border-border rounded-xl overflow-hidden group card-game ${isPast ? "opacity-60" : ""}`}
+                          >
+                            <div className="relative h-28 overflow-hidden bg-muted">
+                              {event.imageUrl ? (
+                                <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-accent/10 to-accent/5 flex items-center justify-center">
+                                  <Calendar className="w-10 h-10 text-accent/30" />
+                                </div>
+                              )}
+                              <button
+                                onClick={() => {
+                                  setDeleteTarget(null);
+                                  (async () => {
+                                    const res = await eventApi.delete(event.id);
+                                    if (res.success) setEvents(prev => prev.filter(e => e.id !== event.id));
+                                  })();
+                                }}
+                                className="absolute top-2 left-2 w-7 h-7 bg-background/80 backdrop-blur-sm border border-border hover:bg-red-500 hover:border-red-500 hover:text-white text-subtle flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                                title="Delete event"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                              {isPast && (
+                                <div className="absolute top-2 right-2 px-2 py-0.5 bg-muted border border-border text-[10px] font-black uppercase tracking-wide text-subtle">
+                                  Past
+                                </div>
+                              )}
+                            </div>
+                            <div className="p-4">
+                              <h4 className="text-sm font-black text-foreground mb-2">{event.title}</h4>
+                              <div className="space-y-1 text-xs text-muted-foreground">
+                                <div className="flex items-center gap-1.5">
+                                  <Calendar className="w-3 h-3 text-accent" />
+                                  {eventDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
+                                </div>
+                                {event.eventTime && (
+                                  <div className="flex items-center gap-1.5">
+                                    <Clock className="w-3 h-3 text-accent" />
+                                    {event.eventTime}
+                                  </div>
+                                )}
+                                {event.location && (
+                                  <div className="flex items-center gap-1.5">
+                                    <MapPin className="w-3 h-3 text-accent" />
+                                    {event.location}
+                                  </div>
+                                )}
+                              </div>
+                              {event.description && (
+                                <p className="text-xs text-subtle mt-2 line-clamp-2">{event.description}</p>
+                              )}
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </motion.div>
               </motion.div>
             ) : selectedItemIndex !== null ? (
