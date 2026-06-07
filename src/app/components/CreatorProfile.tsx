@@ -7,19 +7,14 @@ import {
   Edit2, Settings, LogIn, Loader2, Target, Calendar, Clock, MapPin,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
-import { userApi, projectApi, followApi, giftApi, eventApi } from "../../lib/api";
-import type { PublicUserResponse, ProjectResponse, EventResponse } from "../../lib/api";
+import { userApi, projectApi, followApi, giftApi, eventApi, feedApi } from "../../lib/api";
+import type { PublicUserResponse, ProjectResponse, EventResponse, FeedPostResponse } from "../../lib/api";
+import ActivityFeed from "./ActivityFeed";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface ProjectItem { id: string; title: string; description?: string; goalAmount?: number; raisedAmount?: number; status?: string; thumbnail?: string }
 interface CreatorProject { id: string; name: string; description?: string; coverImage?: string; items: ProjectItem[] }
-interface FeedItem {
-  platform: "youtube" | "twitch" | "twitter" | "instagram" | "tiktok";
-  type: "video" | "livestream" | "post" | "clip";
-  title: string; thumbnail?: string; timestamp: string;
-  views?: string; likes?: string; comments?: string; isLive?: boolean; url?: string;
-}
 interface ConnectedPlatform {
   platform: "youtube" | "twitch" | "twitter" | "instagram" | "tiktok";
   url: string; handle?: string;
@@ -31,7 +26,6 @@ interface CreatorProfileProps {
   rank?: number;
   description?: string;
   profileImage?: string;
-  feedItems?: FeedItem[];
   projects?: CreatorProject[];
   connectedPlatforms?: ConnectedPlatform[];
   onViewProject?: (projectId: string) => void;
@@ -55,43 +49,27 @@ const platformBrandIcons: Record<string, React.ReactNode> = {
   tiktok:   <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" /></svg>,
 };
 
-// ─── Default seed data (replaced by API data in production) ──────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const DEFAULT_FEED: FeedItem[] = [
-  { platform: "youtube",   type: "video",      title: "How I Built My Setup From Scratch",                   timestamp: "2 days ago",   views: "14.2K", likes: "892",   comments: "134" },
-  { platform: "twitch",    type: "livestream",  title: "Late Night Chill Stream",                            timestamp: "Live now",     views: "1.3K",  isLive: true },
-  { platform: "twitter",   type: "post",        title: "Just dropped a new video. Best budget gear for 2026.", timestamp: "5 hours ago", likes: "2.1K",  comments: "89" },
-  { platform: "youtube",   type: "video",      title: "Top 10 Gadgets Under $50",                            timestamp: "1 week ago",   views: "52.8K", likes: "3.4K",  comments: "421" },
-  { platform: "instagram", type: "post",        title: "BTS of today's shoot. New content incoming.",        timestamp: "3 days ago",   likes: "4.7K",  comments: "156" },
-  { platform: "tiktok",    type: "clip",        title: "When your setup finally comes together",             timestamp: "4 days ago",   views: "128K",  likes: "18.2K" },
-  { platform: "twitch",    type: "clip",        title: "INSANE clutch play in ranked",                      timestamp: "6 days ago",   views: "8.9K",  likes: "1.2K" },
-  { platform: "youtube",   type: "video",      title: "I Tried Every Standing Desk Under $300",             timestamp: "2 weeks ago",  views: "89.1K", likes: "5.6K",  comments: "673" },
-];
+function formatNumber(n: number): string {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
+  if (n >= 1_000) return (n / 1_000).toFixed(1) + "K";
+  return n.toString();
+}
 
-const DEFAULT_PROJECTS: CreatorProject[] = [
-  { id: "studio-gear", name: "Studio Gear", description: "Everything I need to level up my recording setup", items: [
-    { id: "1", title: "Ableton Push 3", description: "MIDI controller for live production on stream", goalAmount: 1200, raisedAmount: 340, status: "ACTIVE" },
-    { id: "2", title: "Universal Audio Apollo X4", description: "Pro audio interface for studio-quality sound", goalAmount: 1800, raisedAmount: 200, status: "ACTIVE" },
-    { id: "3", title: "Bose Solo Soundbar", description: "Better monitoring for music reviews", goalAmount: 250, raisedAmount: 250, status: "COMPLETED" },
-  ]},
-  { id: "dream-items", name: "Dream Items", description: "Big ticket items on my bucket list", items: [
-    { id: "4", title: "Cybertruck", description: "The ultimate content creation vehicle", goalAmount: 50000, raisedAmount: 1200, status: "ACTIVE" },
-    { id: "5", title: "Rolex Submariner", description: "Milestone reward for hitting 1M subs", goalAmount: 12000, raisedAmount: 0, status: "ACTIVE" },
-  ]},
-  { id: "fitness", name: "Fitness & Health", items: [
-    { id: "6", title: "Pull-up Bar Station", description: "Home gym setup for stream break workouts", goalAmount: 300, raisedAmount: 150, status: "ACTIVE" },
-    { id: "7", title: "Theragun Pro", description: "Recovery after long streaming sessions", goalAmount: 400, raisedAmount: 400, status: "COMPLETED" },
-    { id: "8", title: "Adjustable Dumbbell Set", description: "Space-efficient weights for the office", goalAmount: 350, raisedAmount: 80, status: "ACTIVE" },
-  ]},
-];
-
-const DEFAULT_PLATFORMS: ConnectedPlatform[] = [
-  { platform: "youtube",   url: "https://youtube.com/@Clavicular",  handle: "@Clavicular" },
-  { platform: "twitch",    url: "https://twitch.tv/Clavicular",     handle: "Clavicular" },
-  { platform: "twitter",   url: "https://x.com/Clavicular",         handle: "@Clavicular" },
-  { platform: "instagram", url: "https://instagram.com/Clavicular", handle: "@Clavicular" },
-  { platform: "tiktok",    url: "https://tiktok.com/@Clavicular",   handle: "@Clavicular" },
-];
+function timeAgo(timestamp: string): string {
+  const diff = Date.now() - new Date(timestamp).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  const weeks = Math.floor(days / 7);
+  if (weeks < 4) return `${weeks}w ago`;
+  return new Date(timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -101,7 +79,6 @@ export default function CreatorProfile({
   rank: propRank,
   description: propDescription,
   profileImage,
-  feedItems = DEFAULT_FEED,
   projects: propProjects,
   connectedPlatforms: propConnectedPlatforms,
   onViewProject,
@@ -114,22 +91,27 @@ export default function CreatorProfile({
   const [creatorName, setCreatorName] = useState(propCreatorName ?? "");
   const [rank, setRank] = useState(propRank ?? 0);
   const [description, setDescription] = useState(propDescription ?? "");
-  const [projects, setProjects] = useState<CreatorProject[]>(propProjects ?? DEFAULT_PROJECTS);
-  const [connectedPlatforms, setConnectedPlatforms] = useState<ConnectedPlatform[]>(propConnectedPlatforms ?? DEFAULT_PLATFORMS);
+  const [projects, setProjects] = useState<CreatorProject[]>(propProjects ?? []);
+  const [connectedPlatforms, setConnectedPlatforms] = useState<ConnectedPlatform[]>(propConnectedPlatforms ?? []);
   const [creatorEvents, setCreatorEvents] = useState<EventResponse[]>([]);
   const [followerCount, setFollowerCount] = useState(0);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [feedPosts, setFeedPosts] = useState<FeedPostResponse[]>([]);
+  const [feedPostsPage, setFeedPostsPage] = useState(0);
+  const [feedPostsHasMore, setFeedPostsHasMore] = useState(false);
+  const [feedPostsLoading, setFeedPostsLoading] = useState(false);
 
   useEffect(() => {
     if (!routeUsername) { setProfileLoading(false); return; }
 
     async function loadProfile() {
       setProfileLoading(true);
-      const [profileRes, projectRes, followCountRes, eventRes] = await Promise.all([
+      const [profileRes, projectRes, followCountRes, eventRes, postsRes] = await Promise.all([
         userApi.getPublicProfile(routeUsername),
         projectApi.getByCreator(routeUsername),
         followApi.getFollowerCount(routeUsername),
         eventApi.getByCreator(routeUsername),
+        feedApi.getCreatorPosts(routeUsername, 0, 20),
       ]);
 
       if (profileRes.success && profileRes.data) {
@@ -174,6 +156,12 @@ export default function CreatorProfile({
         setCreatorEvents(eventRes.data);
       }
 
+      if (postsRes.success && postsRes.data) {
+        setFeedPosts(postsRes.data.content);
+        setFeedPostsPage(0);
+        setFeedPostsHasMore(!postsRes.data.last);
+      }
+
       if (isAuthenticated) {
         const statusRes = await followApi.isFollowing(routeUsername);
         if (statusRes.success && statusRes.data) {
@@ -204,8 +192,9 @@ export default function CreatorProfile({
   }
 
   // Feed filter state
-  const [feedFilter, setFeedFilter] = useState<"all" | keyof typeof platformConfig>("all");
-  const filteredFeed = feedFilter === "all" ? feedItems : feedItems.filter((i) => i.platform === feedFilter);
+  const [feedTab, setFeedTab] = useState<"posts" | "activity">("posts");
+  const [feedFilter, setFeedFilter] = useState<string>("all");
+  const filteredFeed = feedFilter === "all" ? feedPosts : feedPosts.filter((p) => p.platform.toLowerCase() === feedFilter);
 
   // Quick Tip modal state
   const [showQuickTip, setShowQuickTip] = useState(false);
@@ -284,7 +273,7 @@ export default function CreatorProfile({
           >
             <div className="text-xl font-black text-white tracking-tight">Rory</div>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-white/50 hidden sm:block">Create a project. Get funded. Zero fees.</span>
+              <span className="text-sm text-white/50 hidden sm:block">Create a project. Get funded. Low fees.</span>
               <button
                 onClick={() => navigate("/auth")}
                 className="flex items-center gap-2 px-4 py-2 btn-cta text-white text-xs font-black uppercase tracking-widest"
@@ -459,8 +448,31 @@ export default function CreatorProfile({
 
         {/* Feed */}
         <motion.section initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.15 }}>
-          <h2 className="text-xs font-black uppercase tracking-widest text-subtle mb-4">Recent Feed</h2>
+          {/* Feed Tab Switcher */}
+          <div className="flex items-center gap-4 mb-4">
+            <button
+              onClick={() => setFeedTab("posts")}
+              className={`text-xs font-black uppercase tracking-widest transition-colors ${feedTab === "posts" ? "text-foreground" : "text-subtle hover:text-foreground"}`}
+            >
+              Posts
+            </button>
+            <button
+              onClick={() => setFeedTab("activity")}
+              className={`text-xs font-black uppercase tracking-widest transition-colors ${feedTab === "activity" ? "text-foreground" : "text-subtle hover:text-foreground"}`}
+            >
+              Activity
+            </button>
+            <div className="flex-1" />
+          </div>
 
+          {/* Activity Feed Tab */}
+          {feedTab === "activity" && routeUsername && (
+            <ActivityFeed username={routeUsername} />
+          )}
+
+          {/* Posts Tab - Platform filters */}
+          {feedTab === "posts" && (
+          <>
           {/* Platform filters */}
           <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
             <button
@@ -470,6 +482,8 @@ export default function CreatorProfile({
               All
             </button>
             {(Object.keys(platformConfig) as Array<keyof typeof platformConfig>).map((platform) => {
+              const hasPosts = feedPosts.some(p => p.platform.toLowerCase() === platform);
+              if (!hasPosts) return null;
               const config = platformConfig[platform];
               return (
                 <button
@@ -486,55 +500,79 @@ export default function CreatorProfile({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filteredFeed.map((item, i) => {
-              const config = platformConfig[item.platform];
+            {filteredFeed.map((post, i) => {
+              const platformKey = post.platform.toLowerCase() as keyof typeof platformConfig;
+              const config = platformConfig[platformKey];
               return (
                 <motion.div
-                  key={i}
+                  key={post.id}
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: i * 0.04 }}
-                  className="bg-background border border-border overflow-hidden group cursor-pointer hover:border-accent/40 hover:shadow-md transition-all"
+                  className="bg-background border border-border rounded-xl overflow-hidden group cursor-pointer hover:border-accent/40 hover:shadow-md transition-all"
+                  onClick={() => post.platformUrl && window.open(post.platformUrl, "_blank")}
                 >
-                  <div className="relative w-full h-36 bg-muted flex items-center justify-center">
-                    {item.thumbnail ? (
-                      <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                  <div className="relative w-full h-36 bg-muted flex items-center justify-center overflow-hidden">
+                    {post.thumbnailUrl ? (
+                      <img src={post.thumbnailUrl} alt={post.caption || ""} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-muted to-secondary flex items-center justify-center">
-                        <span className="w-10 h-10 opacity-40" style={{ color: config.color }}>{platformBrandIcons[item.platform]}</span>
+                        {config && <span className="w-10 h-10 opacity-40" style={{ color: config.color }}>{platformBrandIcons[platformKey]}</span>}
                       </div>
                     )}
-                    <div className="absolute top-2 left-2 px-2 py-0.5 flex items-center gap-1 text-white text-[9px] font-black uppercase" style={{ backgroundColor: config.color }}>
-                      <span className="w-3 h-3 flex items-center justify-center">{platformBrandIcons[item.platform]}</span>
-                      {config.label}
+                    <div className="absolute top-2 left-2 flex items-center gap-1.5 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-sm">
+                      {config && <span className="w-3 h-3 flex items-center justify-center text-white">{platformBrandIcons[platformKey]}</span>}
+                      <span className="text-white text-[9px] font-bold uppercase tracking-wide">{config?.label || post.platform}</span>
                     </div>
-                    {item.isLive && (
-                      <div className="absolute top-2 right-2 px-2 py-0.5 bg-red-600 text-white text-[9px] font-black uppercase flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                        Live
-                      </div>
-                    )}
-                    {!item.isLive && (
-                      <div className="absolute bottom-2 right-2 px-2 py-0.5 bg-black/60 text-white text-[9px] font-bold uppercase">{item.type}</div>
-                    )}
+                    <div className="absolute bottom-2 right-2 px-2 py-0.5 bg-black/60 text-white text-[9px] font-bold uppercase rounded-sm">{post.contentType}</div>
                   </div>
                   <div className="p-3">
-                    <h3 className="text-sm font-bold text-foreground leading-tight line-clamp-2 mb-2 group-hover:text-accent transition-colors">{item.title}</h3>
+                    <h3 className="text-sm font-bold text-foreground leading-tight line-clamp-2 mb-2 group-hover:text-accent transition-colors">{post.caption || "Untitled"}</h3>
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] text-subtle">{item.timestamp}</span>
+                      <span className="text-[11px] text-subtle">{post.platformCreatedAt ? timeAgo(post.platformCreatedAt) : timeAgo(post.createdAt)}</span>
                       <div className="flex items-center gap-3 text-subtle text-[11px]">
-                        {item.views    && <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {item.views}</span>}
-                        {item.likes    && <span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {item.likes}</span>}
-                        {item.comments && <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" /> {item.comments}</span>}
+                        {post.platformViews > 0 && <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> {formatNumber(post.platformViews)}</span>}
+                        {post.platformLikes > 0 && <span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {formatNumber(post.platformLikes)}</span>}
+                        {post.platformComments > 0 && <span className="flex items-center gap-1"><MessageCircle className="w-3 h-3" /> {formatNumber(post.platformComments)}</span>}
                       </div>
                     </div>
+                    {post.linkedProject && (
+                      <div className="mt-2 flex items-center gap-1.5 text-[10px] font-bold text-accent">
+                        <Target className="w-3 h-3" />
+                        {post.linkedProject.projectName}
+                        <span className="text-subtle ml-1">{Math.round(post.linkedProject.progress * 100)}% funded</span>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               );
             })}
           </div>
           {filteredFeed.length === 0 && (
-            <div className="text-center py-12 text-subtle text-sm">No posts from this platform yet.</div>
+            <div className="text-center py-12 text-subtle text-sm">No posts yet.</div>
+          )}
+          {feedPostsHasMore && feedFilter === "all" && (
+            <div className="flex justify-center mt-4">
+              <button
+                onClick={async () => {
+                  setFeedPostsLoading(true);
+                  const res = await feedApi.getCreatorPosts(routeUsername, feedPostsPage + 1, 20);
+                  if (res.success && res.data) {
+                    setFeedPosts(prev => [...prev, ...res.data!.content]);
+                    setFeedPostsPage(res.data.page);
+                    setFeedPostsHasMore(!res.data.last);
+                  }
+                  setFeedPostsLoading(false);
+                }}
+                disabled={feedPostsLoading}
+                className="px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-subtle hover:text-foreground border border-border hover:border-accent/40 transition-colors flex items-center gap-2"
+              >
+                {feedPostsLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+                Load More
+              </button>
+            </div>
+          )}
+          </>
           )}
         </motion.section>
 
@@ -602,7 +640,7 @@ export default function CreatorProfile({
         <div className="border-t border-border bg-muted py-16 px-6 text-center">
           <p className="text-[10px] font-black uppercase tracking-widest text-subtle mb-4">Want to support {creatorName}?</p>
           <h3 className="text-3xl font-black text-foreground mb-4 tracking-tight">Create a free account.</h3>
-          <p className="text-muted-foreground mb-8 max-w-md mx-auto">Donate to their project. Zero platform fees. Creators keep 100%.</p>
+          <p className="text-muted-foreground mb-8 max-w-md mx-auto">Donate to their project. Low platform fees, always.</p>
           <button
             onClick={() => navigate("/auth")}
             className="px-8 py-3 btn-cta text-white font-black text-sm uppercase tracking-widest inline-flex items-center gap-2"

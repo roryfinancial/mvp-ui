@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Sounds } from "../../lib/sounds";
 import ConfettiBurst from "./Confetti";
-import { Plus, User, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, ChevronDown, List, ShoppingBag, Trophy, Loader2, Trash2, X, Calendar, Clock, MapPin } from "lucide-react";
+import { Plus, User, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, ChevronDown, ChevronLeft, ChevronRight, List, ShoppingBag, Trophy, Loader2, Trash2, X, Calendar, Clock, MapPin, RefreshCw, Link2, Eye, Heart } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
-import { projectApi, giftApi, eventApi } from "../../lib/api";
-import type { ProjectResponse, RecentSupporterResponse, TopSupporterResponse, EventResponse } from "../../lib/api";
+import { projectApi, giftApi, eventApi, feedApi } from "../../lib/api";
+import type { ProjectResponse, RecentSupporterResponse, TopSupporterResponse, EventResponse, FeedPostResponse } from "../../lib/api";
+import AddPostDialog from "./AddPostDialog";
 
 interface CreatorDashboardProps {
   username?: string;
@@ -61,6 +62,10 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
   const [dataLoading, setDataLoading] = useState(true);
   const [dataError, setDataError] = useState<string | null>(null);
 
+  // Item-level recent supporters
+  const [itemSupporters, setItemSupporters] = useState<Supporter[]>([]);
+  const [itemSupportersLoading, setItemSupportersLoading] = useState(false);
+
   // Delete confirmation state
   const [deleteTarget, setDeleteTarget] = useState<{ type: "project"; projectId: string } | { type: "item"; projectId: string; itemId: string } | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -96,6 +101,18 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
     setDeleteTarget(null);
   }
 
+  // Post sync state
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<{ newPosts: number } | null>(null);
+  const [addPostOpen, setAddPostOpen] = useState(false);
+  const [myPosts, setMyPosts] = useState<FeedPostResponse[]>([]);
+  const [postsLoaded, setPostsLoaded] = useState(false);
+  const [postsPage, setPostsPage] = useState(0);
+  const [postsTotalPages, setPostsTotalPages] = useState(0);
+  const [postsTotalElements, setPostsTotalElements] = useState(0);
+  const [postsLoadingPage, setPostsLoadingPage] = useState(false);
+  const [postsPlatformFilter, setPostsPlatformFilter] = useState<string>("ALL");
+
   // Dynamic data from API
   const [projects, setProjects] = useState<DashboardProject[]>([]);
   const [events, setEvents] = useState<EventResponse[]>([]);
@@ -103,6 +120,39 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
   const [topSupportersLeaderboard, setTopSupportersLeaderboard] = useState<
     { rank: number; name: string; initials: string; totalAmount: string; contributions: number }[]
   >([]);
+
+  // Fetch recent supporters when an item is selected
+  useEffect(() => {
+    if (selectedItemIndex === null || selectedProjectId === null) {
+      setItemSupporters([]);
+      return;
+    }
+    const currentProject = projects.find(w => w.id === selectedProjectId);
+    if (!currentProject) return;
+    const item = currentProject.items[selectedItemIndex];
+    if (!item) return;
+
+    let cancelled = false;
+    setItemSupportersLoading(true);
+    giftApi.getRecentSupportersByItem(item.id, 5).then(res => {
+      if (cancelled) return;
+      if (res.success && res.data) {
+        setItemSupporters(
+          res.data.map((s: RecentSupporterResponse) => ({
+            name: s.supporterDisplayName,
+            amount: `$${s.amount}`,
+            initials: s.supporterInitials,
+            timeAgo: s.timeAgo,
+          }))
+        );
+      }
+    }).catch(() => {
+      if (!cancelled) setItemSupporters([]);
+    }).finally(() => {
+      if (!cancelled) setItemSupportersLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [selectedItemIndex, selectedProjectId, projects]);
 
   // Fire funded sound + confetti once when projects load with a completed item
   useEffect(() => {
@@ -125,11 +175,12 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
       setDataError(null);
 
       try {
-        const [projectRes, recentRes, topRes, eventRes] = await Promise.all([
+        const [projectRes, recentRes, topRes, eventRes, postsRes] = await Promise.all([
           projectApi.getMyProjects(),
           giftApi.getRecentSupporters(username, 5),
           giftApi.getTopSupporters(username, 10),
           eventApi.getMyEvents(),
+          feedApi.getMyPosts(0, 12),
         ]);
 
         if (cancelled) return;
@@ -180,6 +231,14 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
 
         if (eventRes.success && eventRes.data) {
           setEvents(eventRes.data);
+        }
+
+        if (postsRes.success && postsRes.data) {
+          setMyPosts(postsRes.data.content);
+          setPostsPage(postsRes.data.page);
+          setPostsTotalPages(postsRes.data.totalPages);
+          setPostsTotalElements(postsRes.data.totalElements);
+          setPostsLoaded(true);
         }
       } catch {
         if (!cancelled) setDataError("Failed to load dashboard data. Please refresh.");
@@ -366,6 +425,62 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
               <Calendar className="w-4 h-4" />
               New Event
             </motion.button>
+
+            {/* Post Management */}
+            <div className="pt-4 mt-4 border-t border-border space-y-2">
+              <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">Content</div>
+              <motion.button
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.45 }}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={async () => {
+                  setSyncing(true);
+                  setSyncResult(null);
+                  const res = await feedApi.syncPosts();
+                  if (res.success && res.data) {
+                    setSyncResult({ newPosts: res.data.newPosts });
+                    // Reload posts from page 0
+                    const postsRes = await feedApi.getMyPosts(0, 12);
+                    if (postsRes.success && postsRes.data) {
+                      setMyPosts(postsRes.data.content);
+                      setPostsPage(0);
+                      setPostsTotalPages(postsRes.data.totalPages);
+                      setPostsTotalElements(postsRes.data.totalElements);
+                      setPostsLoaded(true);
+                    }
+                  }
+                  setSyncing(false);
+                }}
+                disabled={syncing}
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-border bg-background hover:bg-muted text-foreground font-bold text-xs uppercase tracking-wide transition-colors disabled:opacity-50"
+              >
+                {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                {syncing ? "Syncing..." : "Sync Posts"}
+              </motion.button>
+              <motion.button
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => { Sounds.softClick(); setAddPostOpen(true); }}
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-border bg-background hover:bg-muted text-foreground font-bold text-xs uppercase tracking-wide transition-colors"
+              >
+                <Link2 className="w-4 h-4" />
+                Add Post
+              </motion.button>
+              {syncResult && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-[11px] text-center text-green-600 font-medium"
+                >
+                  {syncResult.newPosts > 0 ? `${syncResult.newPosts} new post${syncResult.newPosts !== 1 ? "s" : ""} synced!` : "All posts up to date"}
+                </motion.p>
+              )}
+            </div>
           </div>
         </aside>
 
@@ -553,6 +668,181 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                   </div>
                 </motion.div>
 
+                {/* My Posts - Per-post project dropdown */}
+                {postsLoaded && myPosts.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.2 }}
+                    className="mt-10"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <h2 className="text-2xl font-black text-foreground tracking-tight">My Posts</h2>
+                        <span className="px-2 py-0.5 border border-border text-subtle text-xs font-bold">{postsTotalElements}</span>
+                      </div>
+                    </div>
+
+                    {/* Platform filter tabs */}
+                    <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
+                      {["ALL", "YOUTUBE", "TWITCH", "TWITTER", "INSTAGRAM", "TIKTOK"].map((p) => {
+                        const count = p === "ALL" ? myPosts.length : myPosts.filter(post => post.platform === p).length;
+                        if (p !== "ALL" && count === 0) return null;
+                        const colors: Record<string, string> = { YOUTUBE: "#FF0000", TWITCH: "#9146FF", TWITTER: "#1DA1F2", INSTAGRAM: "#E4405F", TIKTOK: "#00f2ea" };
+                        const isActive = postsPlatformFilter === p;
+                        return (
+                          <button
+                            key={p}
+                            onClick={() => setPostsPlatformFilter(p)}
+                            className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider flex-shrink-0 border transition-colors ${
+                              isActive
+                                ? p !== "ALL" ? "text-white" : "bg-foreground text-background border-foreground"
+                                : "border-border text-subtle hover:text-foreground hover:border-foreground/30"
+                            }`}
+                            style={isActive && p !== "ALL" ? { backgroundColor: colors[p], borderColor: colors[p] } : undefined}
+                          >
+                            {p === "ALL" ? "All" : p}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                      {myPosts
+                        .filter(post => postsPlatformFilter === "ALL" || post.platform === postsPlatformFilter)
+                        .map((post) => (
+                            <div key={post.id} className="bg-background border border-border rounded-xl overflow-hidden group hover:border-accent/30 transition-colors">
+                              {/* Thumbnail */}
+                              <div className="relative h-36 bg-muted overflow-hidden">
+                                {post.thumbnailUrl ? (
+                                  <img src={post.thumbnailUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-subtle">
+                                    <Plus className="w-6 h-6 rotate-45" />
+                                  </div>
+                                )}
+                                <div className="absolute top-2 left-2 flex items-center gap-1.5 px-2 py-1 bg-black/60 backdrop-blur-sm rounded-sm">
+                                  <span className="text-white text-[9px] font-bold uppercase tracking-wide">{post.platform}</span>
+                                </div>
+                                {post.platformUrl && (
+                                  <a
+                                    href={post.platformUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="absolute top-2 right-2 p-1.5 bg-black/40 backdrop-blur-sm text-white/80 hover:text-white rounded-sm transition-colors"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <Link2 className="w-3 h-3" />
+                                  </a>
+                                )}
+                              </div>
+
+                              {/* Content */}
+                              <div className="p-3 space-y-2.5">
+                                <p className="text-xs font-bold text-foreground line-clamp-2 leading-snug min-h-[2.25rem]">
+                                  {post.caption || "Untitled"}
+                                </p>
+
+                                {/* Stats row */}
+                                <div className="flex items-center gap-3 text-[10px] text-subtle">
+                                  {post.platformViews > 0 && (
+                                    <span className="flex items-center gap-0.5"><Eye className="w-3 h-3" />{post.platformViews >= 1000 ? (post.platformViews / 1000).toFixed(1) + "K" : post.platformViews}</span>
+                                  )}
+                                  {post.platformLikes > 0 && (
+                                    <span className="flex items-center gap-0.5"><Heart className="w-3 h-3" />{post.platformLikes >= 1000 ? (post.platformLikes / 1000).toFixed(1) + "K" : post.platformLikes}</span>
+                                  )}
+                                  {post.platformCreatedAt && (
+                                    <span className="ml-auto">{new Date(post.platformCreatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                                  )}
+                                </div>
+
+                                {/* Project dropdown */}
+                                <div className="relative">
+                                  <select
+                                    value={post.linkedProject?.projectId || ""}
+                                    onChange={async (e) => {
+                                      const projectId = e.target.value || null;
+                                      const res = await feedApi.linkPostToProject(post.id, projectId);
+                                      if (res.success && res.data) {
+                                        setMyPosts(prev => prev.map(p => p.id === post.id ? res.data! : p));
+                                      }
+                                    }}
+                                    className="w-full px-3 py-2.5 text-xs font-bold border border-border rounded-lg bg-muted text-foreground focus:outline-none focus:border-accent transition-colors cursor-pointer appearance-none pr-8"
+                                  >
+                                    <option value="">— Assign to project —</option>
+                                    {projects.map((p) => (
+                                      <option key={p.id} value={p.id}>{p.name}</option>
+                                    ))}
+                                  </select>
+                                  <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-subtle pointer-events-none" />
+                                </div>
+
+                                {/* Linked project badge */}
+                                {post.linkedProject && (
+                                  <div className="flex items-center gap-1.5 text-[10px] font-bold px-2 py-1 border border-accent/30 bg-accent/5 text-accent rounded-md">
+                                    <Check className="w-3 h-3" />
+                                    {post.linkedProject.projectName}
+                                    <span className="ml-auto opacity-60">{Math.round(post.linkedProject.progress * 100)}%</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Pagination */}
+                    {postsTotalPages > 1 && (
+                      <div className="flex items-center justify-center gap-3 mt-6">
+                        <button
+                          onClick={async () => {
+                            if (postsPage <= 0 || postsLoadingPage) return;
+                            setPostsLoadingPage(true);
+                            const res = await feedApi.getMyPosts(postsPage - 1, 12);
+                            if (res.success && res.data) {
+                              setMyPosts(res.data.content);
+                              setPostsPage(res.data.page);
+                              setPostsTotalPages(res.data.totalPages);
+                              setPostsTotalElements(res.data.totalElements);
+                            }
+                            setPostsLoadingPage(false);
+                          }}
+                          disabled={postsPage <= 0 || postsLoadingPage}
+                          className="flex items-center gap-1 px-3 py-2 text-xs font-bold border border-border hover:bg-muted text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <ChevronLeft className="w-3.5 h-3.5" />
+                          Prev
+                        </button>
+                        <span className="text-xs text-subtle font-bold">
+                          {postsLoadingPage ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            `${postsPage + 1} / ${postsTotalPages}`
+                          )}
+                        </span>
+                        <button
+                          onClick={async () => {
+                            if (postsPage >= postsTotalPages - 1 || postsLoadingPage) return;
+                            setPostsLoadingPage(true);
+                            const res = await feedApi.getMyPosts(postsPage + 1, 12);
+                            if (res.success && res.data) {
+                              setMyPosts(res.data.content);
+                              setPostsPage(res.data.page);
+                              setPostsTotalPages(res.data.totalPages);
+                              setPostsTotalElements(res.data.totalElements);
+                            }
+                            setPostsLoadingPage(false);
+                          }}
+                          disabled={postsPage >= postsTotalPages - 1 || postsLoadingPage}
+                          className="flex items-center gap-1 px-3 py-2 text-xs font-bold border border-border hover:bg-muted text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        >
+                          Next
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+
                 {/* My Events */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -709,26 +999,30 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                         Recent Supporters
                       </div>
                       <div className="space-y-2">
-                        {[
-                          { name: "Sarah Johnson", amount: "$250", initials: "SJ", timeAgo: "2h ago" },
-                          { name: "Mike Chen", amount: "$180", initials: "MC", timeAgo: "5h ago" },
-                          { name: "Emily Rodriguez", amount: "$120", initials: "ER", timeAgo: "1d ago" },
-                        ].map((s, i) => (
-                          <motion.div
-                            key={i}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.3, delay: i * 0.06 }}
-                            className="flex items-center gap-3 p-4 border border-border bg-background"
-                          >
-                            <div className="w-8 h-8 bg-secondary flex items-center justify-center text-foreground font-bold text-xs flex-shrink-0">{s.initials}</div>
-                            <div className="flex-1">
-                              <p className="text-foreground font-medium text-sm">{s.name}</p>
-                              <p className="text-subtle text-xs">{s.timeAgo}</p>
-                            </div>
-                            <p className="text-accent font-black text-sm">{s.amount}</p>
-                          </motion.div>
-                        ))}
+                        {itemSupportersLoading ? (
+                          <div className="flex items-center justify-center py-8">
+                            <Loader2 className="w-5 h-5 animate-spin text-subtle" />
+                          </div>
+                        ) : itemSupporters.length === 0 ? (
+                          <p className="text-subtle text-sm py-4">No supporters yet</p>
+                        ) : (
+                          itemSupporters.map((s, i) => (
+                            <motion.div
+                              key={i}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.3, delay: i * 0.06 }}
+                              className="flex items-center gap-3 p-4 border border-border bg-background"
+                            >
+                              <div className="w-8 h-8 bg-secondary flex items-center justify-center text-foreground font-bold text-xs flex-shrink-0">{s.initials}</div>
+                              <div className="flex-1">
+                                <p className="text-foreground font-medium text-sm">{s.name}</p>
+                                <p className="text-subtle text-xs">{s.timeAgo}</p>
+                              </div>
+                              <p className="text-accent font-black text-sm">{s.amount}</p>
+                            </motion.div>
+                          ))
+                        )}
                       </div>
                     </div>
                   </motion.div>
@@ -928,6 +1222,23 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Add Post Dialog */}
+      <AddPostDialog
+        open={addPostOpen}
+        onClose={() => setAddPostOpen(false)}
+        onPostCreated={async () => {
+          const postsRes = await feedApi.getMyPosts(0, 12);
+          if (postsRes.success && postsRes.data) {
+            setMyPosts(postsRes.data.content);
+            setPostsPage(0);
+            setPostsTotalPages(postsRes.data.totalPages);
+            setPostsTotalElements(postsRes.data.totalElements);
+            setPostsLoaded(true);
+          }
+        }}
+        projects={projects.map(p => ({ id: p.id, name: p.name, description: p.description, coverImageUrl: p.coverImage ?? null, isPublic: true, goalAmount: 0, raisedAmount: 0, progress: 0, items: [], createdAt: "" }))}
+      />
     </div>
   );
 }

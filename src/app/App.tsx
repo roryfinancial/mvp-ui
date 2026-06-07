@@ -81,8 +81,8 @@ function HomeRoute() {
   return (
     <>
       <Helmet>
-        <title>Rory — Fan Gifts. Zero Fees.</title>
-        <meta name="description" content="Rory lets fans fund the gear, software, and essentials creators actually need — with zero platform fees." />
+        <title>Rory — Fan Gifts. Low Fees.</title>
+        <meta name="description" content="Rory lets creators set goals for their projects and fans donate to help achieve them — with low platform fees." />
         <link rel="canonical" href="https://rory.com/" />
       </Helmet>
       <Home
@@ -99,7 +99,7 @@ function LoginRoute() {
   const { user } = useAuth();
   function handleAuthComplete(type: "creator" | "supporter") {
     if (user && !user.isProfileComplete) {
-      navigate("/onboarding");
+      navigate(type === "creator" ? "/connect-platforms" : "/onboarding");
     } else {
       navigate(type === "creator" ? "/dashboard" : "/supporter");
     }
@@ -131,7 +131,7 @@ function SignUpRoute() {
       <Auth
         mode="signup"
         onBack={() => navigate("/")}
-        onAuthComplete={() => navigate("/onboarding")}
+        onAuthComplete={(type) => navigate(type === "creator" ? "/connect-platforms" : "/onboarding")}
         onSwitchMode={() => navigate("/login")}
       />
     </>
@@ -320,14 +320,51 @@ function SettingsRoute({
   onUpdateBalance: (n: number) => void;
 }) {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const initialSection = (searchParams.get("section") as "profile" | "account" | "notifications" | "privacy" | "balance" | "customization") ?? "profile";
+  const [searchParams, setSearchParams] = useSearchParams();
+  const platformConnected = searchParams.get("platform_connected");
+  const platformError = searchParams.get("platform_error");
+  const hasPlatformParam = platformConnected || platformError;
+  const initialSection = hasPlatformParam
+    ? "platforms" as const
+    : (searchParams.get("section") as "profile" | "account" | "notifications" | "privacy" | "balance" | "customization") ?? "profile";
+
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  useEffect(() => {
+    if (platformConnected) {
+      setToast({ message: `${platformConnected.charAt(0).toUpperCase() + platformConnected.slice(1)} connected successfully!`, type: "success" });
+      searchParams.delete("platform_connected");
+      setSearchParams(searchParams, { replace: true });
+    } else if (platformError) {
+      const reason = searchParams.get("reason") || "unknown";
+      setToast({ message: `Failed to connect ${platformError}: ${reason}`, type: "error" });
+      searchParams.delete("platform_error");
+      searchParams.delete("reason");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!toast) return;
+    const id = setTimeout(() => setToast(null), 5000);
+    return () => clearTimeout(id);
+  }, [toast]);
+
   return (
     <>
       <Helmet>
         <title>Settings — Rory</title>
         <meta name="robots" content="noindex" />
       </Helmet>
+      {toast && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 text-sm font-medium border shadow-lg ${
+          toast.type === "success"
+            ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-500"
+            : "bg-red-500/10 border-red-500/30 text-red-500"
+        }`}>
+          {toast.message}
+        </div>
+      )}
       <Settings
         creditBalance={creditBalance}
         onUpdateBalance={onUpdateBalance}

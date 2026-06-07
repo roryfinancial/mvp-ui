@@ -38,6 +38,15 @@ export default function RecommendedCreators({ onToast }: RecommendedCreatorsProp
     }
   };
 
+  const handleDismiss = async (username: string) => {
+    try {
+      await recommendationApi.dismiss(username);
+      setCreators((prev) => prev.filter((c) => c.username !== username));
+    } catch {
+      // silent fail
+    }
+  };
+
   if (loading) {
     return (
       <div className="bg-muted border border-border rounded-lg p-4 space-y-3">
@@ -63,7 +72,7 @@ export default function RecommendedCreators({ onToast }: RecommendedCreatorsProp
 
       <div className="space-y-3">
         {creators.map((creator) => (
-          <div key={creator.username} className="flex items-start gap-3">
+          <div key={creator.username} className="flex items-start gap-3 group">
             {/* Avatar */}
             <a href={`/creator/${creator.username}`} className="flex-shrink-0">
               {creator.avatarUrl ? (
@@ -92,14 +101,25 @@ export default function RecommendedCreators({ onToast }: RecommendedCreatorsProp
               </p>
             </div>
 
-            {/* Follow button */}
-            <button
-              onClick={() => handleFollow(creator.username)}
-              disabled={followingSet.has(creator.username)}
-              className="flex-shrink-0 text-xs font-bold text-accent hover:text-accent/80 transition-colors disabled:opacity-50"
-            >
-              {followingSet.has(creator.username) ? "Following" : "Follow"}
-            </button>
+            {/* Actions */}
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <button
+                onClick={() => handleFollow(creator.username)}
+                disabled={followingSet.has(creator.username)}
+                className="text-xs font-bold text-accent hover:text-accent/80 transition-colors disabled:opacity-50"
+              >
+                {followingSet.has(creator.username) ? "Following" : "Follow"}
+              </button>
+              <button
+                onClick={() => handleDismiss(creator.username)}
+                className="text-muted-foreground/40 hover:text-muted-foreground transition-colors opacity-0 group-hover:opacity-100"
+                title="Not interested"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
+                  <path d="M5.28 4.22a.75.75 0 0 0-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 1 0 1.06 1.06L8 9.06l2.72 2.72a.75.75 0 1 0 1.06-1.06L9.06 8l2.72-2.72a.75.75 0 0 0-1.06-1.06L8 6.94 5.28 4.22Z" />
+                </svg>
+              </button>
+            </div>
           </div>
         ))}
       </div>

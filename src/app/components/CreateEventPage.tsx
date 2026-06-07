@@ -52,8 +52,8 @@ export default function CreateEventPage({ onBack, onComplete }: CreateEventPageP
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <section className="pt-12 pb-20 px-6">
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center">
+      <section className="w-full py-12 px-6">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <motion.div

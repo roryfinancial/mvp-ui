@@ -1,13 +1,20 @@
 import { useState } from "react";
-import { motion } from "motion/react";
-import { ArrowLeft, ArrowRight, Check, Link2 } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { ArrowLeft, ArrowRight, Check, Link2, Loader2 } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
+import { userApi, platformApi } from "../../lib/api";
+import type { PlatformType } from "../../lib/api";
+
+const OAUTH_PLATFORMS: Set<PlatformType> = new Set(["YOUTUBE", "TWITCH"]);
 
 interface Platform {
-  id: string;
+  id: PlatformType;
   name: string;
   icon: React.ReactNode;
   description: string;
   color: string;
+  placeholder: string;
+  urlHint: string;
 }
 
 interface ConnectPlatformsProps {
@@ -18,98 +25,206 @@ interface ConnectPlatformsProps {
 
 const creatorPlatforms: Platform[] = [
   {
-    id: "twitch",
-    name: "Twitch",
-    icon: <TwitchIcon />,
-    description: "Stream viewers can gift directly",
-    color: "#9146FF",
-  },
-  {
-    id: "youtube",
+    id: "YOUTUBE",
     name: "YouTube",
     icon: <YouTubeIcon />,
-    description: "Link your channel for subscribers",
+    description: "We'll auto-sync your recent videos",
     color: "#FF0000",
+    placeholder: "@yourchannel or channel URL",
+    urlHint: "youtube.com/@handle or youtube.com/channel/...",
   },
   {
-    id: "tiktok",
+    id: "TWITCH",
+    name: "Twitch",
+    icon: <TwitchIcon />,
+    description: "We'll pull your VODs and clips",
+    color: "#9146FF",
+    placeholder: "your_username",
+    urlHint: "twitch.tv/username",
+  },
+  {
+    id: "TIKTOK",
     name: "TikTok",
     icon: <TikTokIcon />,
-    description: "Share your project with followers",
+    description: "Paste video links to add posts",
     color: "#000000",
+    placeholder: "@yourhandle",
+    urlHint: "tiktok.com/@handle",
   },
   {
-    id: "instagram",
+    id: "INSTAGRAM",
     name: "Instagram",
     icon: <InstagramIcon />,
-    description: "Add your project link to bio",
+    description: "Paste post links to add content",
     color: "#E4405F",
+    placeholder: "@yourhandle",
+    urlHint: "instagram.com/handle",
   },
   {
-    id: "twitter",
+    id: "TWITTER",
     name: "X / Twitter",
     icon: <XIcon />,
-    description: "Share your project with fans",
+    description: "Paste tweet links to add posts",
     color: "#000000",
-  },
-  {
-    id: "shopify",
-    name: "Shopify",
-    icon: <ShopifyIcon />,
-    description: "Sync products from your store",
-    color: "#96BF48",
+    placeholder: "@yourhandle",
+    urlHint: "x.com/handle",
   },
 ];
 
 const supporterPlatforms: Platform[] = [
   {
-    id: "twitch",
-    name: "Twitch",
-    icon: <TwitchIcon />,
-    description: "Find creators you follow",
-    color: "#9146FF",
-  },
-  {
-    id: "youtube",
+    id: "YOUTUBE",
     name: "YouTube",
     icon: <YouTubeIcon />,
-    description: "Import your subscriptions",
+    description: "Find creators you subscribe to",
     color: "#FF0000",
+    placeholder: "@yourchannel",
+    urlHint: "youtube.com/@handle",
   },
   {
-    id: "tiktok",
+    id: "TWITCH",
+    name: "Twitch",
+    icon: <TwitchIcon />,
+    description: "Find streamers you follow",
+    color: "#9146FF",
+    placeholder: "your_username",
+    urlHint: "twitch.tv/username",
+  },
+  {
+    id: "TIKTOK",
     name: "TikTok",
     icon: <TikTokIcon />,
     description: "Discover creators you follow",
     color: "#000000",
+    placeholder: "@yourhandle",
+    urlHint: "tiktok.com/@handle",
   },
   {
-    id: "instagram",
+    id: "INSTAGRAM",
     name: "Instagram",
     icon: <InstagramIcon />,
     description: "Find creators from your feed",
     color: "#E4405F",
+    placeholder: "@yourhandle",
+    urlHint: "instagram.com/handle",
   },
   {
-    id: "twitter",
+    id: "TWITTER",
     name: "X / Twitter",
     icon: <XIcon />,
     description: "Import creators you follow",
     color: "#000000",
+    placeholder: "@yourhandle",
+    urlHint: "x.com/handle",
   },
 ];
 
 export default function ConnectPlatforms({ userType, onBack, onContinue }: ConnectPlatformsProps) {
+  const { user } = useAuth();
+  const [expandedPlatform, setExpandedPlatform] = useState<PlatformType | null>(null);
+  const [handles, setHandles] = useState<Record<string, string>>({});
   const [connected, setConnected] = useState<Set<string>>(new Set());
+  const [saving, setSaving] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const platforms = userType === "creator" ? creatorPlatforms : supporterPlatforms;
 
-  function toggleConnect(id: string) {
-    setConnected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  function handlePlatformClick(platform: Platform) {
+    if (connected.has(platform.id)) return;
+    if (OAUTH_PLATFORMS.has(platform.id)) {
+      handleOAuthConnect(platform.id);
+      return;
+    }
+    setExpandedPlatform(expandedPlatform === platform.id ? null : platform.id);
+    setErrors(prev => ({ ...prev, [platform.id]: "" }));
+  }
+
+  async function handleOAuthConnect(platformId: PlatformType) {
+    setSaving(platformId);
+    setErrors(prev => ({ ...prev, [platformId]: "" }));
+    try {
+      const getAuthUrl = platformId === "YOUTUBE"
+        ? platformApi.getYouTubeAuthUrl
+        : platformApi.getTwitchAuthUrl;
+      const res = await getAuthUrl();
+      if (res.success && res.data?.url) {
+        window.location.href = res.data.url;
+      } else {
+        setErrors(prev => ({ ...prev, [platformId]: res.error?.message || "Failed to start authentication" }));
+        setSaving(null);
+      }
+    } catch {
+      setErrors(prev => ({ ...prev, [platformId]: "Failed to start authentication" }));
+      setSaving(null);
+    }
+  }
+
+  async function handleConnect(platform: Platform) {
+    const handle = handles[platform.id]?.trim();
+    if (!handle) {
+      setErrors(prev => ({ ...prev, [platform.id]: "Please enter your handle or URL" }));
+      return;
+    }
+
+    if (!user?.username) return;
+
+    setSaving(platform.id);
+    setErrors(prev => ({ ...prev, [platform.id]: "" }));
+
+    try {
+      let url = handle;
+      if (!handle.includes("http") && !handle.includes(".com")) {
+        const cleanHandle = handle.startsWith("@") ? handle.substring(1) : handle;
+        url = buildUrl(platform.id, cleanHandle);
+      }
+
+      const cleanHandle = handle.startsWith("@") ? handle.substring(1) : handle;
+
+      await userApi.connectPlatform(user.username, {
+        platform: platform.id,
+        handle: cleanHandle,
+        url,
+      });
+
+      setConnected(prev => new Set([...prev, platform.id]));
+      setExpandedPlatform(null);
+    } catch (e: any) {
+      setErrors(prev => ({
+        ...prev,
+        [platform.id]: e?.message || "Failed to connect. Try again.",
+      }));
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  async function handleDisconnect(platformId: PlatformType) {
+    if (!user?.username) return;
+    setSaving(platformId);
+    try {
+      await userApi.disconnectPlatform(user.username, platformId);
+      setConnected(prev => {
+        const next = new Set(prev);
+        next.delete(platformId);
+        return next;
+      });
+      setHandles(prev => ({ ...prev, [platformId]: "" }));
+    } catch {
+      // ignore
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  function buildUrl(platformId: PlatformType, handle: string): string {
+    switch (platformId) {
+      case "YOUTUBE": return `https://www.youtube.com/@${handle}`;
+      case "TWITCH": return `https://www.twitch.tv/${handle}`;
+      case "TIKTOK": return `https://www.tiktok.com/@${handle}`;
+      case "INSTAGRAM": return `https://www.instagram.com/${handle}`;
+      case "TWITTER": return `https://x.com/${handle}`;
+      default: return handle;
+    }
   }
 
   return (
@@ -148,7 +263,7 @@ export default function ConnectPlatforms({ userType, onBack, onContinue }: Conne
           </h1>
           <p className="text-muted-foreground text-sm">
             {userType === "creator"
-              ? "Link your social accounts and storefronts so fans can find and support you."
+              ? "Link your social accounts so we can auto-sync your content and fans can support you."
               : "Connect your accounts to discover creators you already follow."}
           </p>
         </motion.div>
@@ -157,43 +272,111 @@ export default function ConnectPlatforms({ userType, onBack, onContinue }: Conne
         <div className="space-y-2 mb-8">
           {platforms.map((platform, index) => {
             const isConnected = connected.has(platform.id);
+            const isExpanded = expandedPlatform === platform.id;
+            const isSaving = saving === platform.id;
+
             return (
-              <motion.button
+              <motion.div
                 key={platform.id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: 0.05 * index }}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                onClick={() => toggleConnect(platform.id)}
-                className={`w-full flex items-center gap-4 px-4 py-3 border transition-colors text-left ${
-                  isConnected
-                    ? "border-accent bg-accent/5"
-                    : "border-border bg-muted hover:bg-background"
-                }`}
               >
-                <div
-                  className="w-10 h-10 flex items-center justify-center shrink-0"
-                  style={{ color: platform.color }}
+                <motion.button
+                  whileHover={{ scale: 1.005 }}
+                  whileTap={{ scale: 0.995 }}
+                  onClick={() => handlePlatformClick(platform)}
+                  className={`w-full flex items-center gap-4 px-4 py-3 border transition-colors text-left ${
+                    isConnected
+                      ? "border-accent bg-accent/5"
+                      : isExpanded
+                        ? "border-accent/50 bg-background"
+                        : "border-border bg-muted hover:bg-background"
+                  }`}
                 >
-                  {platform.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-foreground font-bold text-sm">{platform.name}</div>
-                  <div className="text-muted-foreground text-xs">{platform.description}</div>
-                </div>
-                <div className="shrink-0">
-                  {isConnected ? (
-                    <div className="w-8 h-8 flex items-center justify-center bg-accent text-white">
-                      <Check className="w-4 h-4" />
+                  <div
+                    className="w-10 h-10 flex items-center justify-center shrink-0"
+                    style={{ color: platform.color }}
+                  >
+                    {platform.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-foreground font-bold text-sm">{platform.name}</div>
+                    <div className="text-muted-foreground text-xs">
+                      {isConnected
+                        ? `Connected as ${handles[platform.id] || ""}`
+                        : OAUTH_PLATFORMS.has(platform.id)
+                          ? `Sign in with ${platform.name} to verify your account`
+                          : platform.description}
                     </div>
-                  ) : (
-                    <div className="w-8 h-8 flex items-center justify-center border border-border text-subtle">
-                      <Link2 className="w-4 h-4" />
-                    </div>
+                  </div>
+                  <div className="shrink-0">
+                    {isConnected ? (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDisconnect(platform.id); }}
+                        className="w-8 h-8 flex items-center justify-center bg-accent text-white hover:bg-red-600 transition-colors"
+                      >
+                        {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                      </button>
+                    ) : isSaving && OAUTH_PLATFORMS.has(platform.id) ? (
+                      <div className="w-8 h-8 flex items-center justify-center">
+                        <Loader2 className="w-4 h-4 animate-spin text-subtle" />
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 flex items-center justify-center border border-border text-subtle">
+                        <Link2 className="w-4 h-4" />
+                      </div>
+                    )}
+                  </div>
+                </motion.button>
+
+                {/* Expanded input area (manual platforms only) */}
+                <AnimatePresence>
+                  {isExpanded && !isConnected && !OAUTH_PLATFORMS.has(platform.id) && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-4 py-3 border border-t-0 border-accent/50 bg-background">
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder={platform.placeholder}
+                            value={handles[platform.id] || ""}
+                            onChange={(e) => setHandles(prev => ({ ...prev, [platform.id]: e.target.value }))}
+                            onKeyDown={(e) => { if (e.key === "Enter") handleConnect(platform); }}
+                            className="flex-1 px-3 py-2 text-sm border border-border bg-muted text-foreground placeholder:text-subtle focus:outline-none focus:border-accent"
+                            autoFocus
+                          />
+                          <button
+                            onClick={() => handleConnect(platform)}
+                            disabled={isSaving}
+                            className="px-4 py-2 bg-accent text-white text-xs font-bold uppercase tracking-wider hover:bg-[#c9164f] transition-colors disabled:opacity-50"
+                          >
+                            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Connect"}
+                          </button>
+                        </div>
+                        <p className="text-[11px] text-subtle mt-1.5">
+                          {platform.urlHint}
+                        </p>
+                        {errors[platform.id] && (
+                          <p className="text-[11px] text-red-500 mt-1">{errors[platform.id]}</p>
+                        )}
+                      </div>
+                    </motion.div>
                   )}
-                </div>
-              </motion.button>
+                </AnimatePresence>
+
+                {/* Error display for OAuth platforms */}
+                {errors[platform.id] && OAUTH_PLATFORMS.has(platform.id) && !isConnected && (
+                  <div className="px-4 py-2 border border-t-0 border-red-500/30 bg-red-500/5">
+                    <p className="text-[11px] text-red-500">{errors[platform.id]}</p>
+                  </div>
+                )}
+              </motion.div>
             );
           })}
         </div>
@@ -273,14 +456,6 @@ function XIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-    </svg>
-  );
-}
-
-function ShopifyIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-      <path d="M15.337 23.979l7.216-1.561s-2.604-17.613-2.625-17.73c-.018-.116-.114-.192-.211-.192s-1.929-.136-1.929-.136-1.275-1.274-1.439-1.411c-.045-.037-.075-.058-.121-.074l-.914 21.104zm-1.656-17.449a3.617 3.617 0 0 0-1.548-.399c-1.193 0-1.793.6-2.093 1.198 0 0-.6 1.497-.899 2.394l-1.796.553s.6-2.694.6-2.894c0-.199-1.593-5.288-1.593-5.288-.2-.399-.599-.599-.999-.599 0 0-1.746-.01-1.933-.01L6.41 8.057l2.195-.676s.898 2.693.998 2.993c.1.3.6 2.493.6 2.493l1.897-.584s-.6-1.793-.698-2.094c-.1-.3-.3-.599-.3-.599s.399-.898 1.298-.898c.599 0 .899.399.899 1.098 0 .6-.399 1.697-.599 2.595-.199.899.3 1.598 1.198 1.598 1.497 0 2.394-2.394 2.394-4.388 0-1.498-.899-2.695-2.611-2.695z" />
     </svg>
   );
 }

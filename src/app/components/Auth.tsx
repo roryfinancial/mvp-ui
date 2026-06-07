@@ -202,10 +202,10 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
               <span style={{ color: "oklch(65.6% 0.241 354.308)" }}>funded.</span>
             </h2>
             <p className="text-lg text-white/60 max-w-md mx-auto leading-relaxed">
-              Get exactly what you want from your supporters. Zero fees, ever.
+              Set goals for your project. Fans donate to help you achieve them.
             </p>
             <div className="mt-12 space-y-3">
-              {["Trusted by 10,000+ creators", "100% free for creators", "No platform fees, ever"].map(line => (
+              {["Trusted by 10,000+ creators", "Built for creators", "Low platform fees, always"].map(line => (
                 <div key={line} className="flex items-center gap-3 text-white/50 text-sm">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
                   <span>{line}</span>

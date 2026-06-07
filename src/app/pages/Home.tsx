@@ -16,7 +16,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e0e] border-b border-accent/40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="text-xl font-black text-white tracking-tight">Rory</div>
+          <img src="/rory-word.svg" alt="Rory" className="h-9" />
           <div className="flex items-center gap-8">
             <a href="#features" className="text-white/50 hover:text-white transition-colors text-sm font-medium">Features</a>
             <a href="#pricing" className="text-white/50 hover:text-white transition-colors text-sm font-medium">Pricing</a>
@@ -66,7 +66,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
                   background: "oklch(65.6% 0.241 354.308 / 0.12)",
                 }}
               >
-                New — Fan Gifts with Zero Fees
+                New — Fan Gifts with Low Fees
               </div>
             </motion.div>
 
@@ -77,7 +77,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
             </h1>
 
             <p className="text-xl text-white/50 mb-12 max-w-2xl mx-auto leading-relaxed">
-              Share your list. Your fans buy the gifts. You keep 100%. No platform cut, ever.
+              Create goals for your project. Fans donate to help you achieve them. Low fees, always.
             </p>
 
             <motion.div
@@ -160,9 +160,9 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
                 </span>
               </div>
               <h2 className="text-5xl font-black mb-6 leading-tight text-foreground tracking-tight">
-                Get exactly
+                Set goals,
                 <br />
-                what you want.
+                get funded.
               </h2>
               <p className="text-lg text-muted-foreground mb-10 leading-relaxed">
                 Add any item from any store. Fans browse, choose what to gift, and it ships straight to you — your address never shared.
@@ -326,7 +326,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
             </motion.button>
 
             <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-10 text-sm text-white/30">
-              {["100% free for creators", "Set up in 2 minutes", "No credit card needed"].map((item) => (
+              {["Low fees for creators", "Set up in 2 minutes", "No credit card needed"].map((item) => (
                 <div key={item} className="flex items-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#059669]" />
                   <span>{item}</span>
@@ -342,9 +342,9 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-5 gap-12 mb-12">
             <div className="md:col-span-2">
-              <div className="text-xl font-black text-white mb-4">Rory</div>
+              <img src="/rory-word.svg" alt="Rory" className="h-9 mb-4" />
               <p className="text-white/40 mb-6 max-w-xs text-sm leading-relaxed">
-                The funding platform for creators. Get exactly what you need. Zero fees, ever.
+                The funding platform for creators. Set goals, fans help you reach them. Low fees, always.
               </p>
             </div>
             {[

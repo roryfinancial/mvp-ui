@@ -1,10 +1,11 @@
 import { motion } from "motion/react";
-import { useState, useEffect } from "react";
-import { User, Bell, Lock, Mail, Key, Shield, DollarSign, Palette, Sun, Moon, Monitor, Users, Check, Loader2, ArrowUpRight, ArrowDownLeft, Plus, ExternalLink, CheckCircle2, AlertCircle } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
+import { User, Bell, Lock, Mail, Key, Shield, DollarSign, Palette, Sun, Moon, Monitor, Users, Check, Loader2, ArrowUpRight, ArrowDownLeft, Plus, ExternalLink, CheckCircle2, AlertCircle, Link2, Trash2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useAuth } from "../../contexts/AuthContext";
-import { userApi, walletApi, stripeApi } from "../../lib/api";
-import type { WalletSummaryResponse, TransactionResponse, PagedResponse } from "../../lib/api";
+import { userApi, walletApi, stripeApi, platformApi } from "../../lib/api";
+import type { WalletSummaryResponse, TransactionResponse, PagedResponse, ConnectedPlatform, PlatformType } from "../../lib/api";
 import { COMMUNITIES } from "./OnboardingChoice";
 
 interface SettingsProps {
@@ -12,7 +13,7 @@ interface SettingsProps {
   email?: string;
   creditBalance?: number;
   onUpdateBalance?: (newBalance: number) => void;
-  initialSection?: "profile" | "account" | "notifications" | "privacy" | "balance" | "customization" | "communities";
+  initialSection?: "profile" | "account" | "notifications" | "privacy" | "balance" | "customization" | "communities" | "platforms";
 }
 
 export default function Settings({
@@ -20,7 +21,7 @@ export default function Settings({
   initialSection = "profile",
 }: SettingsProps) {
   const { user, refreshUser } = useAuth();
-  const [activeSection, setActiveSection] = useState<"profile" | "account" | "notifications" | "privacy" | "balance" | "customization" | "communities">(initialSection);
+  const [activeSection, setActiveSection] = useState<"profile" | "account" | "notifications" | "privacy" | "balance" | "customization" | "communities" | "platforms">(initialSection);
   const { theme, setTheme, resolvedTheme } = useTheme();
 
   const [displayName, setDisplayName] = useState(user?.displayName ?? "");
@@ -48,33 +49,130 @@ export default function Settings({
   const [depositLoading, setDepositLoading] = useState(false);
   const [depositError, setDepositError] = useState("");
 
+  // Deposit success banner
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [depositSuccess, setDepositSuccess] = useState(false);
+  const depositPolled = useRef(false);
+
   // Stripe Connect state
   const [connectStatus, setConnectStatus] = useState<{ connected: boolean; chargesEnabled: boolean; payoutsEnabled: boolean; stripeAccountId: string | null } | null>(null);
   const [connectLoading, setConnectLoading] = useState(false);
   const [connectError, setConnectError] = useState("");
 
-  // Fetch wallet data and connect status when balance section is active
-  useEffect(() => {
-    if (activeSection !== "balance") return;
-    setLoadingWallet(true);
+  // Connected Platforms state
+  const [connectedPlatforms, setConnectedPlatforms] = useState<ConnectedPlatform[]>([]);
+  const [platformsLoading, setPlatformsLoading] = useState(false);
+  const [addingPlatform, setAddingPlatform] = useState<PlatformType | null>(null);
+  const [platformHandle, setPlatformHandle] = useState("");
+  const [platformUrl, setPlatformUrl] = useState("");
+  const [platformSaving, setPlatformSaving] = useState(false);
+
+  // Helper to fetch wallet data
+  async function fetchWalletData() {
     const fetches: Promise<unknown>[] = [walletApi.getSummary(), walletApi.getTransactions()];
     if (user?.role === "creator") {
       fetches.push(stripeApi.getConnectStatus());
     }
-    Promise.all(fetches)
-      .then(([summaryRes, txRes, connectRes]) => {
-        const s = summaryRes as { success: boolean; data?: WalletSummaryResponse };
-        const t = txRes as { success: boolean; data?: PagedResponse<TransactionResponse> };
-        if (s.success && s.data) setWalletSummary(s.data);
-        if (t.success && t.data) setTransactions(t.data.content ?? []);
-        if (connectRes) {
-          const c = connectRes as { success: boolean; data?: typeof connectStatus };
-          if (c.success && c.data) setConnectStatus(c.data);
-        }
-      })
+    const [summaryRes, txRes, connectRes] = await Promise.all(fetches);
+    const s = summaryRes as { success: boolean; data?: WalletSummaryResponse };
+    const t = txRes as { success: boolean; data?: PagedResponse<TransactionResponse> };
+    if (s.success && s.data) setWalletSummary(s.data);
+    if (t.success && t.data) setTransactions(t.data.content ?? []);
+    if (connectRes) {
+      const c = connectRes as { success: boolean; data?: typeof connectStatus };
+      if (c.success && c.data) setConnectStatus(c.data);
+    }
+  }
+
+  // Fetch wallet data when balance section is active
+  useEffect(() => {
+    if (activeSection !== "balance") return;
+    setLoadingWallet(true);
+    fetchWalletData()
       .catch(() => {})
       .finally(() => setLoadingWallet(false));
   }, [activeSection]);
+
+  // Fetch connected platforms when platforms section is active
+  useEffect(() => {
+    if (activeSection !== "platforms" || !user) return;
+    setPlatformsLoading(true);
+    userApi.getPlatforms(user.username)
+      .then((res) => { if (res.success && res.data) setConnectedPlatforms(res.data); })
+      .catch(() => {})
+      .finally(() => setPlatformsLoading(false));
+  }, [activeSection, user]);
+
+  async function handleConnectPlatform() {
+    if (!user || !addingPlatform || !platformHandle.trim()) return;
+    setPlatformSaving(true);
+    const res = await userApi.connectPlatform(user.username, {
+      platform: addingPlatform,
+      handle: platformHandle.trim(),
+      url: platformUrl.trim(),
+    });
+    if (res.success && res.data) {
+      setConnectedPlatforms((prev) => [...prev.filter(p => p.platform !== addingPlatform), res.data!]);
+    }
+    setPlatformSaving(false);
+    setAddingPlatform(null);
+    setPlatformHandle("");
+    setPlatformUrl("");
+  }
+
+  async function handleDisconnectPlatform(platform: PlatformType) {
+    if (!user) return;
+    const res = await userApi.disconnectPlatform(user.username, platform);
+    if (res.success) {
+      setConnectedPlatforms((prev) => prev.filter(p => p.platform !== platform));
+    }
+  }
+
+  const OAUTH_PLATFORMS: Set<PlatformType> = new Set(["YOUTUBE", "TWITCH"]);
+
+  async function handleOAuthConnect(platformId: PlatformType) {
+    setPlatformSaving(true);
+    setAddingPlatform(platformId);
+    try {
+      const getAuthUrl = platformId === "YOUTUBE"
+        ? platformApi.getYouTubeAuthUrl
+        : platformApi.getTwitchAuthUrl;
+      const res = await getAuthUrl();
+      if (res.success && res.data?.url) {
+        window.location.href = res.data.url;
+      } else {
+        setPlatformSaving(false);
+      }
+    } catch {
+      setPlatformSaving(false);
+    }
+  }
+
+  // After returning from Stripe checkout, poll until balance updates
+  useEffect(() => {
+    if (searchParams.get("deposit") !== "success" || depositPolled.current) return;
+    depositPolled.current = true;
+    setDepositSuccess(true);
+
+    // Remove the query param so refreshes don't re-trigger
+    const next = new URLSearchParams(searchParams);
+    next.delete("deposit");
+    setSearchParams(next, { replace: true });
+
+    // Poll wallet summary a few times to catch webhook completion
+    let attempts = 0;
+    const maxAttempts = 6;
+    const interval = setInterval(async () => {
+      attempts++;
+      try {
+        await fetchWalletData();
+        await refreshUser();
+      } catch { /* ignore */ }
+      if (attempts >= maxAttempts) clearInterval(interval);
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   async function handleDeposit() {
     const amount = parseFloat(depositAmount);
@@ -148,9 +246,14 @@ export default function Settings({
     );
   }
 
+  const platformColorMap: Record<string, string> = {
+    YOUTUBE: "#FF0000", TWITCH: "#9146FF", TWITTER: "#000000", INSTAGRAM: "#E4405F", TIKTOK: "#00f2ea",
+  };
+
   const navItems = [
     { key: "profile" as const,       icon: <User className="w-4 h-4" />,        label: "Profile" },
     { key: "account" as const,       icon: <Mail className="w-4 h-4" />,        label: "Account" },
+    { key: "platforms" as const,     icon: <Link2 className="w-4 h-4" />,       label: "Connected Platforms" },
     { key: "balance" as const,       icon: <DollarSign className="w-4 h-4" />,  label: "Credit & Spending" },
     { key: "communities" as const,     icon: <Users className="w-4 h-4" />,       label: "Communities" },
     { key: "customization" as const,  icon: <Palette className="w-4 h-4" />,     label: "Customization" },
@@ -301,6 +404,26 @@ export default function Settings({
               {activeSection === "balance" && (
                 <div className="space-y-6">
                   <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-6">Credit & Spending</div>
+
+                  {depositSuccess && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center gap-3 p-4 border border-green-500/30 bg-green-500/5"
+                    >
+                      <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-bold text-foreground">Deposit successful</p>
+                        <p className="text-xs text-subtle">Your balance is updating — this may take a moment.</p>
+                      </div>
+                      <button
+                        onClick={() => setDepositSuccess(false)}
+                        className="ml-auto text-xs text-subtle hover:text-foreground"
+                      >
+                        Dismiss
+                      </button>
+                    </motion.div>
+                  )}
 
                   {loadingWallet ? (
                     <div className="flex items-center justify-center py-12">
@@ -625,6 +748,160 @@ export default function Settings({
                 </div>
               )}
 
+              {/* Connected Platforms */}
+              {activeSection === "platforms" && (
+                <div className="space-y-6">
+                  <div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">Connected Platforms</div>
+                    <p className="text-muted-foreground text-sm">Link your social media accounts so we can auto-sync your posts.</p>
+                  </div>
+
+                  {platformsLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : (
+                    <>
+                      {/* Currently connected */}
+                      {connectedPlatforms.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-xs font-bold uppercase tracking-widest text-subtle">Connected</p>
+                          {connectedPlatforms.map((cp) => (
+                            <div key={cp.platform} className="flex items-center justify-between p-4 border border-accent/30 bg-accent/5">
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className="w-8 h-8 flex items-center justify-center text-white text-[10px] font-black"
+                                  style={{ backgroundColor: platformColorMap[cp.platform] || "#333" }}
+                                >
+                                  {cp.platform.slice(0, 2)}
+                                </div>
+                                <div>
+                                  <p className="text-sm font-bold text-foreground">{cp.platform}</p>
+                                  <p className="text-xs text-subtle">{cp.handle || cp.url}</p>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => handleDisconnectPlatform(cp.platform)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-500/10 border border-red-500/30 transition-colors"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                                Disconnect
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Add new platform */}
+                      <div className="space-y-2">
+                        <p className="text-xs font-bold uppercase tracking-widest text-subtle">
+                          {connectedPlatforms.length > 0 ? "Add another" : "Connect a platform"}
+                        </p>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          {(["YOUTUBE", "TWITCH", "TWITTER", "INSTAGRAM", "TIKTOK"] as PlatformType[])
+                            .filter(p => !connectedPlatforms.some(cp => cp.platform === p))
+                            .map((p) => (
+                              <button
+                                key={p}
+                                onClick={() => {
+                                  if (OAUTH_PLATFORMS.has(p)) {
+                                    handleOAuthConnect(p);
+                                  } else {
+                                    setAddingPlatform(p); setPlatformHandle(""); setPlatformUrl("");
+                                  }
+                                }}
+                                disabled={platformSaving && addingPlatform === p}
+                                className={`flex items-center gap-2 p-3 border text-left text-sm font-bold transition-colors ${
+                                  addingPlatform === p
+                                    ? "border-accent bg-accent/5 text-foreground"
+                                    : "border-border hover:border-accent/30 text-muted-foreground hover:text-foreground"
+                                } disabled:opacity-50`}
+                              >
+                                {platformSaving && addingPlatform === p ? (
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                  <div
+                                    className="w-6 h-6 flex items-center justify-center text-white text-[8px] font-black"
+                                    style={{ backgroundColor: platformColorMap[p] || "#333" }}
+                                  >
+                                    {p.slice(0, 2)}
+                                  </div>
+                                )}
+                                {OAUTH_PLATFORMS.has(p) ? `Sign in with ${p.charAt(0) + p.slice(1).toLowerCase()}` : p}
+                              </button>
+                            ))}
+                        </div>
+
+                        {addingPlatform && !OAUTH_PLATFORMS.has(addingPlatform) && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="p-4 border border-accent/30 bg-muted space-y-3"
+                          >
+                            <p className="text-xs font-bold text-foreground">
+                              Connect {addingPlatform}
+                            </p>
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-widest text-subtle mb-1">
+                                {addingPlatform === "TWITTER" ? "Handle (e.g. @elonmusk)" :
+                                 addingPlatform === "INSTAGRAM" ? "Username (e.g. natgeo)" :
+                                 "Username (e.g. @charlidamelio)"}
+                              </label>
+                              <input
+                                type="text"
+                                value={platformHandle}
+                                onChange={(e) => setPlatformHandle(e.target.value)}
+                                placeholder="username"
+                                className={inputClass}
+                                autoFocus
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-widest text-subtle mb-1">
+                                Profile URL (optional)
+                              </label>
+                              <input
+                                type="url"
+                                value={platformUrl}
+                                onChange={(e) => setPlatformUrl(e.target.value)}
+                                placeholder={`https://${addingPlatform.toLowerCase()}.com/...`}
+                                className={inputClass}
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <motion.button
+                                whileHover={{ scale: 1.01 }}
+                                whileTap={{ scale: 0.99 }}
+                                onClick={handleConnectPlatform}
+                                disabled={platformSaving || !platformHandle.trim()}
+                                className="px-6 py-2.5 btn-cta text-white font-black text-xs uppercase tracking-widest disabled:opacity-50 flex items-center gap-2"
+                              >
+                                {platformSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Connect"}
+                              </motion.button>
+                              <button
+                                onClick={() => { setAddingPlatform(null); setPlatformHandle(""); setPlatformUrl(""); }}
+                                className="px-4 py-2.5 border border-border text-muted-foreground hover:text-foreground text-xs font-bold transition-colors"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                            <p className="text-[10px] text-subtle">
+                              For this platform, you'll manually add posts via the "Add Post" button on the dashboard.
+                            </p>
+                          </motion.div>
+                        )}
+                      </div>
+
+                      {connectedPlatforms.length === 0 && !addingPlatform && (
+                        <div className="text-center py-8 text-subtle text-sm">
+                          No platforms connected yet. Click a platform above to get started.
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+
               {/* Notifications */}
               {activeSection === "notifications" && (
                 <div className="space-y-4">
@@ -686,15 +963,7 @@ export default function Settings({
                       <Lock className="w-4 h-4 text-subtle mt-0.5 flex-shrink-0" />
                       <div className="flex-1">
                         <p className="text-foreground font-bold text-sm">Connected Accounts</p>
-                        <p className="text-subtle text-xs mt-0.5 mb-3">Manage your linked social profiles</p>
-                        <div className="space-y-2">
-                          <button className="w-full px-4 py-2 border border-border bg-background text-muted-foreground hover:text-foreground hover:bg-secondary text-sm font-medium transition-colors text-left">
-                            Twitter — @username
-                          </button>
-                          <button className="w-full px-4 py-2 border border-border bg-background text-muted-foreground hover:text-foreground hover:bg-secondary text-sm font-medium transition-colors text-left">
-                            Instagram — @username
-                          </button>
-                        </div>
+                        <p className="text-subtle text-xs mt-0.5 mb-3">Manage your linked social profiles in the <button onClick={() => setActiveSection("platforms")} className="text-accent font-bold hover:underline">Connected Platforms</button> section.</p>
                       </div>
                     </div>
                   </div>

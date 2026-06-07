@@ -197,6 +197,8 @@ export interface AnalyticsResponse {
 
 export interface ReferralResponse {
   referredUsername: string;
+  referredDisplayName: string;
+  referredInitials: string;
   joinedDate: string;
   status: "ACTIVE" | "INACTIVE" | "PENDING";
   commissionRate: number;
@@ -351,6 +353,16 @@ export const userApi = {
     }),
 };
 
+// ─── Platform OAuth endpoints ────────────────────────────────────────────────
+
+export const platformApi = {
+  getYouTubeAuthUrl: () =>
+    apiFetch<{ url: string }>("/api/platforms/youtube/auth"),
+
+  getTwitchAuthUrl: () =>
+    apiFetch<{ url: string }>("/api/platforms/twitch/auth"),
+};
+
 // ─── Project endpoints ──────────────────────────────────────────────────────
 
 export const projectApi = {
@@ -395,7 +407,7 @@ export const projectApi = {
 // ─── Gift endpoints ──────────────────────────────────────────────────────────
 
 export const giftApi = {
-  create: (body: { projectId: string; amount: number; message?: string }) =>
+  create: (body: { projectId: string; itemId?: string; amount: number; message?: string }) =>
     apiFetch<{ giftId: string; clientSecret: string; amount: number; creatorUsername: string; projectName: string }>(
       "/api/gifts",
       { method: "POST", body: JSON.stringify(body) }
@@ -403,6 +415,9 @@ export const giftApi = {
 
   getRecentSupporters: (username: string, limit = 10) =>
     apiFetch<RecentSupporterResponse[]>(`/api/gifts/creator/${username}/recent?limit=${limit}`),
+
+  getRecentSupportersByItem: (itemId: string, limit = 10) =>
+    apiFetch<RecentSupporterResponse[]>(`/api/gifts/item/${itemId}/recent?limit=${limit}`),
 
   getTopSupporters: (username: string, limit = 10) =>
     apiFetch<TopSupporterResponse[]>(`/api/gifts/creator/${username}/top?limit=${limit}`),
@@ -522,6 +537,97 @@ export const feedApi = {
 
   toggleLike: (postId: string) =>
     apiFetch<{ liked: boolean }>(`/api/feed/${postId}/like`, { method: "POST" }),
+
+  // ─── Post sync & management ────────────────────────────────────────────────
+
+  syncPosts: () =>
+    apiFetch<SyncResultResponse>("/api/feed/posts/sync", { method: "POST" }),
+
+  previewUrl: (url: string) =>
+    apiFetch<PostMetadataPreview>("/api/feed/posts/preview", {
+      method: "POST",
+      body: JSON.stringify({ url }),
+    }),
+
+  createPost: (body: { url: string; linkedProjectId?: string }) =>
+    apiFetch<FeedPostResponse>("/api/feed/posts", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  linkPostToProject: (postId: string, projectId: string | null) =>
+    apiFetch<FeedPostResponse>(`/api/feed/posts/${postId}/link-project`, {
+      method: "PUT",
+      body: JSON.stringify({ projectId: projectId ?? "" }),
+    }),
+
+  getMyPosts: (page = 0, size = 50) =>
+    apiFetch<PagedResponse<FeedPostResponse>>(`/api/feed/posts/my?page=${page}&size=${size}`),
+
+  getPostsByProject: (projectId: string) =>
+    apiFetch<FeedPostResponse[]>(`/api/feed/posts/project/${projectId}`),
+
+  getMyUnlinkedPosts: () =>
+    apiFetch<FeedPostResponse[]>("/api/feed/posts/my/unlinked"),
+};
+
+// ─── Post sync types ─────────────────────────────────────────────────────────
+
+export interface SyncResultResponse {
+  newPosts: number;
+  skipped: number;
+  errors: string[];
+}
+
+export interface PostMetadataPreview {
+  platform: string;
+  platformPostId: string;
+  platformUrl: string;
+  title: string | null;
+  thumbnailUrl: string | null;
+  contentType: string;
+}
+
+// ─── Activity feed types & endpoints ─────────────────────────────────────────
+
+export interface ActivityItemResponse {
+  id: string;
+  type: "POST" | "GIFT" | "PROJECT_CREATED" | "ITEM_GIFTED";
+  timestamp: string;
+  title: string | null;
+  description: string | null;
+  thumbnailUrl: string | null;
+  post: {
+    platform: string;
+    platformUrl: string | null;
+    contentType: string;
+    caption: string | null;
+    imageUrl: string | null;
+    platformViews: number;
+    platformLikes: number;
+    linkedProject: { projectId: string; projectName: string; progress: number } | null;
+  } | null;
+  gift: {
+    supporterUsername: string;
+    supporterDisplayName: string;
+    amount: number;
+    projectName: string | null;
+    message: string | null;
+  } | null;
+  project: {
+    projectId: string;
+    projectName: string;
+    itemTitle: string | null;
+    goalAmount: number;
+    raisedAmount: number;
+  } | null;
+}
+
+export const activityApi = {
+  getCreatorActivity: (username: string, page = 0, size = 20) =>
+    apiFetch<ActivityItemResponse[]>(
+      `/api/activity/creator/${username}?page=${page}&size=${size}`
+    ),
 };
 
 // ─── Recommendation types & endpoints ────────────────────────────────────────
@@ -534,13 +640,16 @@ export interface RecommendedCreatorResponse {
   bio: string | null;
   followerCount: number;
   reason: string;
-  reasonType: "FOLLOW_GRAPH" | "COMMUNITY";
+  reasonType: "FOLLOW_GRAPH" | "COMMUNITY" | "TIPPING_ACTIVITY" | "COLLABORATIVE" | "TRENDING";
   score: number;
 }
 
 export const recommendationApi = {
   getRecommendations: (limit = 10) =>
     apiFetch<RecommendedCreatorResponse[]>(`/api/recommendations?limit=${limit}`),
+
+  dismiss: (username: string) =>
+    apiFetch<void>(`/api/recommendations/dismiss/${username}`, { method: "POST" }),
 };
 
 // ─── Search endpoints ────────────────────────────────────────────────────────

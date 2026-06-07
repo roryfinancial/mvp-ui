@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { useState, useEffect } from "react";
 import { Plus, Search, TrendingUp, Heart, ArrowLeft, Loader2, AlertCircle, Check, Twitter, Instagram, Youtube, Twitch, Link2 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
-import { leaderboardApi, userApi } from "../../lib/api";
+import { leaderboardApi, userApi, platformApi } from "../../lib/api";
 import type { PlatformType } from "../../lib/api";
 import type { UserRole } from "../../lib/types";
 
@@ -373,16 +373,41 @@ export default function OnboardingChoice({ userType: initialUserType, onBack, on
 
   // ─── Step: Link Socials ────────────────────────────────────────────────────────
   if (step === "link-socials") {
-    const SOCIAL_PLATFORMS: { key: PlatformType; label: string; icon: React.ReactNode; placeholder: string; urlPrefix: string }[] = [
+    const OAUTH_PLATFORMS: PlatformType[] = ["YOUTUBE", "TWITCH"];
+    const MANUAL_PLATFORMS: { key: PlatformType; label: string; icon: React.ReactNode; placeholder: string; urlPrefix: string }[] = [
       { key: "TWITTER", label: "Twitter / X", icon: <Twitter className="w-4 h-4" />, placeholder: "@yourhandle", urlPrefix: "https://x.com/" },
       { key: "INSTAGRAM", label: "Instagram", icon: <Instagram className="w-4 h-4" />, placeholder: "@yourhandle", urlPrefix: "https://instagram.com/" },
-      { key: "YOUTUBE", label: "YouTube", icon: <Youtube className="w-4 h-4" />, placeholder: "@yourchannel", urlPrefix: "https://youtube.com/@" },
-      { key: "TWITCH", label: "Twitch", icon: <Twitch className="w-4 h-4" />, placeholder: "yourhandle", urlPrefix: "https://twitch.tv/" },
       { key: "TIKTOK", label: "TikTok", icon: <Link2 className="w-4 h-4" />, placeholder: "@yourhandle", urlPrefix: "https://tiktok.com/@" },
     ];
+    const OAUTH_PLATFORM_CONFIG: { key: PlatformType; label: string; icon: React.ReactNode; color: string }[] = [
+      { key: "YOUTUBE", label: "YouTube", icon: <Youtube className="w-4 h-4" />, color: "#FF0000" },
+      { key: "TWITCH", label: "Twitch", icon: <Twitch className="w-4 h-4" />, color: "#9146FF" },
+    ];
+
+    async function handleOAuthConnect(platformId: PlatformType) {
+      setSubmitting(true);
+      setError(null);
+      try {
+        const getAuthUrl = platformId === "YOUTUBE"
+          ? platformApi.getYouTubeAuthUrl
+          : platformApi.getTwitchAuthUrl;
+        const res = await getAuthUrl();
+        if (res.success && res.data?.url) {
+          window.location.href = res.data.url;
+        } else {
+          setError(res.error?.message || "Failed to start authentication");
+          setSubmitting(false);
+        }
+      } catch {
+        setError("Failed to start authentication");
+        setSubmitting(false);
+      }
+    }
 
     async function handleSaveSocials() {
-      const entries = Object.entries(socials).filter(([, handle]) => handle.trim() !== "");
+      const entries = Object.entries(socials).filter(
+        ([key, handle]) => handle.trim() !== "" && !OAUTH_PLATFORMS.includes(key as PlatformType)
+      );
       if (entries.length > 0 && user?.username) {
         setSubmitting(true);
         setError(null);
@@ -390,7 +415,7 @@ export default function OnboardingChoice({ userType: initialUserType, onBack, on
           await Promise.all(
             entries.map(([platform, handle]) => {
               const cleanHandle = handle.trim().replace(/^@/, "");
-              const config = SOCIAL_PLATFORMS.find((p) => p.key === platform)!;
+              const config = MANUAL_PLATFORMS.find((p) => p.key === platform)!;
               return userApi.connectPlatform(user!.username, {
                 platform: platform as PlatformType,
                 handle: cleanHandle,
@@ -406,7 +431,9 @@ export default function OnboardingChoice({ userType: initialUserType, onBack, on
       setStep("explore");
     }
 
-    const filledCount = Object.values(socials).filter((v) => v.trim() !== "").length;
+    const filledCount = Object.entries(socials).filter(
+      ([key, v]) => v.trim() !== "" && !OAUTH_PLATFORMS.includes(key as PlatformType)
+    ).length;
 
     return (
       <div className="min-h-screen bg-muted flex items-center justify-center p-4">
@@ -439,8 +466,41 @@ export default function OnboardingChoice({ userType: initialUserType, onBack, on
             <p className="text-muted-foreground text-sm">Connect your social accounts so supporters can find you everywhere. This is optional.</p>
           </motion.div>
 
+          {/* OAuth platforms — sign in to verify */}
+          <div className="space-y-2 mb-4">
+            {OAUTH_PLATFORM_CONFIG.map((platform, index) => (
+              <motion.button
+                key={platform.key}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.05 * index }}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                onClick={() => handleOAuthConnect(platform.key)}
+                disabled={submitting}
+                className="w-full flex items-center gap-3 px-4 py-3 border border-border bg-muted hover:bg-background transition-colors text-left disabled:opacity-50"
+              >
+                <div className="w-10 h-10 flex items-center justify-center flex-shrink-0" style={{ color: platform.color }}>
+                  {platform.icon}
+                </div>
+                <div className="flex-1">
+                  <div className="text-foreground font-bold text-sm">{platform.label}</div>
+                  <div className="text-muted-foreground text-xs">Sign in to verify your account</div>
+                </div>
+                <div className="text-subtle text-xs font-medium">Connect</div>
+              </motion.button>
+            ))}
+          </div>
+
+          <div className="flex items-center my-5">
+            <hr className="flex-grow border-border" />
+            <span className="px-3 text-subtle text-[10px] uppercase tracking-widest font-bold">Other platforms</span>
+            <hr className="flex-grow border-border" />
+          </div>
+
+          {/* Manual platforms — handle input */}
           <div className="space-y-3 mb-6">
-            {SOCIAL_PLATFORMS.map((platform, index) => (
+            {MANUAL_PLATFORMS.map((platform, index) => (
               <motion.div
                 key={platform.key}
                 initial={{ opacity: 0, y: 10 }}

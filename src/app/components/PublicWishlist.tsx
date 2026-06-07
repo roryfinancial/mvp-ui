@@ -25,6 +25,8 @@ export default function PublicWishlist({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showQuickTip, setShowQuickTip] = useState(false);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [selectedItemTitle, setSelectedItemTitle] = useState<string | null>(null);
   const [selectedTipAmount, setSelectedTipAmount] = useState<number>(10);
   const [customTipAmount, setCustomTipAmount] = useState("");
   const [tipConfirmed, setTipConfirmed] = useState(false);
@@ -81,12 +83,25 @@ export default function PublicWishlist({
   const activeItems = items.filter(i => i.status === "active");
   const giftedCount = items.filter(i => i.status === "gifted").length;
 
+  function openDonateModal(itemId?: string, itemTitle?: string) {
+    setSelectedItemId(itemId ?? null);
+    setSelectedItemTitle(itemTitle ?? null);
+    setSelectedTipAmount(10);
+    setCustomTipAmount("");
+    setTipError("");
+    setShowQuickTip(true);
+  }
+
   const handleConfirmTip = async () => {
     const amount = selectedTipAmount ?? (customTipAmount ? parseFloat(customTipAmount) : 0);
     if (amount <= 0) return;
     setTipLoading(true);
     setTipError("");
-    const res = await giftApi.create({ projectId, amount });
+    const res = await giftApi.create({
+      projectId,
+      ...(selectedItemId ? { itemId: selectedItemId } : {}),
+      amount,
+    });
     setTipLoading(false);
     if (res.success) {
       setTipConfirmed(true);
@@ -99,6 +114,8 @@ export default function PublicWishlist({
       setTimeout(() => {
         setTipConfirmed(false);
         setShowQuickTip(false);
+        setSelectedItemId(null);
+        setSelectedItemTitle(null);
         setSelectedTipAmount(10);
         setCustomTipAmount("");
       }, 2000);
@@ -174,7 +191,7 @@ export default function PublicWishlist({
                 </div>
               )}
               <button
-                onClick={() => setShowQuickTip(true)}
+                onClick={() => openDonateModal()}
                 className="ml-auto px-6 py-2.5 bg-[#22c55e] hover:bg-[#16a34a] text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2"
               >
                 <Zap className="w-4 h-4" />
@@ -236,11 +253,18 @@ export default function PublicWishlist({
                     {item.title}
                   </h3>
 
-                  {/* Status text */}
-                  {item.status === "gifted" && (
+                  {item.status === "gifted" ? (
                     <p className="text-subtle text-xs text-center py-2">
                       Funded by {item.giftedBy}
                     </p>
+                  ) : (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); openDonateModal(item.id, item.title); }}
+                      className="w-full mt-1 py-2 bg-[#22c55e] hover:bg-[#16a34a] text-white text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <Zap className="w-3 h-3" />
+                      Fund This
+                    </button>
                   )}
                 </div>
               </motion.div>
@@ -288,9 +312,13 @@ export default function PublicWishlist({
                     </div>
                     <div>
                       <h3 className="text-sm font-black text-foreground">
-                        {projectName}
+                        {selectedItemTitle ?? projectName}
                       </h3>
-                      <p className="text-xs text-subtle">Donate to {creatorUsername}'s project</p>
+                      <p className="text-xs text-subtle">
+                        {selectedItemTitle
+                          ? `Fund this item in ${creatorUsername}'s project`
+                          : `Donate to ${creatorUsername}'s project`}
+                      </p>
                     </div>
                   </div>
                   <button
