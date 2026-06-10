@@ -228,6 +228,7 @@ model Follow {
 enum UserType {
   CREATOR
   SUPPORTER
+  MODERATOR
 }
 
 enum PlatformType {
@@ -322,17 +323,13 @@ All other endpoints in `src/lib/api.ts` continue pointing to Java `VITE_API_URL`
 
 File: `docs/demo-users.md`
 
-Seeded via `prisma/seed.ts`. All passwords follow the pattern `Rory2026!<name>` (e.g. `Rory2026!Alex`).
+Seeded via `prisma/seed.ts`. All accounts share password `Rory2026!`.
 
-| Username | Type | Email | Password |
-|----------|------|-------|---------|
-| alex_creates | Creator | alex@demo.rory.dev | Rory2026!Alex |
-| maya_streams | Creator | maya@demo.rory.dev | Rory2026!Maya |
-| jordan_builds | Creator | jordan@demo.rory.dev | Rory2026!Jordan |
-| sam_supports | Supporter | sam@demo.rory.dev | Rory2026!Sam |
-| riley_tips | Supporter | riley@demo.rory.dev | Rory2026!Riley |
-| casey_fans | Supporter | casey@demo.rory.dev | Rory2026!Casey |
-| demo_admin | Creator | admin@demo.rory.dev | Rory2026!Admin |
+| Username | Type | Email |
+|----------|------|-------|
+| demo_creator | Creator | creator@demo.rory.dev |
+| demo_supporter | Supporter | supporter@demo.rory.dev |
+| demo_mod | Moderator | mod@demo.rory.dev |
 
 ---
 
