@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  name          String?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  username                 String?   @unique @db.VarChar(50)
+  displayName              String?   @db.VarChar(100)
+  bio                      String?
+  avatarUrl                String?   @db.VarChar(500)
+  userType                 UserType?
+  creditBalance            Decimal   @default(0) @db.Decimal(12, 2)
+  stripeAccountId          String?   @db.VarChar(255)
+  stripeOnboardingComplete Boolean   @default(false)
+  stripeCustomerId         String?   @db.VarChar(255)
+  referralCode             String?   @unique @db.VarChar(50)
+  communities              String[]  @default([])
+  isProfileComplete        Boolean   @default(false)
+
+  emailNotifications     Boolean @default(true)
+  giftNotifications      Boolean @default(true)
+  milestoneNotifications Boolean @default(true)
+  marketingNotifications Boolean @default(false)
+
+  profileVisible    Boolean @default(true)
+  showOnLeaderboard Boolean @default(true)
+  showGiftAmounts   Boolean @default(true)
+
+  accounts           Account[]
+  sessions           Session[]
+  connectedPlatforms ConnectedPlatform[]
+  following          Follow[] @relation("Supporter")
+  followers          Follow[] @relation("Creator")
+
+  @@map("users")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("accounts")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verifications")
+}
+
+model ConnectedPlatform {
+  id             String       @id @default(cuid())
+  userId         String
+  platform       PlatformType
+  platformUserId String?      @db.VarChar(255)
+  handle         String?      @db.VarChar(100)
+  url            String?      @db.VarChar(500)
+  accessToken    String?
+  refreshToken   String?
+  tokenExpiresAt DateTime?
+  connectedAt    DateTime     @default(now())
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
+  @@map("connected_platforms")
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  supporterId String
+  creatorId   String
+  createdAt   DateTime @default(now())
+  supporter   User     @relation("Supporter", fields: [supporterId], references: [id], onDelete: Cascade)
+  creator     User     @relation("Creator", fields: [creatorId], references: [id], onDelete: Cascade)
+
+  @@unique([supporterId, creatorId])
+  @@map("follows")
+}
+
+enum UserType {
+  CREATOR
+  SUPPORTER
+  MODERATOR
+}
+
+enum PlatformType {
+  YOUTUBE
+  TWITCH
+  TWITTER
+  INSTAGRAM
+  TIKTOK
+  SHOPIFY
+}
