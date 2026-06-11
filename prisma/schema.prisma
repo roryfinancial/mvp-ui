@@ -21,7 +21,7 @@ model User {
   bio                      String?   @db.VarChar(1000)
   avatarUrl                String?   @db.VarChar(500)
   userType                 UserType?
-  creditBalance            Decimal   @default(0) @db.Decimal(12, 2)
+  creditBalance            Float     @default(0)
   stripeAccountId          String?   @db.VarChar(255)
   stripeOnboardingComplete Boolean   @default(false)
   stripeCustomerId         String?   @db.VarChar(255)
