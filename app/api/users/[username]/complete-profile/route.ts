@@ -1,0 +1,72 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth.server";
+import { prisma } from "@/lib/prisma";
+import { headers } from "next/headers";
+import type { UserType } from "@prisma/client";
+
+export async function POST(req: NextRequest) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session?.user) {
+    return NextResponse.json(
+      { success: false, error: { code: "UNAUTHORIZED", message: "Not authenticated" } },
+      { status: 401 }
+    );
+  }
+  const body = await req.json();
+  const { username, displayName, userType, referralCode, communities } = body;
+
+  const existing = await prisma.user.findUnique({ where: { username } });
+  if (existing && existing.id !== session.user.id) {
+    return NextResponse.json(
+      { success: false, error: { code: "CONFLICT", message: "Username already taken" } },
+      { status: 409 }
+    );
+  }
+
+  const user = await prisma.user.update({
+    where: { id: session.user.id },
+    data: {
+      username,
+      displayName,
+      userType: userType as UserType,
+      referralCode: referralCode ?? null,
+      communities: communities ?? [],
+      isProfileComplete: true,
+    },
+    include: { connectedPlatforms: true },
+  });
+
+  return NextResponse.json({
+    success: true,
+    data: {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      displayName: user.displayName ?? "",
+      bio: user.bio ?? "",
+      avatarUrl: user.avatarUrl ?? null,
+      userType: user.userType,
+      creditBalance: Number(user.creditBalance),
+      stripeOnboardingComplete: user.stripeOnboardingComplete,
+      referralCode: user.referralCode ?? null,
+      communities: user.communities,
+      isProfileComplete: user.isProfileComplete,
+      settings: {
+        emailNotifications: user.emailNotifications,
+        giftNotifications: user.giftNotifications,
+        milestoneNotifications: user.milestoneNotifications,
+        marketingNotifications: user.marketingNotifications,
+        profileVisible: user.profileVisible,
+        showOnLeaderboard: user.showOnLeaderboard,
+        showGiftAmounts: user.showGiftAmounts,
+      },
+      connectedPlatforms: user.connectedPlatforms.map((p) => ({
+        platform: p.platform,
+        handle: p.handle ?? "",
+        url: p.url ?? "",
+      })),
+      createdAt: user.createdAt.toISOString(),
+    },
+    error: null,
+  });
+}
