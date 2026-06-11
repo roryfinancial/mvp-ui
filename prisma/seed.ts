@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
+import { hashPassword } from "@better-auth/utils/password";
 
 const prisma = new PrismaClient();
 
@@ -24,22 +24,19 @@ const DEMO_USERS = [
   },
 ];
 
-async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 12);
-}
-
 async function main() {
   const password = "Rory2026!";
+  const passwordHash = await hashPassword(password);
 
   for (const demo of DEMO_USERS) {
+    // Delete existing to allow re-seed with corrected hashes
     const existing = await prisma.user.findUnique({ where: { email: demo.email } });
     if (existing) {
-      console.log(`Skipping existing: ${demo.email}`);
-      continue;
+      await prisma.user.delete({ where: { email: demo.email } });
+      console.log(`Deleted existing: ${demo.email}`);
     }
 
     const userId = `seed_${demo.username}`;
-    const passwordHash = await hashPassword(password);
 
     await prisma.user.create({
       data: {
