@@ -1,9 +1,7 @@
 // ─── API Client ────────────────────────────────────────────────────────────────
 // Communicates with the rory-api backend. Uses the Supabase JWT for auth.
 
-import { supabase } from "./supabase";
-
-const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+const API_BASE = (import.meta.env?.VITE_API_URL ?? process.env.NEXT_PUBLIC_API_URL) ?? "http://localhost:8080";
 
 // ─── Types matching backend DTOs ─────────────────────────────────────────────
 
@@ -30,7 +28,7 @@ export interface UserProfileResponse {
   displayName: string;
   bio: string;
   avatarUrl: string | null;
-  userType: "CREATOR" | "SUPPORTER";
+  userType: "CREATOR" | "SUPPORTER" | "MODERATOR";
   creditBalance: number;
   stripeOnboardingComplete: boolean;
   referralCode: string | null;
@@ -261,9 +259,25 @@ export interface SearchUserItem {
 
 // ─── Core fetch wrapper ────────────────────────────────────────────────────────
 
+// Cookie-based fetch for Next.js API routes (no Bearer token needed — session cookie handles auth)
+async function nextFetch<T>(
+  path: string,
+  options: RequestInit = {},
+): Promise<ApiResponse<T>> {
+  const res = await fetch(path, {
+    ...options,
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...(options.headers as Record<string, string> ?? {}) },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    return { success: false, data: null, error: body?.error ?? { code: `HTTP_${res.status}`, message: res.statusText } };
+  }
+  return res.json();
+}
+
 async function getAuthToken(): Promise<string | null> {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.access_token ?? null;
+  return null;
 }
 
 async function apiFetch<T>(
@@ -307,12 +321,12 @@ async function apiFetch<T>(
 // ─── Auth endpoints ───────────────────────────────────────────────────────────
 
 export const authApi = {
-  getMe: (token?: string) => apiFetch<UserProfileResponse>("/api/auth/me", {}, token),
-
-  completeProfile: (req: CompleteProfileRequest) =>
-    apiFetch<UserProfileResponse>("/api/auth/complete-profile", {
+  getMe: (_tokenOverride?: string) =>
+    nextFetch<UserProfileResponse>("/api/users/me"),
+  completeProfile: (data: CompleteProfileRequest) =>
+    nextFetch<UserProfileResponse>(`/api/users/${data.username}/complete-profile`, {
       method: "POST",
-      body: JSON.stringify(req),
+      body: JSON.stringify(data),
     }),
 };
 
@@ -429,19 +443,16 @@ export const giftApi = {
 // ─── Follow endpoints ────────────────────────────────────────────────────────
 
 export const followApi = {
-  follow: (creatorUsername: string) =>
-    apiFetch<{ followed: boolean }>(`/api/follows/${creatorUsername}`, { method: "POST" }),
-
-  unfollow: (creatorUsername: string) =>
-    apiFetch<{ followed: boolean }>(`/api/follows/${creatorUsername}`, { method: "DELETE" }),
-
-  getFollowing: () => apiFetch<FollowedCreatorResponse[]>("/api/follows/following"),
-
+  follow: (username: string) =>
+    nextFetch<null>(`/api/follows/${username}`, { method: "POST" }),
+  unfollow: (username: string) =>
+    nextFetch<null>(`/api/follows/${username}`, { method: "DELETE" }),
+  getFollowing: () =>
+    nextFetch<FollowedCreatorResponse[]>("/api/follows/following"),
   getFollowerCount: (username: string) =>
-    apiFetch<{ count: number }>(`/api/follows/creator/${username}/count`),
-
-  isFollowing: (creatorUsername: string) =>
-    apiFetch<{ following: boolean }>(`/api/follows/${creatorUsername}/status`),
+    nextFetch<{ count: number }>(`/api/follows/${username}/count`),
+  getFollowStatus: (username: string) =>
+    nextFetch<{ following: boolean }>(`/api/follows/${username}/status`),
 };
 
 // ─── Leaderboard endpoints ───────────────────────────────────────────────────

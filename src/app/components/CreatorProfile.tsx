@@ -163,7 +163,7 @@ export default function CreatorProfile({
       }
 
       if (isAuthenticated) {
-        const statusRes = await followApi.isFollowing(routeUsername);
+        const statusRes = await followApi.getFollowStatus(routeUsername);
         if (statusRes.success && statusRes.data) {
           setIsFollowing((statusRes.data as { following: boolean }).following);
         }
