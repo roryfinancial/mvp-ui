@@ -4,7 +4,6 @@ import { Mail, Lock, ArrowLeft, AlertCircle, Loader2, Pencil, Zap } from "lucide
 import { useAuth } from "../../contexts/AuthContext";
 import { validateEmail } from "../../lib/security";
 import { DEMO_CREDENTIALS } from "../../lib/store";
-import { AuthService } from "../../lib/auth";
 import { Sounds } from "../../lib/sounds";
 import type { UserRole } from "../../lib/types";
 
@@ -83,27 +82,18 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
 
   async function switchToCode() {
     setError(null);
-    if (!codeSent) {
-      setLoading(true);
-      const res = channel === "email"
-        ? await AuthService.sendOtp(identifier)
-        : await AuthService.sendPhoneOtp(identifier);
-      setLoading(false);
-      if (!res.ok) { setError(res.error ?? "Failed to send code"); return; }
-      setCodeSent(true);
-      setCountdown(30);
-    }
-    setDigits(Array(N).fill(""));
-    setStep("code");
-    requestAnimationFrame(() => codeInputs.current[0]?.focus());
+    // OTP via Supabase has been removed — this flow is not currently supported
+    setError("One-time code login is not currently available. Please use password.");
   }
 
   // ── Social ───────────────────────────────────────────────────────────────────
 
   async function handleSocial(provider: "google" | "twitch" | "twitter") {
     setLoading(true);
-    try { await AuthService.signInWithProvider(provider); }
-    catch { setError("Social login failed"); setLoading(false); }
+    try {
+      // Social login is handled by Better Auth — redirect to provider
+      window.location.href = `/api/auth/${provider}`;
+    } catch { setError("Social login failed"); setLoading(false); }
   }
 
   // ── OTC verify + resend ──────────────────────────────────────────────────────
@@ -112,30 +102,13 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
     setError(null);
     const code = digits.join("");
     if (code.length < N) return;
-    setLoading(true);
-    try {
-      const { data, error: verifyErr } = channel === "email"
-        ? await (await import("../../lib/supabase")).supabase.auth.verifyOtp({ email: identifier, token: code, type: "email" })
-        : await (await import("../../lib/supabase")).supabase.auth.verifyOtp({ phone: identifier, token: code, type: "sms" });
-      setLoading(false);
-      if (verifyErr) { setError(verifyErr.message); return; }
-      if (data?.user) done({ role: data.user.user_metadata?.role ?? "supporter" });
-    } catch {
-      setLoading(false);
-      setError("Verification failed");
-    }
+    setLoading(false);
+    setError("One-time code verification is not currently available.");
   }
 
   async function handleResend() {
     setError(null);
-    setLoading(true);
-    const res = channel === "email"
-      ? await AuthService.sendOtp(identifier)
-      : await AuthService.sendPhoneOtp(identifier);
-    setLoading(false);
-    if (!res.ok) { setError(res.error ?? "Failed to resend code"); return; }
-    setCountdown(30);
-    setDigits(Array(N).fill(""));
+    setError("One-time code login is not currently available.");
   }
 
   // ── OTC digit inputs ─────────────────────────────────────────────────────────
