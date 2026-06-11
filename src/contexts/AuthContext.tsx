@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
-import { supabase } from "../lib/supabase";
-import { authApi } from "../lib/api";
+import { authClient } from "../lib/auth-client";
 import type { User, UserRole, LoginResult, SignUpResult } from "../lib/types";
 import type { UserProfileResponse } from "../lib/api";
 
@@ -20,13 +19,13 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 function mapProfileToUser(profile: UserProfileResponse): User {
-  const isProvisional = profile.username.startsWith("user_");
+  const isProvisional = !profile.username || profile.username.startsWith("user_");
   return {
     id: profile.id,
     email: profile.email,
     username: profile.username,
     displayName: profile.displayName,
-    role: profile.userType.toLowerCase() as UserRole,
+    role: (profile.userType ?? "CREATOR").toLowerCase() as UserRole,
     bio: profile.bio,
     avatarUrl: profile.avatarUrl,
     creditBalance: profile.creditBalance,
@@ -38,97 +37,56 @@ function mapProfileToUser(profile: UserProfileResponse): User {
   };
 }
 
+async function fetchMe(): Promise<User | null> {
+  try {
+    const res = await fetch("/api/users/me", { credentials: "include" });
+    if (!res.ok) return null;
+    const body = await res.json();
+    if (body.success && body.data) return mapProfileToUser(body.data);
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetches profile from backend, passing a token directly to avoid getSession() timing issues.
-  const fetchProfileWithToken = useCallback(async (token: string): Promise<User | null> => {
-    try {
-      const res = await authApi.getMe(token);
-      if (res.success && res.data) {
-        return mapProfileToUser(res.data);
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  }, []);
-
-  // Fetches profile using the current session (for refreshes / non-auth-triggered calls).
-  const fetchProfile = useCallback(async (): Promise<User | null> => {
-    try {
-      const res = await authApi.getMe();
-      if (res.success && res.data) {
-        return mapProfileToUser(res.data);
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  }, []);
-
-  // Listen for Supabase auth state changes. When authenticated, load profile from backend.
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.access_token) {
-        const profile = await fetchProfileWithToken(session.access_token);
-        setUser(profile);
-      } else {
-        setUser(null);
-      }
+    fetchMe().then((u) => {
+      setUser(u);
       setLoading(false);
     });
-
-    return () => subscription.unsubscribe();
-  }, [fetchProfileWithToken]);
+  }, []);
 
   const login = useCallback(async (email: string, password: string): Promise<LoginResult> => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      return { ok: false, error: error.message, field: "general" };
-    }
-    const token = data.session?.access_token;
-    if (!token) {
-      return { ok: false, error: "No session returned", field: "general" };
-    }
-    const profile = await fetchProfileWithToken(token);
+    const { data, error } = await authClient.signIn.email({ email, password });
+    if (error) return { ok: false, error: error.message ?? "Login failed", field: "general" };
+    if (!data) return { ok: false, error: "No session returned", field: "general" };
+    const profile = await fetchMe();
     if (profile) {
       setUser(profile);
       return { ok: true, user: profile };
     }
     return { ok: false, error: "Failed to load profile", field: "general" };
-  }, [fetchProfileWithToken]);
+  }, []);
 
   const signUp = useCallback(async (email: string, password: string, role: UserRole = "creator"): Promise<SignUpResult> => {
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await authClient.signUp.email({
       email,
       password,
-      options: {
-        data: { role },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
+      name: email.split("@")[0],
+      callbackURL: `${window.location.origin}/auth/callback`,
     });
+    if (error) return { ok: false, error: error.message ?? "Sign-up failed", field: "general" };
+    if (!data) return { ok: false, error: "Sign-up failed. Please try again.", field: "general" };
 
-    if (error) {
-      return { ok: false, error: error.message, field: "general" };
+    const profile = await fetchMe();
+    if (profile) {
+      setUser(profile);
+      return { ok: true, user: profile, confirmEmail: false };
     }
-
-    if (!data.user) {
-      return { ok: false, error: "Sign-up failed. Please try again.", field: "general" };
-    }
-
-    const confirmEmail = !data.session;
-
-    if (data.session?.access_token) {
-      const profile = await fetchProfileWithToken(data.session.access_token);
-      if (profile) {
-        setUser(profile);
-        return { ok: true, user: profile, confirmEmail: false };
-      }
-    }
-
-    // Email confirmation required or profile fetch failed
     return {
       ok: true,
       user: {
@@ -144,22 +102,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         stripeOnboardingComplete: false,
         communities: [],
         isProfileComplete: false,
-        createdAt: data.user.created_at,
+        createdAt: data.user.createdAt instanceof Date ? data.user.createdAt.toISOString() : String(data.user.createdAt),
       },
-      confirmEmail,
+      confirmEmail: false,
     };
-  }, [fetchProfileWithToken]);
+  }, []);
 
   const signInWithProvider = useCallback(async (provider: "google" | "twitch" | "twitter") => {
-    const { error } = await supabase.auth.signInWithOAuth({
+    await authClient.signIn.social({
       provider,
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      callbackURL: `${window.location.origin}/auth/callback`,
     });
-    if (error) throw error;
   }, []);
 
   const logout = useCallback(async () => {
-    await supabase.auth.signOut();
+    await authClient.signOut();
     setUser(null);
   }, []);
 
@@ -170,19 +127,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     referralCode?: string,
     communities?: string[]
   ): Promise<{ ok: boolean; error?: string }> => {
-    const res = await authApi.completeProfile({
-      username,
-      displayName: displayName || undefined,
-      userType: userType.toUpperCase() as "CREATOR" | "SUPPORTER",
-      referralCode: referralCode || undefined,
-      communities: communities?.length ? communities : undefined,
-    });
-
-    if (res.success && res.data) {
-      setUser(mapProfileToUser(res.data));
-      return { ok: true };
+    try {
+      const res = await fetch(`/api/users/${username}/complete-profile`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username,
+          displayName: displayName || undefined,
+          userType: userType.toUpperCase(),
+          referralCode: referralCode || undefined,
+          communities: communities?.length ? communities : undefined,
+        }),
+      });
+      const body = await res.json();
+      if (body.success && body.data) {
+        setUser(mapProfileToUser(body.data));
+        return { ok: true };
+      }
+      return { ok: false, error: body.error?.message ?? "Failed to complete profile" };
+    } catch {
+      return { ok: false, error: "Network error" };
     }
-    return { ok: false, error: res.error?.message ?? "Failed to complete profile" };
   }, []);
 
   const updateBalance = useCallback((balance: number) => {
@@ -190,9 +156,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshUser = useCallback(async () => {
-    const profile = await fetchProfile();
+    const profile = await fetchMe();
     if (profile) setUser(profile);
-  }, [fetchProfile]);
+  }, []);
 
   return (
     <AuthContext.Provider
