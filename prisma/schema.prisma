@@ -125,6 +125,16 @@ model Follow {
   @@map("follows")
 }
 
+model Jwks {
+  id         String    @id @default(cuid())
+  publicKey  String
+  privateKey String
+  createdAt  DateTime
+  expiresAt  DateTime?
+
+  @@map("jwks")
+}
+
 enum UserType {
   CREATOR
   SUPPORTER
