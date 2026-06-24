@@ -298,7 +298,7 @@ enum PlatformType {
 Edit `.env` and set:
 
 ```
-DATABASE_URL=postgresql://neondb_owner:npg_REDACTED@ep-odd-term-a65zksmr-pooler.us-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+DATABASE_URL=postgresql://<user>:<REDACTED>@<neon-host>/neondb
 ```
 
 - [ ] **Step 4: Push schema to Neon.tech**

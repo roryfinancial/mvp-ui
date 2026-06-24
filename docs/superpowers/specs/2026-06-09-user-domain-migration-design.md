@@ -241,7 +241,7 @@ enum PlatformType {
 }
 ```
 
-**Database:** `postgresql://neondb_owner:npg_REDACTED@ep-odd-term-a65zksmr-pooler.us-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require`
+**Database:** `postgresql://<user>:<REDACTED>@<neon-host>/neondb`
 
 ---
 
@@ -354,7 +354,7 @@ Seeded via `prisma/seed.ts`. All accounts share password `Rory2026!`.
 
 ```env
 # Neon.tech
-DATABASE_URL=postgresql://neondb_owner:npg_REDACTED@ep-odd-term-a65zksmr-pooler.us-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+DATABASE_URL=postgresql://<user>:<REDACTED>@<neon-host>/neondb
 
 # Better Auth
 BETTER_AUTH_SECRET=<generate: openssl rand -hex 32>
