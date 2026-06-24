@@ -816,3 +816,25 @@ export const stripeApi = {
       "/api/stripe/connect/status"
     ),
 };
+
+// ─── Founder Suggestions (temporary internal tool) ───────────────────────────
+
+export interface FounderSuggestion {
+  id: string;
+  author: string;
+  comment: string;
+  pageUrl: string;
+  screenshot: string | null;
+  createdAt: string;
+}
+
+export const founderSuggestionsApi = {
+  list: () => nextFetch<FounderSuggestion[]>("/api/founder-suggestions"),
+  create: (body: { author: string; comment: string; pageUrl: string; screenshot?: string | null }) =>
+    nextFetch<FounderSuggestion>("/api/founder-suggestions", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  remove: (id: string) =>
+    nextFetch<null>(`/api/founder-suggestions/${id}`, { method: "DELETE" }),
+};

@@ -380,3 +380,20 @@ model Event {
   @@index([creatorId])
   @@map("events")
 }
+
+// ─── Founder Suggestions (temporary internal tool) ───────────────────────────
+// Cofounder UI/layout feedback. `screenshot` holds a compressed JPEG data URL
+// (base64) of the page view, optionally marked up. Storing base64 inline is
+// deliberately simple for this short-lived tool (~10-20 small shots).
+
+model FounderSuggestion {
+  id         String   @id @default(uuid())
+  author     String // 'Logan' | 'Kayden' | 'Annabella'
+  comment    String
+  pageUrl    String
+  screenshot String? // compressed JPEG data URL (base64), optional
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("founder_suggestions")
+}

@@ -24,6 +24,7 @@ import Leaderboard from "./components/Leaderboard";
 import PublicWishlist from "./components/PublicWishlist";
 import SupporterProfile from "./components/SupporterProfile";
 import CreateEventPage from "./components/CreateEventPage";
+import FounderSuggestions from "./components/FounderSuggestions";
 
 type UserType = "creator" | "supporter";
 
@@ -519,6 +520,9 @@ export default function App() {
           <Route path="/referrals" element={<ReferralsRoute />} />
         </Route>
       </Routes>
+
+      {/* Temporary cofounder feedback widget — visible on every page */}
+      <FounderSuggestions />
     </>
   );
 }
