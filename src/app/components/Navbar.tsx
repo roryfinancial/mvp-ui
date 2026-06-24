@@ -8,6 +8,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { searchApi } from "../../lib/api";
 import { Sounds } from "../../lib/sounds";
 import type { GamificationState } from "../../lib/types";
+import { getInitials, formatCurrencyPrecise } from "../../lib/format";
 
 interface NavbarProps {
   creditBalance: number;
@@ -46,12 +47,12 @@ export default function Navbar({ creditBalance, userType, gamification }: Navbar
           creators: res.data.creators.map(c => ({
             name: c.displayName,
             username: `@${c.username}`,
-            initials: c.displayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2),
+            initials: getInitials(c.displayName),
           })),
           supporters: res.data.supporters.map(s => ({
             name: s.displayName,
             username: `@${s.username}`,
-            initials: s.displayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2),
+            initials: getInitials(s.displayName),
           })),
         });
       }
@@ -117,7 +118,7 @@ export default function Navbar({ creditBalance, userType, gamification }: Navbar
             className="flex items-center gap-2 px-3 py-2 border border-white/20 text-white hover:bg-white/10 transition-colors text-sm font-medium"
           >
             <DollarSign className="w-4 h-4 text-accent" />
-            <span className="hidden sm:inline">${creditBalance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span className="hidden sm:inline">{formatCurrencyPrecise(creditBalance)}</span>
           </button>
 
           <div className="relative hidden sm:block">

@@ -1,33 +1,51 @@
+// Prisma schema — written in the SQLite/Postgres-compatible subset so the same
+// models run on Neon Postgres (production) and a local SQLite file (DEMO_MODE).
+//
+// Compatibility rules enforced here:
+//   - No native `enum` blocks (SQLite has none) -> enums are String + TS unions.
+//   - No scalar lists like String[] (SQLite has none) -> `communities` is a JSON string.
+//   - No @db.* native column types (SQLite ignores/rejects them) -> plain types.
+//   - Money is Float (SQLite has no Decimal); TS contract already uses `number`.
+//   - Date-only values (eventDate, questDate, lastActivityDate) are 'YYYY-MM-DD' Strings.
+//   - Cross-domain User references are plain String FK columns (no Prisma relation),
+//     matching the Java code which mostly does manual id lookups. This keeps the User
+//     model free of back-relation churn. Within-domain links (Project<->ProjectItem,
+//     Post<->PostLike/PostComment) DO use relations for cascade + includes.
+//
+// The `provider` line below is rewritten by scripts/select-db.mjs (db:demo / db:prod).
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
+// ─── Auth + user domain (Better Auth) ────────────────────────────────────────
+
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  emailVerified Boolean   @default(false)
+  id            String   @id @default(cuid())
+  email         String   @unique
+  emailVerified Boolean  @default(false)
   name          String?
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  username                 String?   @unique @db.VarChar(50)
-  displayName              String?   @db.VarChar(100)
-  bio                      String?   @db.VarChar(1000)
-  avatarUrl                String?   @db.VarChar(500)
-  userType                 UserType?
-  creditBalance            Float     @default(0)
-  stripeAccountId          String?   @db.VarChar(255)
-  stripeOnboardingComplete Boolean   @default(false)
-  stripeCustomerId         String?   @db.VarChar(255)
-  referralCode             String?   @unique @db.VarChar(50)
-  communities              String[]  @default([])
-  isProfileComplete        Boolean   @default(false)
+  username                 String?  @unique
+  displayName              String?
+  bio                      String?
+  avatarUrl                String?
+  userType                 String? // 'CREATOR' | 'SUPPORTER' | 'MODERATOR'
+  creditBalance            Float    @default(0)
+  stripeAccountId          String?
+  stripeOnboardingComplete Boolean  @default(false)
+  stripeCustomerId         String?
+  referralCode             String?  @unique
+  communities              String   @default("[]") // JSON array of strings
+  isProfileComplete        Boolean  @default(false)
 
   emailNotifications     Boolean @default(true)
   giftNotifications      Boolean @default(true)
@@ -41,8 +59,8 @@ model User {
   accounts           Account[]
   sessions           Session[]
   connectedPlatforms ConnectedPlatform[]
-  following          Follow[] @relation("Supporter")
-  followers          Follow[] @relation("Creator")
+  following          Follow[]            @relation("Supporter")
+  followers          Follow[]            @relation("Creator")
 
   @@map("users")
 }
@@ -96,17 +114,17 @@ model Verification {
 }
 
 model ConnectedPlatform {
-  id             String       @id @default(cuid())
+  id             String    @id @default(cuid())
   userId         String
-  platform       PlatformType
-  platformUserId String?      @db.VarChar(255)
-  handle         String?      @db.VarChar(100)
-  url            String?      @db.VarChar(500)
+  platform       String // 'YOUTUBE' | 'TWITCH' | 'TWITTER' | 'INSTAGRAM' | 'TIKTOK' | 'SHOPIFY'
+  platformUserId String?
+  handle         String?
+  url            String?
   accessToken    String?
   refreshToken   String?
   tokenExpiresAt DateTime?
-  connectedAt    DateTime     @default(now())
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  connectedAt    DateTime  @default(now())
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, platform])
   @@map("connected_platforms")
@@ -135,17 +153,230 @@ model Jwks {
   @@map("jwks")
 }
 
-enum UserType {
-  CREATOR
-  SUPPORTER
-  MODERATOR
+// ─── Project domain ──────────────────────────────────────────────────────────
+
+model Project {
+  id            String        @id @default(uuid())
+  creatorId     String // -> User.id (creator/owner)
+  name          String
+  description   String?
+  coverImageUrl String?
+  isPublic      Boolean       @default(true)
+  sortOrder     Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  items         ProjectItem[]
+
+  @@index([creatorId])
+  @@map("projects")
 }
 
-enum PlatformType {
-  YOUTUBE
-  TWITCH
-  TWITTER
-  INSTAGRAM
-  TIKTOK
-  SHOPIFY
+model ProjectItem {
+  id           String   @id @default(uuid())
+  projectId    String
+  title        String
+  description  String?
+  thumbnailUrl String?
+  goalAmount   Float
+  raisedAmount Float    @default(0)
+  status       String   @default("ACTIVE") // 'ACTIVE' | 'COMPLETED' | 'GIFTED'
+  giftedById   String? // -> User.id, set when fully gifted by one supporter
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("project_items")
+}
+
+// ─── Gift domain ─────────────────────────────────────────────────────────────
+
+model Gift {
+  id                    String   @id @default(uuid())
+  supporterId           String // -> User.id (sender)
+  creatorId             String // -> User.id (recipient)
+  projectId             String // -> Project.id (plain column, no relation)
+  amount                Float
+  message               String?
+  stripePaymentIntentId String?
+  stripeChargeId        String?
+  status                String   @default("PENDING") // PENDING | COMPLETED | FAILED | REFUNDED
+  referralId            String?
+  commissionAmount      Float?   @default(0)
+  createdAt             DateTime @default(now())
+
+  @@index([creatorId])
+  @@index([supporterId])
+  @@index([projectId])
+  @@map("gifts")
+}
+
+// ─── Wallet domain ───────────────────────────────────────────────────────────
+
+model Deposit {
+  id                      String    @id @default(uuid())
+  userId                  String
+  amount                  Float
+  stripeCheckoutSessionId String?   @unique
+  stripePaymentIntentId   String?
+  status                  String    @default("PENDING") // PENDING | COMPLETED | FAILED | EXPIRED
+  createdAt               DateTime  @default(now())
+  completedAt             DateTime?
+
+  @@index([userId])
+  @@map("deposits")
+}
+
+model CreditTransaction {
+  id                    String   @id @default(uuid())
+  userId                String
+  type                  String // DEPOSIT | GIFT_SENT | GIFT_RECEIVED | REFUND
+  amount                Float
+  balanceAfter          Float
+  referenceId           String? // depositId or giftId
+  stripePaymentIntentId String?
+  description           String?
+  createdAt             DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, type])
+  @@map("credit_transactions")
+}
+
+// ─── Post / feed domain ──────────────────────────────────────────────────────
+
+model Post {
+  id                String     @id @default(uuid())
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  authorId          String // -> User.id
+  platform          String // YOUTUBE | TWITCH | TWITTER | INSTAGRAM | TIKTOK
+  platformPostId    String
+  platformUrl       String?
+  caption           String?
+  imageUrl          String?
+  videoUrl          String?
+  thumbnailUrl      String?
+  contentType       String     @default("IMAGE") // IMAGE | VIDEO | TEXT | REEL | STREAM | SHORT
+  platformLikes     Int        @default(0)
+  platformComments  Int        @default(0)
+  platformViews     Int        @default(0)
+  likeCount         Int        @default(0)
+  commentCount      Int        @default(0)
+  linkedProjectId   String? // -> Project.id
+  platformCreatedAt DateTime?
+
+  likes    PostLike[]
+  comments PostComment[]
+
+  @@index([authorId])
+  @@index([linkedProjectId])
+  @@map("posts")
+}
+
+model PostLike {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  postId    String
+  userId    String // -> User.id
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([userId])
+  @@map("post_likes")
+}
+
+model PostComment {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  postId    String
+  authorId  String // -> User.id
+  content   String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@map("post_comments")
+}
+
+// ─── Gamification domain ─────────────────────────────────────────────────────
+
+model UserGamification {
+  id               String   @id @default(uuid())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  userId           String   @unique // -> User.id
+  xp               Int      @default(0)
+  level            Int      @default(1)
+  streakDays       Int      @default(0)
+  lastActivityDate String? // 'YYYY-MM-DD'
+  leagueTier       String   @default("bronze") // bronze | silver | gold | diamond
+  weeklyGifted     Float    @default(0)
+
+  @@map("user_gamification")
+}
+
+model DailyQuest {
+  id         String   @id @default(uuid())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  userId     String // -> User.id
+  questDate  String // 'YYYY-MM-DD'
+  difficulty String // easy | medium | hard
+  label      String
+  xpReward   Int
+  completed  Boolean  @default(false)
+  locked     Boolean  @default(false)
+
+  @@index([userId, questDate])
+  @@map("daily_quests")
+}
+
+model UserBadge {
+  id       String   @id @default(uuid())
+  userId   String // -> User.id
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("user_badges")
+}
+
+// ─── Referral domain ─────────────────────────────────────────────────────────
+
+model Referral {
+  id                    String   @id @default(uuid())
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  referrerId            String // -> User.id (earns commission)
+  referredId            String // -> User.id (signed up via link)
+  status                String   @default("PENDING") // ACTIVE | INACTIVE | PENDING
+  commissionRate        Float    @default(5.0)
+  totalTipsGenerated    Float    @default(0)
+  totalCommissionEarned Float    @default(0)
+
+  @@index([referrerId])
+  @@index([referredId])
+  @@map("referrals")
+}
+
+// ─── Event domain ────────────────────────────────────────────────────────────
+
+model Event {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  creatorId   String // -> User.id
+  title       String
+  description String?
+  eventDate   String // 'YYYY-MM-DD'
+  eventTime   String?
+  location    String?
+  imageUrl    String?
+  isPublic    Boolean  @default(true)
+
+  @@index([creatorId])
+  @@map("events")
 }

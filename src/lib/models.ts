@@ -26,6 +26,7 @@ export function createUser(
     creditBalance: fields.creditBalance ?? 0,
     referralCode: fields.referralCode ?? null,
     stripeOnboardingComplete: fields.stripeOnboardingComplete ?? false,
+    communities: fields.communities ?? [],
     isProfileComplete: fields.isProfileComplete ?? true,
     createdAt: fields.createdAt ?? now(),
     ...fields,

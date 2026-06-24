@@ -7,6 +7,12 @@ import { useAuth } from "../../contexts/AuthContext";
 import { projectApi, giftApi, eventApi, feedApi } from "../../lib/api";
 import type { ProjectResponse, RecentSupporterResponse, TopSupporterResponse, EventResponse, FeedPostResponse } from "../../lib/api";
 import AddPostDialog from "./AddPostDialog";
+import { SectionLabel } from "./shared/SectionLabel";
+import { UserListItem } from "./shared/UserListItem";
+import { EmptyState } from "./shared/EmptyState";
+import { StatMiniCard } from "./shared/StatMiniCard";
+import { fadeUp, fadeUpFast, fadeIn, scaleIn, btnHover, staggerFadeUp, staggerSlideLeft } from "../../lib/motion";
+import { formatCurrency, formatEventDate, formatShortDate, formatCompact, calcProgress, parseMoney } from "../../lib/format";
 
 interface CreatorDashboardProps {
   username?: string;
@@ -43,10 +49,6 @@ interface DashboardProject {
   description: string;
   coverImage?: string | null;
   items: ProjectItem[];
-}
-
-function getInitials(name: string): string {
-  return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
 export default function CreatorDashboard({ username: propUsername, initialProjectId = null, shopifyStore = null, onCreateProject, onAddItem, onCreateEvent }: CreatorDashboardProps) {
@@ -196,8 +198,8 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                 id: item.id,
                 title: item.title,
                 description: item.description,
-                goal: `$${item.goalAmount.toLocaleString()}`,
-                raised: `$${item.raisedAmount.toLocaleString()}`,
+                goal: formatCurrency(item.goalAmount),
+                raised: formatCurrency(item.raisedAmount),
                 progress: item.progress,
                 status: item.status === "ACTIVE" ? "active" as const : "completed" as const,
                 thumbnail: item.thumbnailUrl,
@@ -210,7 +212,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
           setRecentSupporters(
             recentRes.data.map((s: RecentSupporterResponse) => ({
               name: s.supporterDisplayName,
-              amount: `$${s.amount.toLocaleString()}`,
+              amount: formatCurrency(s.amount),
               initials: s.supporterInitials,
               timeAgo: s.timeAgo,
             }))
@@ -223,7 +225,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
               rank: s.rank,
               name: s.supporterDisplayName,
               initials: s.supporterInitials,
-              totalAmount: `$${s.totalAmount.toLocaleString()}`,
+              totalAmount: formatCurrency(s.totalAmount),
               contributions: s.contributionCount,
             }))
           );
@@ -250,10 +252,9 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
     return () => { cancelled = true; };
   }, [username]);
 
-  const totalRaised = `$${projects
-    .flatMap((w) => w.items)
-    .reduce((sum, i) => sum + parseFloat(i.raised.replace(/[$,]/g, "") || "0"), 0)
-    .toLocaleString()}`;
+  const totalRaised = formatCurrency(
+    projects.flatMap((w) => w.items).reduce((sum, i) => sum + parseMoney(i.raised), 0)
+  );
   const totalActiveItems = projects.flatMap(w => w.items).filter(i => i.status === "active").length;
   const totalSupporters = recentSupporters.length;
 
@@ -272,12 +273,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
         {/* Left Sidebar */}
         <aside className="w-full lg:sticky lg:top-[57px] lg:h-[calc(100vh-57px)] bg-muted p-6 flex flex-col overflow-y-auto border-r border-border">
           {/* Profile */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex items-center gap-4 mb-8 pb-8 border-b border-border"
-          >
+          <motion.div {...fadeUp} className="flex items-center gap-4 mb-8 pb-8 border-b border-border">
             <div className="w-14 h-14 rounded-full bg-secondary border border-border flex items-center justify-center flex-shrink-0">
               <User className="w-6 h-6 text-muted-foreground" />
             </div>
@@ -300,13 +296,8 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
 
           {/* Linked Shopify Store */}
           {shopifyStore && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.05 }}
-              className="mb-8 pb-8 border-b border-border"
-            >
-              <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">Linked Store</div>
+            <motion.div {...fadeUp} transition={{ duration: 0.5, delay: 0.05 }} className="mb-8 pb-8 border-b border-border">
+              <SectionLabel>Linked Store</SectionLabel>
               <a
                 href={shopifyStore.url}
                 target="_blank"
@@ -325,63 +316,28 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
             </motion.div>
           )}
           {/* Stats */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="mb-8"
-          >
-            <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">Overview</div>
+          <motion.div {...fadeUp} transition={{ duration: 0.5, delay: 0.1 }} className="mb-8">
+            <SectionLabel>Overview</SectionLabel>
             <div className="space-y-2">
-              <div className="p-4 bg-background border border-border card-game">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-subtle">Total Raised</span>
-                  <TrendingUp className="w-4 h-4 text-accent" />
-                </div>
-                <p className="text-2xl font-black" style={{ color: "oklch(65.6% 0.241 354.308)" }}>{totalRaised}</p>
-              </div>
-              <div className="p-4 bg-background border border-border card-game">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-subtle">Active Items</span>
-                  <Gift className="w-4 h-4 text-muted-foreground" />
-                </div>
-                <p className="text-2xl font-black text-foreground">{totalActiveItems}</p>
-              </div>
-              <div className="p-4 bg-background border border-border card-game">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-subtle">Supporters</span>
-                  <User className="w-4 h-4 text-muted-foreground" />
-                </div>
-                <p className="text-2xl font-black text-foreground">{totalSupporters}</p>
-              </div>
+              <StatMiniCard label="Total Raised" value={totalRaised} icon={TrendingUp} valueStyle={{ color: "oklch(65.6% 0.241 354.308)" }} />
+              <StatMiniCard label="Active Items" value={totalActiveItems} icon={Gift} />
+              <StatMiniCard label="Supporters" value={totalSupporters} icon={User} />
             </div>
           </motion.div>
 
           {/* Recent Supporters */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="mb-auto"
-          >
-            <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">Recent Supporters</div>
+          <motion.div {...fadeUp} transition={{ duration: 0.5, delay: 0.2 }} className="mb-auto">
+            <SectionLabel>Recent Supporters</SectionLabel>
             <ul className="space-y-2">
               {recentSupporters.slice(0, 5).map((supporter, index) => (
-                <motion.li
-                  key={index}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: 0.3 + index * 0.05 }}
-                  className="flex items-center gap-3 py-2"
-                >
-                  <div className="w-8 h-8 bg-secondary flex items-center justify-center text-foreground font-bold text-xs flex-shrink-0">
-                    {supporter.initials}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-foreground font-medium text-sm truncate">{supporter.name}</p>
-                    <p className="text-subtle text-xs">{supporter.timeAgo}</p>
-                  </div>
-                  <p className="text-accent font-black text-sm flex-shrink-0">{supporter.amount}</p>
+                <motion.li key={index} {...staggerSlideLeft(index)} className="py-0.5">
+                  <UserListItem
+                    initials={supporter.initials}
+                    name={supporter.name}
+                    subtitle={supporter.timeAgo}
+                    metric={supporter.amount}
+                    className="border-0 bg-transparent p-2"
+                  />
                 </motion.li>
               ))}
             </ul>
@@ -390,11 +346,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
           {/* Action Buttons */}
           <div className="mt-6 space-y-2">
             <motion.button
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
+              {...staggerFadeUp(0, 0.3)} {...btnHover}
               onClick={() => { Sounds.click(); onAddItem?.(); }}
               className="w-full flex items-center justify-center gap-2 px-6 py-3 btn-cta text-white font-black text-xs uppercase tracking-widest"
             >
@@ -402,11 +354,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
               Add Item
             </motion.button>
             <motion.button
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.35 }}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
+              {...staggerFadeUp(1, 0.3)} {...btnHover}
               onClick={() => { Sounds.softClick(); onCreateProject?.(); }}
               className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-border bg-background hover:bg-muted text-foreground font-bold text-xs uppercase tracking-wide transition-colors"
             >
@@ -414,11 +362,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
               New Project
             </motion.button>
             <motion.button
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
+              {...staggerFadeUp(2, 0.3)} {...btnHover}
               onClick={() => { Sounds.softClick(); onCreateEvent?.(); }}
               className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-border bg-background hover:bg-muted text-foreground font-bold text-xs uppercase tracking-wide transition-colors"
             >
@@ -428,13 +372,9 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
 
             {/* Post Management */}
             <div className="pt-4 mt-4 border-t border-border space-y-2">
-              <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">Content</div>
+              <SectionLabel className="mb-2">Content</SectionLabel>
               <motion.button
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.45 }}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
+                {...staggerFadeUp(3, 0.3)} {...btnHover}
                 onClick={async () => {
                   setSyncing(true);
                   setSyncResult(null);
@@ -460,11 +400,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                 {syncing ? "Syncing..." : "Sync Posts"}
               </motion.button>
               <motion.button
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.5 }}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
+                {...staggerFadeUp(4, 0.3)} {...btnHover}
                 onClick={() => { Sounds.softClick(); setAddPostOpen(true); }}
                 className="w-full flex items-center justify-center gap-2 px-6 py-3 border border-border bg-background hover:bg-muted text-foreground font-bold text-xs uppercase tracking-wide transition-colors"
               >
@@ -506,8 +442,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                     <span className="px-2 py-0.5 border border-border text-subtle text-xs font-bold">{projects.length}</span>
                   </div>
                   <motion.button
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
+                    {...btnHover}
                     onClick={onCreateProject}
                     className="hidden sm:flex items-center gap-2 px-4 py-2 border border-border hover:bg-muted text-foreground font-bold text-xs uppercase tracking-wide transition-colors"
                   >
@@ -519,14 +454,8 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                   {projects.map((project, wIndex) => {
                     const activeCount = project.items.filter(i => i.status === "active").length;
-                    const totalGoalAmt = project.items.reduce((sum, i) => {
-                      const n = parseFloat(i.goal.replace(/[$,]/g, ""));
-                      return sum + (isNaN(n) ? 0 : n);
-                    }, 0);
-                    const totalRaisedAmt = project.items.reduce((sum, i) => {
-                      const n = parseFloat(i.raised.replace(/[$,]/g, ""));
-                      return sum + (isNaN(n) ? 0 : n);
-                    }, 0);
+                    const totalGoalAmt = project.items.reduce((sum, i) => sum + parseMoney(i.goal), 0);
+                    const totalRaisedAmt = project.items.reduce((sum, i) => sum + parseMoney(i.raised), 0);
 
                     return (
                       <motion.div
@@ -581,11 +510,11 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
 
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-[10px] font-bold uppercase tracking-widest text-subtle">Funding Goal</span>
-                            <span className="text-foreground font-black text-sm">${totalGoalAmt.toLocaleString()}</span>
+                            <span className="text-foreground font-black text-sm">{formatCurrency(totalGoalAmt)}</span>
                           </div>
 
                           {(() => {
-                            const pct = totalGoalAmt > 0 ? Math.min(100, Math.round((totalRaisedAmt / totalGoalAmt) * 100)) : 0;
+                            const pct = calcProgress(totalRaisedAmt, totalGoalAmt);
                             return (
                               <div>
                                 <div className="w-full h-1 bg-secondary overflow-hidden">
@@ -597,7 +526,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                                   />
                                 </div>
                                 <div className="flex items-center justify-between mt-1">
-                                  <span className="text-[10px] text-subtle font-bold">${totalRaisedAmt.toLocaleString()} raised</span>
+                                  <span className="text-[10px] text-subtle font-bold">{formatCurrency(totalRaisedAmt)} raised</span>
                                   <span className="text-[10px] text-subtle font-bold">{pct}%</span>
                                 </div>
                               </div>
@@ -610,12 +539,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                 </div>
 
                 {/* My Top Supporters Leaderboard */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="mt-10"
-                >
+                <motion.div {...fadeUp} transition={{ duration: 0.5, delay: 0.2 }} className="mt-10">
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
                       <Trophy className="w-5 h-5 text-accent" />
@@ -644,9 +568,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                       return (
                         <motion.div
                           key={supporter.rank}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: 0.25 + index * 0.04 }}
+                          {...staggerSlideLeft(index, 0.25, 0.04)}
                           className={`grid grid-cols-[48px_1fr_100px_100px] sm:grid-cols-[48px_1fr_120px_120px] gap-3 px-5 py-3 items-center border-b border-border last:border-b-0 hover:bg-muted/50 transition-colors ${
                             supporter.rank <= 3 ? "bg-accent/[0.03]" : ""
                           }`}
@@ -670,12 +592,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
 
                 {/* My Posts - Per-post project dropdown */}
                 {postsLoaded && myPosts.length > 0 && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 0.2 }}
-                    className="mt-10"
-                  >
+                  <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.2 }} className="mt-10">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <h2 className="text-2xl font-black text-foreground tracking-tight">My Posts</h2>
@@ -746,13 +663,13 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                                 {/* Stats row */}
                                 <div className="flex items-center gap-3 text-[10px] text-subtle">
                                   {post.platformViews > 0 && (
-                                    <span className="flex items-center gap-0.5"><Eye className="w-3 h-3" />{post.platformViews >= 1000 ? (post.platformViews / 1000).toFixed(1) + "K" : post.platformViews}</span>
+                                    <span className="flex items-center gap-0.5"><Eye className="w-3 h-3" />{formatCompact(post.platformViews)}</span>
                                   )}
                                   {post.platformLikes > 0 && (
-                                    <span className="flex items-center gap-0.5"><Heart className="w-3 h-3" />{post.platformLikes >= 1000 ? (post.platformLikes / 1000).toFixed(1) + "K" : post.platformLikes}</span>
+                                    <span className="flex items-center gap-0.5"><Heart className="w-3 h-3" />{formatCompact(post.platformLikes)}</span>
                                   )}
                                   {post.platformCreatedAt && (
-                                    <span className="ml-auto">{new Date(post.platformCreatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                                    <span className="ml-auto">{formatShortDate(post.platformCreatedAt)}</span>
                                   )}
                                 </div>
 
@@ -844,12 +761,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                 )}
 
                 {/* My Events */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  className="mt-10"
-                >
+                <motion.div {...fadeUp} transition={{ duration: 0.5, delay: 0.3 }} className="mt-10">
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
                       <Calendar className="w-5 h-5 text-accent" />
@@ -857,8 +769,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                       <span className="px-2 py-0.5 border border-border text-subtle text-xs font-bold">{events.length}</span>
                     </div>
                     <motion.button
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.99 }}
+                      {...btnHover}
                       onClick={onCreateEvent}
                       className="hidden sm:flex items-center gap-2 px-4 py-2 border border-border hover:bg-muted text-foreground font-bold text-xs uppercase tracking-wide transition-colors"
                     >
@@ -868,16 +779,13 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                   </div>
 
                   {events.length === 0 ? (
-                    <div className="py-12 text-center border border-dashed border-border">
-                      <Calendar className="w-10 h-10 text-subtle mx-auto mb-3" />
-                      <p className="text-sm text-muted-foreground mb-1">No events yet</p>
-                      <p className="text-xs text-subtle">Create an event to show on your public profile.</p>
-                    </div>
+                    <EmptyState icon={Calendar} message="No events yet" sub="Create an event to show on your public profile." />
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                       {events.map((event, eIndex) => {
                         const eventDate = new Date(event.eventDate + "T00:00:00");
                         const isPast = eventDate < new Date(new Date().toDateString());
+                        const formattedDate = formatEventDate(event.eventDate);
                         return (
                           <motion.div
                             key={event.id}
@@ -918,7 +826,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                               <div className="space-y-1 text-xs text-muted-foreground">
                                 <div className="flex items-center gap-1.5">
                                   <Calendar className="w-3 h-3 text-accent" />
-                                  {eventDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
+                                  {formattedDate}
                                 </div>
                                 {event.eventTime && (
                                   <div className="flex items-center gap-1.5">
@@ -994,9 +902,9 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                     </div>
 
                     <div>
-                      <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-4 flex items-center gap-2">
+                      <div className="flex items-center gap-2 mb-4">
                         <span className="w-3 h-px bg-accent" />
-                        Recent Supporters
+                        <SectionLabel className="mb-0">Recent Supporters</SectionLabel>
                       </div>
                       <div className="space-y-2">
                         {itemSupportersLoading ? (
@@ -1007,19 +915,8 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                           <p className="text-subtle text-sm py-4">No supporters yet</p>
                         ) : (
                           itemSupporters.map((s, i) => (
-                            <motion.div
-                              key={i}
-                              initial={{ opacity: 0, x: -10 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ duration: 0.3, delay: i * 0.06 }}
-                              className="flex items-center gap-3 p-4 border border-border bg-background"
-                            >
-                              <div className="w-8 h-8 bg-secondary flex items-center justify-center text-foreground font-bold text-xs flex-shrink-0">{s.initials}</div>
-                              <div className="flex-1">
-                                <p className="text-foreground font-medium text-sm">{s.name}</p>
-                                <p className="text-subtle text-xs">{s.timeAgo}</p>
-                              </div>
-                              <p className="text-accent font-black text-sm">{s.amount}</p>
+                            <motion.div key={i} {...staggerSlideLeft(i, 0, 0.06)}>
+                              <UserListItem initials={s.initials} name={s.name} subtitle={s.timeAgo} metric={s.amount} />
                             </motion.div>
                           ))
                         )}
@@ -1160,17 +1057,12 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
       <AnimatePresence>
         {deleteTarget && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            {...fadeIn}
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
             onClick={() => !deleteLoading && setDeleteTarget(null)}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ duration: 0.2 }}
+              {...scaleIn}
               className="bg-background border border-border w-full max-w-sm overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >

@@ -1,7 +1,9 @@
 // ─── API Client ────────────────────────────────────────────────────────────────
 // Communicates with the rory-api backend. Uses the Supabase JWT for auth.
 
-const API_BASE = (import.meta.env?.VITE_API_URL ?? process.env.NEXT_PUBLIC_API_URL) ?? "http://localhost:8080";
+// Same-origin: every endpoint is now a Next.js API route backed by Prisma
+// (the Java backend has been fully migrated in). Empty base = relative fetch.
+const API_BASE = "";
 
 // ─── Types matching backend DTOs ─────────────────────────────────────────────
 
@@ -297,6 +299,7 @@ async function apiFetch<T>(
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers,
+    credentials: "include",
     cache: "no-store" as RequestCache,
   });
 

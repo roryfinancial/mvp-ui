@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth.server";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
-import type { UserType } from "@prisma/client";
+import { parseCommunities, stringifyCommunities } from "@/lib/api-helpers";
 
 export async function POST(req: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -14,6 +14,21 @@ export async function POST(req: NextRequest) {
   }
   const body = await req.json();
   const { username, displayName, userType, referralCode, communities } = body;
+
+  // Validate required fields so we never write a "complete" profile with a
+  // missing username or an invalid type.
+  if (!username || typeof username !== "string" || username.trim().length < 2) {
+    return NextResponse.json(
+      { success: false, error: { code: "BAD_REQUEST", message: "A valid username is required" } },
+      { status: 400 }
+    );
+  }
+  if (userType !== "CREATOR" && userType !== "SUPPORTER") {
+    return NextResponse.json(
+      { success: false, error: { code: "BAD_REQUEST", message: "userType must be CREATOR or SUPPORTER" } },
+      { status: 400 }
+    );
+  }
 
   const existing = await prisma.user.findUnique({ where: { username } });
   if (existing && existing.id !== session.user.id) {
@@ -28,9 +43,9 @@ export async function POST(req: NextRequest) {
     data: {
       username,
       displayName,
-      userType: userType as UserType,
+      userType: userType,
       referralCode: referralCode ?? null,
-      communities: communities ?? [],
+      communities: stringifyCommunities(communities ?? []),
       isProfileComplete: true,
     },
     include: { connectedPlatforms: true },
@@ -49,7 +64,7 @@ export async function POST(req: NextRequest) {
       creditBalance: Number(user.creditBalance),
       stripeOnboardingComplete: user.stripeOnboardingComplete,
       referralCode: user.referralCode ?? null,
-      communities: user.communities,
+      communities: parseCommunities(user.communities),
       isProfileComplete: user.isProfileComplete,
       settings: {
         emailNotifications: user.emailNotifications,

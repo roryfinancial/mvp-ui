@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { Trophy, TrendingUp, Gift, Heart, Loader2 } from "lucide-react";
 import { leaderboardApi } from "../../lib/api";
 import type { LeaderboardEntryResponse } from "../../lib/api";
+import { formatCurrency } from "../../lib/format";
+import { staggerFadeUp } from "../../lib/motion";
 
 interface LeaderboardProps {
   onViewCreator?: (username: string) => void;
@@ -42,7 +44,7 @@ export default function Leaderboard({ onViewCreator }: LeaderboardProps) {
             name: c.displayName,
             username: `@${c.username}`,
             initials: c.initials,
-            amount: `$${c.totalAmount.toLocaleString()}`,
+            amount: formatCurrency(c.totalAmount),
             items: c.totalItems,
             supporters: c.totalContributions,
           }))
@@ -56,7 +58,7 @@ export default function Leaderboard({ onViewCreator }: LeaderboardProps) {
             name: s.displayName,
             username: `@${s.username}`,
             initials: s.initials,
-            amount: `$${s.totalAmount.toLocaleString()}`,
+            amount: formatCurrency(s.totalAmount),
             items: s.totalItems,
             contributions: s.totalContributions,
           }))
@@ -132,9 +134,7 @@ export default function Leaderboard({ onViewCreator }: LeaderboardProps) {
           {entries.map((entry) => (
             <motion.div
               key={entry.rank}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: entry.rank * 0.04 }}
+              {...staggerFadeUp(entry.rank, 0, 0.04)}
               onClick={() => onViewCreator?.(entry.username.replace("@", ""))}
               className="flex items-center gap-4 p-4 bg-card border border-border hover:border-accent/40 transition-all cursor-pointer group"
               style={{

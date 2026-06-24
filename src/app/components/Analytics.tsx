@@ -3,6 +3,10 @@ import { useState, useEffect } from "react";
 import { TrendingUp, DollarSign, Users, Gift, Link2, ArrowRight, Loader2 } from "lucide-react";
 import { analyticsApi, referralApi } from "../../lib/api";
 import type { AnalyticsResponse, ReferralStatsResponse } from "../../lib/api";
+import { SectionLabel } from "./shared/SectionLabel";
+import { UserListItem } from "./shared/UserListItem";
+import { staggerFadeUp } from "../../lib/motion";
+import { getInitials, formatCurrency } from "../../lib/format";
 
 interface AnalyticsProps {
   onNavigateReferrals?: () => void;
@@ -44,10 +48,10 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
         setRecentActivity(
           analyticsRes.data.recentActivity.map((a) => ({
             supporter: a.supporterDisplayName,
-            amount: `$${a.amount.toLocaleString()}`,
+            amount: formatCurrency(a.amount),
             project: a.itemTitle,
             timeAgo: a.timeAgo,
-            initials: a.supporterDisplayName.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2),
+            initials: getInitials(a.supporterDisplayName),
           }))
         );
       }
@@ -64,7 +68,7 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
   // Build chart and stats from API data (with fallbacks)
   const apiStats = analyticsData?.stats;
   const stats = {
-    revenue: apiStats ? `$${apiStats.netRevenue.toLocaleString()}` : "$0",
+    revenue: apiStats ? formatCurrency(apiStats.netRevenue) : "$0",
     revenueChange: apiStats ? `${apiStats.revenueChange >= 0 ? "+" : ""}${apiStats.revenueChange.toFixed(1)}%` : "0%",
     supporters: apiStats?.totalSupporters ?? 0,
     supportersChange: apiStats ? `${apiStats.supportersChange >= 0 ? "+" : ""}${apiStats.supportersChange.toFixed(1)}` : "0",
@@ -72,9 +76,9 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
     giftsChange: apiStats ? `${apiStats.giftsChange >= 0 ? "+" : ""}${apiStats.giftsChange.toFixed(1)}` : "0",
     avg: apiStats ? `$${apiStats.avgContribution.toFixed(2)}` : "$0",
     avgChange: apiStats ? `${apiStats.avgContributionChange >= 0 ? "+" : ""}${apiStats.avgContributionChange.toFixed(1)}%` : "0%",
-    referralEarnings: referralStats ? `$${referralStats.totalCommissionEarned.toLocaleString()}` : "$0",
+    referralEarnings: referralStats ? formatCurrency(referralStats.totalCommissionEarned) : "$0",
     referralEarningsChange: referralStats ? `+${Math.round((referralStats.commissionThisMonth / Math.max(1, referralStats.totalCommissionEarned)) * 100)}%` : "0%",
-    commissionEarned: referralStats ? `$${referralStats.commissionThisMonth.toLocaleString()}` : "$0",
+    commissionEarned: referralStats ? formatCurrency(referralStats.commissionThisMonth) : "$0",
     commissionEarnedChange: referralStats ? `+${Math.round((referralStats.commissionThisMonth / Math.max(1, referralStats.totalCommissionEarned)) * 100)}%` : "0%",
   };
 
@@ -126,7 +130,7 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
             className="mb-10 flex items-end justify-between flex-wrap gap-4"
           >
             <div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">Creator Tools</div>
+              <SectionLabel className="mb-2">Creator Tools</SectionLabel>
               <h1 className="text-5xl font-black text-foreground tracking-tight">Analytics</h1>
             </div>
 
@@ -154,9 +158,7 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
               return (
                 <motion.button
                   key={metric}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 + i * 0.08 }}
+                  {...staggerFadeUp(i, 0.1, 0.08)}
                   whileHover={{ scale: 1.03, y: -4 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setSelectedMetric(metric)}
@@ -193,9 +195,7 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
               return (
                 <motion.button
                   key={metric}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.42 + i * 0.08 }}
+                  {...staggerFadeUp(i, 0.42, 0.08)}
                   whileHover={{ scale: 1.03, y: -4 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setSelectedMetric(metric)}
@@ -342,7 +342,7 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
               transition={{ duration: 0.6 }}
               className="border border-border bg-background p-8 card-game"
             >
-              <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-5">Recent Activity</div>
+              <SectionLabel className="mb-5">Recent Activity</SectionLabel>
               <div className="space-y-2 max-h-80 overflow-y-auto">
                 {recentActivity.map((activity, index) => (
                   <motion.div
@@ -378,7 +378,7 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="mt-6 border border-border bg-background p-8"
             >
-              <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-6">Top Performing Projects</div>
+              <SectionLabel className="mb-6">Top Performing Projects</SectionLabel>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {analyticsData.topProjects.map((project, index) => (
                   <motion.div

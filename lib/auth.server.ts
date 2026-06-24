@@ -4,7 +4,9 @@ import { jwt } from "better-auth/plugins";
 import { prisma } from "./prisma";
 
 export const auth = betterAuth({
-  database: prismaAdapter(prisma, { provider: "postgresql" }),
+  database: prismaAdapter(prisma, {
+    provider: (process.env.DATABASE_PROVIDER as "postgresql" | "sqlite") ?? "postgresql",
+  }),
   secret: process.env.BETTER_AUTH_SECRET!,
   baseURL: process.env.NEXT_PUBLIC_APP_URL,
   emailAndPassword: { enabled: true },

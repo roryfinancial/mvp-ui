@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth.server";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
-import type { PlatformType } from "@prisma/client";
 
 export async function DELETE(
   _req: NextRequest,
@@ -20,7 +19,7 @@ export async function DELETE(
     where: {
       userId_platform: {
         userId: session.user.id,
-        platform: platform.toUpperCase() as PlatformType,
+        platform: platform.toUpperCase(),
       },
     },
   });

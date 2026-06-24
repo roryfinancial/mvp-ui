@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth.server";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
+import { parseCommunities } from "@/lib/api-helpers";
 
 export async function GET() {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -37,7 +38,7 @@ export async function GET() {
       creditBalance: Number(user.creditBalance),
       stripeOnboardingComplete: user.stripeOnboardingComplete,
       referralCode: user.referralCode ?? null,
-      communities: user.communities,
+      communities: parseCommunities(user.communities),
       isProfileComplete: user.isProfileComplete,
       settings: {
         emailNotifications: user.emailNotifications,

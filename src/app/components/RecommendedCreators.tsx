@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { recommendationApi, followApi, type RecommendedCreatorResponse } from "../../lib/api";
+import type { ToastKind } from "./Toast";
 
 interface RecommendedCreatorsProps {
-  onToast?: (kind: "success" | "error" | "info", message: string) => void;
+  onToast?: (kind: ToastKind, message: string) => void;
 }
 
 export default function RecommendedCreators({ onToast }: RecommendedCreatorsProps) {
