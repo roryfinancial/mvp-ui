@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { useState } from "react";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { Gift, Heart, Zap, Shield, Trophy } from "lucide-react";
 
@@ -10,7 +11,24 @@ interface HomeProps {
 
 const RANK_COLORS = ["#FFD700", "#C0C0C0", "#CD7F32"] as const;
 
+const HERO_COPY = {
+  creator: {
+    badge: "For Creators · Keep 100%",
+    headline: <>Your project,<br /><span style={{ color: "oklch(65.6% 0.241 354.308)" }}>funded.</span></>,
+    sub: "Set goals for your project and let your fans fund them. You keep 100% of every gift — Rory never takes a cut.",
+    cta: "Start Your Project",
+  },
+  supporter: {
+    badge: "For Supporters",
+    headline: <>Fund the creators<br /><span style={{ color: "oklch(65.6% 0.241 354.308)" }}>you love.</span></>,
+    sub: "Discover creators, gift toward the goals that matter to them, climb the leaderboard, and unlock rewards as you go.",
+    cta: "Find Creators to Support",
+  },
+} as const;
+
 export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateToSignUp }: HomeProps) {
+  const [audience, setAudience] = useState<"creator" | "supporter">("creator");
+  const copy = HERO_COPY[audience];
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Navigation */}
@@ -53,32 +71,70 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="max-w-4xl mx-auto text-center"
           >
+            {/* Audience toggle — tailor the pitch to creators vs supporters */}
             <motion.div
               initial={{ opacity: 0, scale: 0.92 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.15 }}
-              className="inline-block mb-8"
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="inline-flex p-1 mb-8 rounded-full border border-white/15 bg-white/5"
+              role="tablist"
+              aria-label="Choose your audience"
+            >
+              {([
+                { key: "creator", label: "I'm a Creator" },
+                { key: "supporter", label: "I'm a Supporter" },
+              ] as const).map((tab) => (
+                <button
+                  key={tab.key}
+                  role="tab"
+                  aria-selected={audience === tab.key}
+                  onClick={() => setAudience(tab.key)}
+                  className={`px-5 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-colors ${
+                    audience === tab.key ? "btn-cta text-white" : "text-white/55 hover:text-white"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </motion.div>
+
+            <motion.div
+              key={`badge-${audience}`}
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.35 }}
+              className="block mb-8"
             >
               <div
-                className="px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest text-white/90 border"
+                className="inline-block px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest text-white/90 border"
                 style={{
                   borderColor: "oklch(65.6% 0.241 354.308 / 0.5)",
                   background: "oklch(65.6% 0.241 354.308 / 0.12)",
                 }}
               >
-                New — Fan Gifts with Low Fees
+                {copy.badge}
               </div>
             </motion.div>
 
-            <h1 className="text-7xl md:text-8xl font-black mb-8 leading-none tracking-tight text-white">
-              Your project,
-              <br />
-              <span style={{ color: "oklch(65.6% 0.241 354.308)" }}>funded.</span>
-            </h1>
+            <motion.h1
+              key={`headline-${audience}`}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="text-7xl md:text-8xl font-black mb-8 leading-none tracking-tight text-white"
+            >
+              {copy.headline}
+            </motion.h1>
 
-            <p className="text-xl text-white/50 mb-12 max-w-2xl mx-auto leading-relaxed">
-              Create goals for your project. Fans donate to help you achieve them. Low fees, always.
-            </p>
+            <motion.p
+              key={`sub-${audience}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4, delay: 0.05 }}
+              className="text-xl text-white/50 mb-12 max-w-2xl mx-auto leading-relaxed"
+            >
+              {copy.sub}
+            </motion.p>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -92,7 +148,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
                 whileTap={{ scale: 0.97 }}
                 className="px-10 py-4 btn-cta text-white text-lg font-black uppercase tracking-widest"
               >
-                Start Your Project
+                {copy.cta}
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -111,7 +167,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-16">
           {[
             { stat: "10,000+", label: "Creators" },
-            { stat: "$0", label: "Platform Fees" },
+            { stat: "100%", label: "Creators Keep" },
             { stat: "2 min", label: "Setup Time" },
           ].map((item, i) => (
             <motion.div
