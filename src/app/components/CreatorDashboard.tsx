@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Sounds } from "../../lib/sounds";
 import ConfettiBurst from "./Confetti";
-import { Plus, User, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, ChevronDown, ChevronLeft, ChevronRight, List, ShoppingBag, Trophy, Loader2, Trash2, X, Calendar, Clock, MapPin, RefreshCw, Link2, Eye, Heart } from "lucide-react";
+import { Plus, User, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, ChevronDown, ChevronLeft, ChevronRight, List, ShoppingBag, Trophy, Loader2, Trash2, X, Calendar, Clock, MapPin, RefreshCw, Link2, Eye, Heart, Pin } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { projectApi, giftApi, eventApi, feedApi } from "../../lib/api";
 import type { ProjectResponse, RecentSupporterResponse, TopSupporterResponse, EventResponse, FeedPostResponse } from "../../lib/api";
@@ -41,6 +41,7 @@ interface ProjectItem {
   progress: number;
   status: "active" | "completed";
   thumbnail?: string | null;
+  pinned: boolean;
 }
 
 interface DashboardProject {
@@ -123,6 +124,35 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
     { rank: number; name: string; initials: string; totalAmount: string; contributions: number }[]
   >([]);
   const [weeklyTopGifter, setWeeklyTopGifter] = useState<{ name: string; initials: string; amount: string } | null>(null);
+  const [pinningItemId, setPinningItemId] = useState<string | null>(null);
+
+  async function handleTogglePin(projectId: string, target: ProjectItem) {
+    if (pinningItemId) return;
+    const next = !target.pinned;
+    setPinningItemId(target.id);
+    const res = await projectApi.setItemPinned(projectId, target.id, next);
+    if (res.success) {
+      Sounds.softClick();
+      // Mirror the server's single-pin-per-project rule locally.
+      setProjects((prev) =>
+        prev.map((p) =>
+          p.id !== projectId
+            ? p
+            : {
+                ...p,
+                items: p.items.map((it) =>
+                  it.id === target.id
+                    ? { ...it, pinned: next }
+                    : next
+                      ? { ...it, pinned: false }
+                      : it,
+                ),
+              },
+        ),
+      );
+    }
+    setPinningItemId(null);
+  }
 
   // Fetch recent supporters when an item is selected
   useEffect(() => {
@@ -205,6 +235,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                 progress: item.progress,
                 status: item.status === "ACTIVE" ? "active" as const : "completed" as const,
                 thumbnail: item.thumbnailUrl,
+                pinned: item.pinned,
               })),
             }))
           );
@@ -942,6 +973,19 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                           }`}>
                             {item.status === "completed" ? <><Check className="w-3 h-3" />Funded</> : <><ArrowUp className="w-3 h-3" />Active</>}
                           </div>
+                          <button
+                            onClick={() => handleTogglePin(currentProject.id, item)}
+                            disabled={pinningItemId === item.id}
+                            title={item.pinned ? "Unpin from top of your profile" : "Pin to top of your profile"}
+                            className={`px-2 py-1 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest border transition-colors disabled:opacity-50 ${
+                              item.pinned
+                                ? "bg-accent border-accent text-white"
+                                : "border-border text-subtle hover:border-accent hover:text-accent"
+                            }`}
+                          >
+                            {pinningItemId === item.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Pin className="w-3 h-3" />}
+                            {item.pinned ? "Pinned" : "Pin"}
+                          </button>
                         </div>
                         <p className="text-muted-foreground mb-6 leading-relaxed text-sm">{item.description}</p>
                         <div className="p-4 bg-muted border border-border">

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import {
   User, Check, Zap, X, DollarSign, ArrowUp, Twitter, Youtube, Twitch,
   Play, Eye, Heart, MessageCircle, ChevronRight, List, ExternalLink,
-  Edit2, Settings, LogIn, Loader2, Target, Calendar, Clock, MapPin,
+  Edit2, Settings, LogIn, Loader2, Target, Calendar, Clock, MapPin, Pin,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { userApi, projectApi, followApi, giftApi, eventApi, feedApi } from "../../lib/api";
@@ -13,7 +13,7 @@ import ActivityFeed from "./ActivityFeed";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface ProjectItem { id: string; title: string; description?: string; goalAmount?: number; raisedAmount?: number; status?: string; thumbnail?: string }
+interface ProjectItem { id: string; title: string; description?: string; goalAmount?: number; raisedAmount?: number; status?: string; thumbnail?: string; pinned?: boolean }
 interface CreatorProject { id: string; name: string; description?: string; coverImage?: string; items: ProjectItem[] }
 interface ConnectedPlatform {
   platform: "youtube" | "twitch" | "twitter" | "instagram" | "tiktok";
@@ -143,6 +143,7 @@ export default function CreatorProfile({
               raisedAmount: item.raisedAmount,
               status: item.status,
               thumbnail: item.thumbnailUrl ?? undefined,
+              pinned: item.pinned,
             })),
           }))
         );
@@ -608,6 +609,12 @@ export default function CreatorProfile({
                       <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                     ) : (
                       <User className="w-10 h-10 text-subtle" />
+                    )}
+                    {item.pinned && (
+                      <div className="absolute top-2 left-2 px-1.5 py-0.5 flex items-center gap-1 bg-accent text-white text-[9px] font-black uppercase tracking-widest">
+                        <Pin className="w-2.5 h-2.5" />
+                        Pinned
+                      </div>
                     )}
                   </div>
                   <div className="p-3">

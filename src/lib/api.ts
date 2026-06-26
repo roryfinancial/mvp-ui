@@ -108,6 +108,7 @@ export interface ProjectItemResponse {
   progress: number;
   status: "ACTIVE" | "COMPLETED" | "GIFTED";
   giftedByUsername: string | null;
+  pinned: boolean;
 }
 
 export interface CreateProjectRequest {
@@ -122,6 +123,7 @@ export interface CreateProjectItemRequest {
   description?: string;
   thumbnailUrl?: string;
   goalAmount: number;
+  pinned?: boolean;
 }
 
 export interface RecentSupporterResponse {
@@ -415,6 +417,12 @@ export const projectApi = {
     apiFetch<ProjectItemResponse>(`/api/projects/${projectId}/items/${itemId}`, {
       method: "PUT",
       body: JSON.stringify(body),
+    }),
+
+  setItemPinned: (projectId: string, itemId: string, pinned: boolean) =>
+    apiFetch<ProjectItemResponse>(`/api/projects/${projectId}/items/${itemId}`, {
+      method: "PUT",
+      body: JSON.stringify({ pinned }),
     }),
 
   deleteItem: (projectId: string, itemId: string) =>

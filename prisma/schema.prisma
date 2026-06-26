@@ -181,6 +181,7 @@ model ProjectItem {
   raisedAmount Float    @default(0)
   status       String   @default("ACTIVE") // 'ACTIVE' | 'COMPLETED' | 'GIFTED'
   giftedById   String? // -> User.id, set when fully gifted by one supporter
+  pinned       Boolean  @default(false) // creator-pinned item, surfaced first on the profile
   sortOrder    Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

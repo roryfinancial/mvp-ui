@@ -17,6 +17,7 @@ export interface ProjectItemResponse {
   progress: number;
   status: "ACTIVE" | "COMPLETED" | "GIFTED";
   giftedByUsername: string | null;
+  pinned: boolean;
 }
 
 export interface ProjectResponse {
@@ -52,12 +53,17 @@ export async function toItemResponse(item: ProjectItem): Promise<ProjectItemResp
     progress: progressPct(item.raisedAmount, item.goalAmount),
     status: item.status as "ACTIVE" | "COMPLETED" | "GIFTED",
     giftedByUsername,
+    pinned: item.pinned,
   };
 }
 
 /** Map a Project (with its items) to the full ProjectResponse with summed aggregates. */
 export async function toResponse(project: ProjectWithItems): Promise<ProjectResponse> {
-  const sorted = [...project.items].sort((a, b) => a.sortOrder - b.sortOrder);
+  // Pinned items first, then by sortOrder — keeps a creator's highlighted item
+  // at the top of the list everywhere the project is rendered.
+  const sorted = [...project.items].sort(
+    (a, b) => Number(b.pinned) - Number(a.pinned) || a.sortOrder - b.sortOrder,
+  );
   const items = await Promise.all(sorted.map(toItemResponse));
   const goalAmount = sorted.reduce((s, i) => s + i.goalAmount, 0);
   const raisedAmount = sorted.reduce((s, i) => s + i.raisedAmount, 0);

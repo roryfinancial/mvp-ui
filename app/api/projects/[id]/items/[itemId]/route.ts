@@ -31,6 +31,19 @@ export async function PUT(
     }
     data.goalAmount = goalAmount;
   }
+  if (body.pinned != null) data.pinned = Boolean(body.pinned);
+
+  // Only one item may be pinned per project — pinning this one unpins siblings.
+  if (data.pinned === true) {
+    const [, updated] = await prisma.$transaction([
+      prisma.projectItem.updateMany({
+        where: { projectId: id, pinned: true, NOT: { id: itemId } },
+        data: { pinned: false },
+      }),
+      prisma.projectItem.update({ where: { id: itemId }, data }),
+    ]);
+    return ok(await toItemResponse(updated));
+  }
 
   const updated = await prisma.projectItem.update({ where: { id: itemId }, data });
   return ok(await toItemResponse(updated));
