@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Upload, X, ImageIcon, Loader2 } from "lucide-react";
 import { projectApi } from "../../lib/api";
 import type { ProjectResponse } from "../../lib/api";
+import { fileToCompressedDataUrl } from "../../lib/image-upload";
 
 interface CreateProjectProps {
   onBack?: () => void;
@@ -35,11 +36,15 @@ export default function CreateProject({ onBack, onCreateProject }: CreateProject
     loadProjects();
   }, []);
 
-  const handleThumbnailSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleThumbnailSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setThumbnail(url);
+    if (!file) return;
+    // Persist a compressed base64 data URL (not an ephemeral blob: URL, which
+    // breaks as soon as the page reloads) so the image actually saves.
+    try {
+      setThumbnail(await fileToCompressedDataUrl(file));
+    } catch {
+      setError("Could not read that image. Try a different file.");
     }
   };
 
@@ -65,6 +70,7 @@ export default function CreateProject({ onBack, onCreateProject }: CreateProject
       title: title.trim(),
       description: description.trim() || undefined,
       goalAmount: amount,
+      thumbnailUrl: thumbnail ?? undefined,
     });
 
     if (res.success) {

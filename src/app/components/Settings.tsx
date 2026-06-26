@@ -1,8 +1,9 @@
 import { motion } from "motion/react";
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
-import { User, Bell, Lock, Mail, Key, Shield, DollarSign, Palette, Sun, Moon, Monitor, Users, Check, Loader2, ArrowUpRight, ArrowDownLeft, Plus, ExternalLink, CheckCircle2, AlertCircle, Link2, Trash2 } from "lucide-react";
+import { User, Bell, Lock, Mail, Key, Shield, DollarSign, Palette, Sun, Moon, Monitor, Users, Check, Loader2, ArrowUpRight, ArrowDownLeft, Plus, ExternalLink, CheckCircle2, AlertCircle, Link2, Trash2, Volume2, VolumeX } from "lucide-react";
 import { useTheme } from "next-themes";
+import { Sounds, isSoundMuted, toggleMute } from "../../lib/sounds";
 import { useAuth } from "../../contexts/AuthContext";
 import { userApi, walletApi, stripeApi, platformApi } from "../../lib/api";
 import type { WalletSummaryResponse, TransactionResponse, PagedResponse, ConnectedPlatform, PlatformType } from "../../lib/api";
@@ -23,6 +24,13 @@ export default function Settings({
   const { user, refreshUser } = useAuth();
   const [activeSection, setActiveSection] = useState<"profile" | "account" | "notifications" | "privacy" | "balance" | "customization" | "communities" | "platforms">(initialSection);
   const { theme, setTheme, resolvedTheme } = useTheme();
+  const [soundOn, setSoundOn] = useState(true);
+  useEffect(() => { setSoundOn(!isSoundMuted()); }, []);
+  const handleToggleSound = () => {
+    const nowMuted = toggleMute();
+    setSoundOn(!nowMuted);
+    if (!nowMuted) Sounds.softClick(); // give immediate audible confirmation when enabling
+  };
 
   const [displayName, setDisplayName] = useState(user?.displayName ?? "");
   const [userEmail, setUserEmail] = useState(user?.email ?? "");
@@ -744,6 +752,28 @@ export default function Settings({
                     <p className="text-xs text-subtle mt-3">
                       Currently using <span className="font-bold text-foreground">{resolvedTheme === "dark" ? "dark" : "light"}</span> mode
                     </p>
+                  </div>
+
+                  {/* Sound */}
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Sound</label>
+                    <button
+                      onClick={handleToggleSound}
+                      className="w-full flex items-center justify-between p-5 border border-border bg-muted hover:bg-secondary transition-all text-left"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={soundOn ? "text-accent" : "text-subtle"}>
+                          {soundOn ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm text-foreground">Interface sounds</p>
+                          <p className="text-xs text-subtle">Clicks, gifts, and achievement chimes</p>
+                        </div>
+                      </div>
+                      <div className={`relative w-11 h-6 rounded-full transition-colors ${soundOn ? "bg-accent" : "bg-secondary"}`}>
+                        <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${soundOn ? "translate-x-5" : ""}`} />
+                      </div>
+                    </button>
                   </div>
                 </div>
               )}

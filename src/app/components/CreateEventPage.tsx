@@ -1,7 +1,8 @@
 import { motion } from "motion/react";
-import { useState } from "react";
-import { Calendar, Clock, MapPin, Loader2 } from "lucide-react";
+import { useState, useRef } from "react";
+import { Calendar, Clock, MapPin, Loader2, Upload, X, ImageIcon } from "lucide-react";
 import { eventApi } from "../../lib/api";
+import { fileToCompressedDataUrl } from "../../lib/image-upload";
 
 interface CreateEventPageProps {
   onBack?: () => void;
@@ -16,11 +17,28 @@ export default function CreateEventPage({ onBack, onComplete }: CreateEventPageP
   const [location, setLocation] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [isPublic, setIsPublic] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isValid = title.trim() && eventDate;
+
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setImageUrl(await fileToCompressedDataUrl(file));
+    } catch {
+      setError("Could not read that image. Try a different file.");
+    }
+  };
+
+  const removeImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setImageUrl("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleSubmit = async () => {
     if (!isValid || submitting) return;
@@ -146,18 +164,42 @@ export default function CreateEventPage({ onBack, onComplete }: CreateEventPageP
               />
             </div>
 
-            {/* Image URL */}
+            {/* Event Image */}
             <div>
               <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
-                Image URL <span className="text-subtle font-normal normal-case tracking-normal">optional</span>
+                Event Image <span className="text-subtle font-normal normal-case tracking-normal">optional</span>
               </label>
-              <input
-                type="url"
-                placeholder="https://example.com/event-image.jpg"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                className="w-full px-4 py-3.5 border border-border bg-background text-foreground placeholder-[#999999] focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all text-sm"
-              />
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
+              <motion.div
+                whileHover={{ scale: 1.005 }}
+                onClick={() => fileInputRef.current?.click()}
+                className="relative w-full h-44 overflow-hidden cursor-pointer border-2 border-dashed border-border hover:border-accent transition-colors group bg-muted"
+              >
+                {imageUrl ? (
+                  <>
+                    <img src={imageUrl} alt="Event preview" className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <div className="flex items-center gap-2 text-white font-bold text-sm">
+                        <Upload className="w-4 h-4" />
+                        Change Image
+                      </div>
+                    </div>
+                    <button type="button" onClick={removeImage} className="absolute top-3 right-3 w-7 h-7 bg-background border border-border flex items-center justify-center text-foreground hover:bg-red-50 hover:text-red-500 transition-colors z-10">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </>
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                    <div className="w-11 h-11 border border-border bg-background flex items-center justify-center group-hover:border-accent transition-colors">
+                      <ImageIcon className="w-5 h-5 text-subtle" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-muted-foreground font-bold text-sm">Upload Event Image</p>
+                      <p className="text-subtle text-xs mt-0.5">Click or drag to upload · PNG, JPG, GIF</p>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
             </div>
 
             {/* Public toggle */}
