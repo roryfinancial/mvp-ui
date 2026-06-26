@@ -122,6 +122,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
   const [topSupportersLeaderboard, setTopSupportersLeaderboard] = useState<
     { rank: number; name: string; initials: string; totalAmount: string; contributions: number }[]
   >([]);
+  const [weeklyTopGifter, setWeeklyTopGifter] = useState<{ name: string; initials: string; amount: string } | null>(null);
 
   // Fetch recent supporters when an item is selected
   useEffect(() => {
@@ -177,10 +178,11 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
       setDataError(null);
 
       try {
-        const [projectRes, recentRes, topRes, eventRes, postsRes] = await Promise.all([
+        const [projectRes, recentRes, topRes, weeklyTopRes, eventRes, postsRes] = await Promise.all([
           projectApi.getMyProjects(),
           giftApi.getRecentSupporters(username, 5),
           giftApi.getTopSupporters(username, 10),
+          giftApi.getTopSupporters(username, 1, "week"),
           eventApi.getMyEvents(),
           feedApi.getMyPosts(0, 12),
         ]);
@@ -231,6 +233,17 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
           );
         }
 
+        if (weeklyTopRes.success && weeklyTopRes.data && weeklyTopRes.data.length > 0) {
+          const t = weeklyTopRes.data[0];
+          setWeeklyTopGifter({
+            name: t.supporterDisplayName || t.supporterUsername || "a supporter",
+            initials: t.supporterInitials,
+            amount: formatCurrency(t.totalAmount),
+          });
+        } else if (!cancelled) {
+          setWeeklyTopGifter(null);
+        }
+
         if (eventRes.success && eventRes.data) {
           setEvents(eventRes.data);
         }
@@ -271,7 +284,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
       {/* Main Layout */}
       <div className="flex flex-col lg:grid lg:grid-cols-[320px_1fr] gap-0 min-h-screen pt-[57px]">
         {/* Left Sidebar */}
-        <aside className="w-full lg:sticky lg:top-[57px] lg:h-[calc(100vh-57px)] bg-muted p-6 flex flex-col overflow-y-auto border-r border-border">
+        <aside className="order-2 lg:order-1 w-full lg:sticky lg:top-[57px] lg:h-[calc(100vh-57px)] bg-muted p-6 flex flex-col overflow-y-auto border-r border-border">
           {/* Profile */}
           <motion.div {...fadeUp} className="flex items-center gap-4 mb-8 pb-8 border-b border-border">
             <div className="w-14 h-14 rounded-full bg-secondary border border-border flex items-center justify-center flex-shrink-0">
@@ -421,12 +434,51 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-8 bg-background">
+        <main className="order-1 lg:order-2 flex-1 p-8 bg-background">
           {dataError && (
             <div className="mb-6 p-4 border border-red-300 bg-red-50 text-red-700 text-sm font-medium">
               {dataError}
             </div>
           )}
+
+          {/* Earnings + primary CTA — the first thing a creator should see */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="mb-8 p-6 border border-border bg-muted"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-subtle mb-1">Total Earned</p>
+                <p className="text-4xl font-black tracking-tight" style={{ color: "oklch(65.6% 0.241 354.308)" }}>{totalRaised}</p>
+                <p className="text-xs text-subtle font-medium mt-1">You keep 100% — Rory never takes a cut.</p>
+              </div>
+              <motion.button
+                {...btnHover}
+                onClick={() => { Sounds.click(); onAddItem?.(); }}
+                className="flex items-center justify-center gap-2 px-6 py-4 btn-cta text-white font-black text-xs uppercase tracking-widest whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4" />
+                Create a New Gift
+              </motion.button>
+            </div>
+
+            {/* Fan spotlight */}
+            {weeklyTopGifter && (
+              <div className="mt-5 pt-5 border-t border-border flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-accent/15 text-accent flex items-center justify-center flex-shrink-0">
+                  <Trophy className="w-4 h-4" />
+                </div>
+                <p className="text-sm text-foreground">
+                  Your top gifter this week is{" "}
+                  <span className="font-black text-accent">{weeklyTopGifter.name}</span>
+                  <span className="text-subtle font-medium"> — {weeklyTopGifter.amount} this week 🎉</span>
+                </p>
+              </div>
+            )}
+          </motion.div>
+
           <AnimatePresence mode="wait">
             {selectedProjectId === null ? (
               <motion.div

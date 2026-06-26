@@ -436,8 +436,10 @@ export const giftApi = {
   getRecentSupportersByItem: (itemId: string, limit = 10) =>
     apiFetch<RecentSupporterResponse[]>(`/api/gifts/item/${itemId}/recent?limit=${limit}`),
 
-  getTopSupporters: (username: string, limit = 10) =>
-    apiFetch<TopSupporterResponse[]>(`/api/gifts/creator/${username}/top?limit=${limit}`),
+  getTopSupporters: (username: string, limit = 10, period?: "week") =>
+    apiFetch<TopSupporterResponse[]>(
+      `/api/gifts/creator/${username}/top?limit=${limit}${period ? `&period=${period}` : ""}`,
+    ),
 
   getMyHistory: (page = 0, size = 20) =>
     apiFetch<PagedResponse<GiftHistoryResponse>>(`/api/gifts/my/history?page=${page}&size=${size}`),

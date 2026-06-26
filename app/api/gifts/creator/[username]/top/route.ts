@@ -8,15 +8,27 @@ export async function GET(
   { params }: { params: Promise<{ username: string }> }
 ) {
   const { username } = await params;
-  const limit = Math.max(1, parseInt(new URL(req.url).searchParams.get("limit") ?? "10", 10) || 10);
+  const sp = new URL(req.url).searchParams;
+  const limit = Math.max(1, parseInt(sp.get("limit") ?? "10", 10) || 10);
+  // period=week restricts the leaderboard to the trailing 7 days (used by the
+  // dashboard "top gifter this week" spotlight); default is all-time.
+  const period = sp.get("period");
 
   const creator = await prisma.user.findUnique({ where: { username }, select: { id: true } });
   if (!creator) return notFound("Creator not found");
 
+  const where: { creatorId: string; status: string; createdAt?: { gte: Date } } = {
+    creatorId: creator.id,
+    status: "COMPLETED",
+  };
+  if (period === "week") {
+    where.createdAt = { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) };
+  }
+
   // Aggregate gifts grouped by supporter: SUM(amount), COUNT(*), ORDER BY total DESC.
   const grouped = await prisma.gift.groupBy({
     by: ["supporterId"],
-    where: { creatorId: creator.id, status: "COMPLETED" },
+    where,
     _sum: { amount: true },
     _count: { id: true },
     orderBy: { _sum: { amount: "desc" } },
