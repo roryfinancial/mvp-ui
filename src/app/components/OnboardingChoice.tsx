@@ -202,22 +202,33 @@ export default function OnboardingChoice({ userType: initialUserType, onBack, on
           >
             <div className="text-xs font-bold uppercase tracking-widest text-subtle mb-2">Step 2 of 4</div>
             <h1 className="text-4xl font-black text-foreground tracking-tight mb-2">
-              Choose your username.
+              Claim your link.
             </h1>
-            <p className="text-muted-foreground text-sm">This is how others will find you on Rory.</p>
+            <p className="text-muted-foreground text-sm">Pick the username fans will use to find and gift you.</p>
           </motion.div>
 
           <div className="space-y-4 mb-6">
             <div>
-              <label className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2 block">Username *</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="your_username"
-                className={inputBase}
-                autoFocus
-              />
+              <label className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2 block">Your Rory link *</label>
+              <div className="flex items-stretch border border-border bg-background focus-within:ring-2 focus-within:ring-accent transition-shadow">
+                <span className="flex items-center px-3 bg-muted border-r border-border text-subtle font-bold text-sm select-none">rory.com/</span>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+                  placeholder="yourname"
+                  className="flex-1 min-w-0 px-3 py-3 bg-background text-foreground font-bold text-sm focus:outline-none placeholder-subtle"
+                  autoFocus
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                />
+              </div>
+              {username && (
+                <p className="text-xs text-subtle mt-2">
+                  Your page will be <span className="text-accent font-bold">rory.com/{username}</span>
+                </p>
+              )}
             </div>
             <div>
               <label className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2 block">Display Name</label>
