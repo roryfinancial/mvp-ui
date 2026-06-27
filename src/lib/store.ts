@@ -437,15 +437,17 @@ export const Store = {
 } as const;
 
 // ─── Demo credentials (for investor demo banner) ──────────────────────────────
+// Must match the accounts created by prisma/seed.ts (password PASSWORD there),
+// so the one-click demo login buttons actually authenticate.
 export const DEMO_CREDENTIALS = {
   creator: {
-    email: CREATOR.email,
-    password: "demo1234",
+    email: "creator@demo.rory.dev",
+    password: "Rory2026!",
     label: "Creator account",
   },
   fan: {
-    email: SUPPORTER.email,
-    password: "demo1234",
+    email: "supporter@demo.rory.dev",
+    password: "Rory2026!",
     label: "Supporter account",
   },
 } as const;

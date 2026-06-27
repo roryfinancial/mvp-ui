@@ -3,12 +3,22 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { jwt } from "better-auth/plugins";
 import { prisma } from "./prisma";
 
+// BETTER_AUTH_URL lets local dev / demo override the production app URL without
+// touching .env. localhost origins are trusted only outside production (or in
+// demo mode) so the auth flow works on any dev port.
+const APP_URL = process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL;
+const trustedOrigins = [APP_URL].filter((o): o is string => !!o);
+if (process.env.NODE_ENV !== "production" || process.env.DEMO_MODE === "true") {
+  trustedOrigins.push("http://localhost:3000", "http://localhost:3300");
+}
+
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: (process.env.DATABASE_PROVIDER as "postgresql" | "sqlite") ?? "postgresql",
   }),
   secret: process.env.BETTER_AUTH_SECRET!,
-  baseURL: process.env.NEXT_PUBLIC_APP_URL,
+  baseURL: APP_URL,
+  trustedOrigins,
   emailAndPassword: { enabled: true },
   socialProviders: {
     google: {
