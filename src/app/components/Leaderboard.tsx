@@ -1,10 +1,11 @@
 import { motion } from "motion/react";
 import { useState, useEffect } from "react";
-import { Trophy, TrendingUp, Gift, Heart, Loader2 } from "lucide-react";
+import { Trophy, TrendingUp, Gift, Heart } from "lucide-react";
 import { leaderboardApi } from "../../lib/api";
 import type { LeaderboardEntryResponse } from "../../lib/api";
 import { formatCurrency } from "../../lib/format";
 import { staggerFadeUp } from "../../lib/motion";
+import { EmptyState } from "./shared/EmptyState";
 
 interface LeaderboardProps {
   onViewCreator?: (username: string) => void;
@@ -72,14 +73,6 @@ export default function Leaderboard({ onViewCreator }: LeaderboardProps) {
 
   const entries = tab === "creators" ? creatorsData : supportersData;
 
-  if (dataLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-accent" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Main Content */}
@@ -131,7 +124,22 @@ export default function Leaderboard({ onViewCreator }: LeaderboardProps) {
           transition={{ duration: 0.3 }}
           className="space-y-3"
         >
-          {entries.map((entry) => (
+          {dataLoading ? (
+            Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-4 p-4 bg-card border border-border">
+                <div className="w-8 h-6 skeleton" />
+                <div className="w-10 h-10 skeleton" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3 w-32 skeleton" />
+                  <div className="h-2 w-20 skeleton" />
+                </div>
+                <div className="h-5 w-14 skeleton" />
+              </div>
+            ))
+          ) : entries.length === 0 ? (
+            <EmptyState icon={Trophy} message="No rankings yet" sub="Gifts will populate the leaderboard soon." />
+          ) : (
+            entries.map((entry) => (
             <motion.div
               key={entry.rank}
               {...staggerFadeUp(entry.rank, 0, 0.04)}
@@ -207,7 +215,8 @@ export default function Leaderboard({ onViewCreator }: LeaderboardProps) {
                 </p>
               </div>
             </motion.div>
-          ))}
+            ))
+          )}
         </motion.div>
       </main>
     </div>

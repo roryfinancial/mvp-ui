@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Sounds } from "../../lib/sounds";
 import ConfettiBurst from "./Confetti";
+import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { Plus, User, Gift, TrendingUp, Check, ArrowUp, Twitter, Instagram, Youtube, Twitch, ChevronDown, ChevronLeft, ChevronRight, List, ShoppingBag, Trophy, Loader2, Trash2, X, Calendar, Clock, MapPin, RefreshCw, Link2, Eye, Heart, Pin } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { projectApi, giftApi, eventApi, feedApi } from "../../lib/api";
@@ -552,7 +553,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                       >
                         <div className="relative h-32 overflow-hidden bg-muted">
                           {project.coverImage ? (
-                            <img src={project.coverImage} alt={project.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            <ImageWithFallback src={project.coverImage} alt={project.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center gap-3">
                               {[...Array(3)].map((_, i) => (
@@ -715,7 +716,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                               {/* Thumbnail */}
                               <div className="relative h-36 bg-muted overflow-hidden">
                                 {post.thumbnailUrl ? (
-                                  <img src={post.thumbnailUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                  <ImageWithFallback src={post.thumbnailUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center text-subtle">
                                     <Plus className="w-6 h-6 rotate-45" />
@@ -879,7 +880,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                           >
                             <div className="relative h-28 overflow-hidden bg-muted">
                               {event.imageUrl ? (
-                                <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover" />
+                                <ImageWithFallback src={event.imageUrl} alt={event.title} className="w-full h-full object-cover" />
                               ) : (
                                 <div className="w-full h-full bg-gradient-to-br from-accent/10 to-accent/5 flex items-center justify-center">
                                   <Calendar className="w-10 h-10 text-accent/30" />
@@ -958,7 +959,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                     <div className="flex flex-col sm:flex-row gap-6 mb-10">
                       <div className="w-full sm:w-48 h-48 flex-shrink-0 bg-muted border border-border flex items-center justify-center">
                         {item.thumbnail ? (
-                          <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
+                          <ImageWithFallback src={item.thumbnail} alt={item.title} className="w-full h-full object-cover" />
                         ) : (
                           <Gift className="w-16 h-16 text-subtle" />
                         )}
@@ -1094,7 +1095,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                     </div>
 
                     {filteredItems.length === 0 ? (
-                      <div className="py-20 text-center text-subtle text-sm">No {itemTab === "all" ? "" : itemTab} items in this project.</div>
+                      <EmptyState icon={Gift} message={`No ${itemTab === "all" ? "" : itemTab} items yet`.replace(/\s+/g, " ")} sub="Add a gift item for supporters to fund." />
                     ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                         {filteredItems.map((item, index) => (

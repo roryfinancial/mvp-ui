@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { User, Zap, Loader2 } from "lucide-react";
+import { User, Zap, Loader2, Users } from "lucide-react";
 import { followApi } from "../../lib/api";
+import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { EmptyState } from "./shared/EmptyState";
 
 interface FollowedCreator {
   id: string;
@@ -84,7 +86,7 @@ export default function SupporterProfile({
       <div className="relative w-full pt-[57px]">
         <div className="relative w-full h-[320px] overflow-hidden">
           {profileImage ? (
-            <img src={profileImage} alt={displayName} className="absolute inset-0 w-full h-full object-cover" />
+            <ImageWithFallback src={profileImage} alt={displayName} className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a3e] via-[#2a1a4e] to-[#0e0e2e]" />
           )}
@@ -162,7 +164,7 @@ export default function SupporterProfile({
               <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
             </div>
           ) : followedCreators.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4">Not following any creators yet.</p>
+            <EmptyState icon={Users} message="Not following anyone yet" sub="Follow creators to see them here." />
           ) : (
           <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
             {followedCreators.map((creator, index) => (
@@ -176,7 +178,7 @@ export default function SupporterProfile({
               >
                 <div className="relative w-full h-24 bg-muted flex items-center justify-center">
                   {creator.profileImage ? (
-                    <img src={creator.profileImage} alt={creator.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                    <ImageWithFallback src={creator.profileImage} alt={creator.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                   ) : (
                     <div className="w-12 h-12 bg-secondary flex items-center justify-center text-foreground font-black text-lg">
                       {creator.initials}

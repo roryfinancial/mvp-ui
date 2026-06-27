@@ -10,6 +10,8 @@ import { useAuth } from "../../contexts/AuthContext";
 import { userApi, projectApi, followApi, giftApi, eventApi, feedApi } from "../../lib/api";
 import type { PublicUserResponse, ProjectResponse, EventResponse, FeedPostResponse } from "../../lib/api";
 import ActivityFeed from "./ActivityFeed";
+import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { EmptyState } from "./shared/EmptyState";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -291,7 +293,7 @@ export default function CreatorProfile({
       <div className={`relative w-full ${isOwnProfile ? "pt-[96px]" : isGuest ? "pt-[49px]" : "pt-[57px]"}`}>
         <div className="relative w-full h-[420px] overflow-hidden">
           {profileImage ? (
-            <img src={profileImage} alt={creatorName} className="absolute inset-0 w-full h-full object-cover" />
+            <ImageWithFallback src={profileImage} alt={creatorName} className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-[#4a3060] via-[#5a3a6a] to-[#3a2848]" />
           )}
@@ -404,7 +406,7 @@ export default function CreatorProfile({
                   >
                     <div className="relative w-full h-32 bg-muted flex items-center justify-center">
                       {event.imageUrl ? (
-                        <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                        <ImageWithFallback src={event.imageUrl} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-accent/10 to-accent/5 flex items-center justify-center">
                           <Calendar className="w-10 h-10 text-accent/30" />
@@ -515,7 +517,7 @@ export default function CreatorProfile({
                 >
                   <div className="relative w-full h-36 bg-muted flex items-center justify-center overflow-hidden">
                     {post.thumbnailUrl ? (
-                      <img src={post.thumbnailUrl} alt={post.caption || ""} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                      <ImageWithFallback src={post.thumbnailUrl} alt={post.caption || ""} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                     ) : (
                       <div className="w-full h-full bg-gradient-to-br from-muted to-secondary flex items-center justify-center">
                         {config && <span className="w-10 h-10 opacity-40" style={{ color: config.color }}>{platformBrandIcons[platformKey]}</span>}
@@ -550,7 +552,7 @@ export default function CreatorProfile({
             })}
           </div>
           {filteredFeed.length === 0 && (
-            <div className="text-center py-12 text-subtle text-sm">No posts yet.</div>
+            <EmptyState icon={MessageCircle} message="No posts yet" sub="Content from connected platforms will show here." />
           )}
           {feedPostsHasMore && feedFilter === "all" && (
             <div className="flex justify-center mt-4">
@@ -606,7 +608,7 @@ export default function CreatorProfile({
                 >
                   <div className="relative w-full h-32 bg-muted flex items-center justify-center">
                     {item.thumbnail ? (
-                      <img src={item.thumbnail} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                      <ImageWithFallback src={item.thumbnail} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                     ) : (
                       <User className="w-10 h-10 text-subtle" />
                     )}
