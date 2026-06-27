@@ -19,6 +19,7 @@ import ProjectOverview from "./components/ProjectOverview";
 import CreatorProfile from "./components/CreatorProfile";
 import Settings from "./components/Settings";
 import Analytics from "./components/Analytics";
+import GiftyDemo from "./components/GiftyDemo";
 import Referrals from "./components/Referrals";
 import Leaderboard from "./components/Leaderboard";
 import PublicWishlist from "./components/PublicWishlist";
@@ -491,6 +492,7 @@ export default function App() {
       <Routes>
         {/* Fully public — no navbar */}
         <Route path="/" element={<HomeRoute />} />
+        <Route path="/gifty-demo" element={<GiftyDemo />} />
         <Route path="/auth" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<LoginRoute />} />
         <Route path="/signup" element={<SignUpRoute />} />
