@@ -247,7 +247,7 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
                     <span className="text-xs font-black text-foreground uppercase tracking-wide">Fan Hub</span>
                     <span className="ml-auto text-[10px] text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
                   </div>
-                  <p className="text-[10px] text-subtle font-medium leading-relaxed">Community hub — XP, streaks, leaderboard, creator feed, gamification</p>
+                  <p className="text-[10px] text-subtle font-medium leading-relaxed">Community — top supporters, leaderboard, and creator activity feed</p>
                   <span className="text-[10px] font-mono text-subtle/70">{DEMO_CREDENTIALS.fan.email}</span>
                 </motion.button>
               </div>

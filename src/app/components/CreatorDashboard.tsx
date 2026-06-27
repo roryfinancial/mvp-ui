@@ -504,7 +504,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                 <p className="text-sm text-foreground">
                   Your top gifter this week is{" "}
                   <span className="font-black text-accent">{weeklyTopGifter.name}</span>
-                  <span className="text-subtle font-medium"> — {weeklyTopGifter.amount} this week 🎉</span>
+                  <span className="text-subtle font-medium"> — {weeklyTopGifter.amount} contributed this week</span>
                 </p>
               </div>
             )}

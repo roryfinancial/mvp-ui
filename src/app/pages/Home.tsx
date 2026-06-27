@@ -21,7 +21,7 @@ const HERO_COPY = {
   supporter: {
     badge: "For Supporters",
     headline: <>Fund the creators<br /><span style={{ color: "oklch(65.6% 0.241 354.308)" }}>you love.</span></>,
-    sub: "Discover creators, gift toward the goals that matter to them, climb the leaderboard, and unlock rewards as you go.",
+    sub: "Discover creators, fund the goals that matter to them, and earn your place on the community leaderboard.",
     cta: "Find Creators to Support",
   },
 } as const;

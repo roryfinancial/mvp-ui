@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { Gift, Youtube, Play, Eye, Heart, Target, Loader2, ExternalLink } from "lucide-react";
+import { Gift, Youtube, Play, Eye, Heart, Target, Loader2, ExternalLink, Check } from "lucide-react";
 import { activityApi } from "../../lib/api";
 import type { ActivityItemResponse } from "../../lib/api";
 
@@ -211,7 +211,7 @@ function ItemGiftedCard({ item }: { item: ActivityItemResponse }) {
   return (
     <div className="bg-background border border-green-300 dark:border-green-800 p-3 flex items-center gap-3">
       <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
-        <span className="text-sm">🎉</span>
+        <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-xs font-medium text-foreground">

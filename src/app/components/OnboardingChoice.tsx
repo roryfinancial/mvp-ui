@@ -602,7 +602,7 @@ export default function OnboardingChoice({ userType: initialUserType, onBack, on
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mb-8"
         >
-          <div className="text-xs font-bold uppercase tracking-widest text-subtle mb-2">You're all set!</div>
+          <div className="text-xs font-bold uppercase tracking-widest text-subtle mb-2">You're all set</div>
           <h1 className="text-5xl font-black text-foreground tracking-tight mb-2">
             {userType === "creator" ? "Set up your profile." : "Find creators to support."}
           </h1>

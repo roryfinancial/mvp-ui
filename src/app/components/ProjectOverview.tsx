@@ -21,10 +21,10 @@ interface ProjectOverviewProps {
 }
 
 export default function ProjectOverview({
-  projectTitle = "My Awesome Game",
+  projectTitle = "Your Project",
   projectName = "Creator Essentials",
   creatorName = "Creator Name",
-  description = "This is a placeholder for a detailed description of the project. It covers mechanics, art style, development roadmap, and what funding will help achieve. We're building an epic open-world RPG with pixel-art graphics and a deep narrative. Your support helps us afford better tools, pay artists, and dedicate full-time effort to making this a reality.",
+  description = "Describe your project here — what you're building, your roadmap, and how support will be used. A clear description helps supporters understand your goals and decide to contribute.",
   supporters = [
     { name: "Supporter Name 1", amount: "$100", initials: "S1" },
     { name: "Supporter Name 2", amount: "$75", initials: "S2" },
