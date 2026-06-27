@@ -4,35 +4,38 @@ import { useState } from "react";
 import { Gifty, type GiftyState } from "./shared/gifty/Gifty";
 
 /**
- * /gifty-demo — manual playground for the sprite engine. Click a state and
- * watch Gifty transition there through the idle hub. Toggle bridge strategy
- * to compare crossfade vs (once baked) rife.
+ * /gifty-demo — playground for the layered mascot. idle is rigged (breathe +
+ * blink); every other button cross-fades to a high-quality pose render.
  */
 
-const STATES: GiftyState[] = ["idle", "wave", "think", "sleep", "wave_hd", "cheer_hd", "wave_hd2"];
+const STATES: GiftyState[] = [
+  "idle", "wave", "thumbsup", "salute", "present",
+  "proud", "think", "celebrate", "sad", "sleep",
+];
 
 export default function GiftyDemo() {
   const [state, setState] = useState<GiftyState>("idle");
 
   return (
     <div style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "#0d1b3a" }}>
-      <div style={{ textAlign: "center", color: "#fff" }}>
+      <div style={{ textAlign: "center", color: "#fff", fontFamily: "system-ui, sans-serif" }}>
         <div
           style={{
-            width: 320, height: 320, margin: "0 auto",
+            width: 360, height: 360, margin: "0 auto",
             display: "grid", placeItems: "center",
-            background: "radial-gradient(circle at 50% 40%, #16285a, #0d1b3a)",
-            borderRadius: 24,
+            background: "radial-gradient(circle at 50% 42%, #1b2f63, #0d1b3a)",
+            borderRadius: 28,
           }}
         >
-          <Gifty state={state} size={256} />
+          <Gifty state={state} size={300} />
         </div>
 
-        <p style={{ marginTop: 20, opacity: 0.7, fontSize: 14 }}>
-          current: <strong>{state}</strong> · transitions route through idle
+        <p style={{ marginTop: 18, opacity: 0.7, fontSize: 14 }}>
+          state: <strong style={{ color: "#fff" }}>{state}</strong>
+          {state === "celebrate" && " · one-shot, returns to idle"}
         </p>
 
-        <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", maxWidth: 420 }}>
+        <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", maxWidth: 460 }}>
           {STATES.map((s) => (
             <button
               key={s}

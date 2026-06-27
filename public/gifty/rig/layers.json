@@ -1,0 +1,42 @@
+{
+  "canvas": 1000,
+  "base": {
+    "src": "rig/base.png"
+  },
+  "eye_l": {
+    "src": "rig/eye-l.png",
+    "left": 297,
+    "top": 210,
+    "width": 250,
+    "height": 382
+  },
+  "pupil_l": {
+    "src": "rig/pupil-l.png",
+    "left": 297,
+    "top": 210,
+    "width": 250,
+    "height": 382
+  },
+  "eye_r": {
+    "src": "rig/eye-r.png",
+    "left": 523,
+    "top": 199,
+    "width": 177,
+    "height": 393
+  },
+  "pupil_r": {
+    "src": "rig/pupil-r.png",
+    "left": 523,
+    "top": 199,
+    "width": 177,
+    "height": 393
+  },
+  "bow": {
+    "src": "rig/bow.png",
+    "x": 279,
+    "y": 143,
+    "w": 403,
+    "h": 277,
+    "full": true
+  }
+}

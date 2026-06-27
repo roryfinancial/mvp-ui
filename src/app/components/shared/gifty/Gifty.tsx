@@ -1,62 +1,55 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { GiftyEngine, type ClipsManifest, type RenderState, type BridgeStrategy } from "./engine";
+import { RigIdle } from "./RigIdle";
 
 /**
- * <Gifty /> — the animated Rory mascot.
+ * <Gifty /> — the Rory mascot.
  *
- * Plays sprite-clip sheets from public/gifty/clips/ and transitions between
- * states through the idle hub (see engine.ts). Reactive: change `state` and it
- * routes there seamlessly. Honors prefers-reduced-motion (renders a static
- * rest pose). v1 bridges gaps with crossfade; pass bridge="rife" once baked.
+ * idle  → the rigged, living idle (RigIdle: breathe + bob + blink).
+ * other → cross-fade to the matching high-quality Gemini pose render, with a
+ *         subtle whole-image breathe so it never reads as a dead PNG.
+ *
+ * `celebrate` is one-shot: it plays, then auto-returns to idle. The rest hold
+ * until `state` changes. Honors prefers-reduced-motion (static).
  */
 
 export type GiftyState =
-  | "idle" | "wave" | "think" | "sleep"
-  | "wave_hd" | "cheer_hd" | "wave_hd2";
+  | "idle" | "wave" | "sad" | "celebrate" | "sleep"
+  | "proud" | "think" | "present" | "thumbsup" | "salute";
 
-const CLIPS_URL = "/gifty/clips";
+const POSE_URL = "/gifty/poses";
+const ONE_SHOT: Record<string, true> = { celebrate: true };
+const ONE_SHOT_MS = 2200;
 
-function useManifest() {
-  const [man, setMan] = useState<ClipsManifest | null>(null);
+function reduced() {
+  return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+}
+
+/** A pose render with a gentle idle breathe so it feels alive, not frozen. */
+function Pose({ name, size, visible }: { name: string; size: number; visible: boolean }) {
+  const [t, setT] = useState(0);
+  const raf = useRef(0);
   useEffect(() => {
-    let live = true;
-    fetch(`${CLIPS_URL}/clips.json`)
-      .then((r) => r.json())
-      .then((m) => { if (live) setMan(m); })
-      .catch(() => {});
-    return () => { live = false; };
+    if (reduced()) return;
+    const start = performance.now();
+    const loop = (now: number) => { setT((now - start) / 1000); raf.current = requestAnimationFrame(loop); };
+    raf.current = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf.current);
   }, []);
-  return man;
-}
-
-function prefersReducedMotion() {
-  return typeof window !== "undefined" &&
-    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-}
-
-/** One sprite-sheet layer rendered via background-position. */
-function Layer({
-  clip, frame, tile, size, opacity,
-}: { clip: string; frame: number; tile: number; size: number; opacity: number }) {
-  const scale = size / tile;
+  const breathe = reduced() ? 0 : Math.sin(t * 1.7) * 0.012;
+  const bob = reduced() ? 0 : Math.sin(t * 1.7) * (size * 0.01);
   return (
-    <div
-      aria-hidden
+    <img
+      src={`${POSE_URL}/${name}.png`}
+      alt=""
+      draggable={false}
       style={{
-        position: "absolute",
-        inset: 0,
-        width: size,
-        height: size,
-        opacity,
-        backgroundImage: `url(${CLIPS_URL}/${clip}.png)`,
-        backgroundRepeat: "no-repeat",
-        // sheet is a horizontal strip of `tile`-wide frames, scaled to `size`
-        backgroundSize: `auto ${size}px`,
-        backgroundPositionX: `${-frame * tile * scale}px`,
-        // sheets are 128px art scaled up — keep edges crisp, no bilinear smear
-        imageRendering: "pixelated",
+        position: "absolute", inset: 0, width: size, height: size,
+        transform: `translateY(${bob}px) scale(${1 + breathe})`,
+        transformOrigin: "50% 92%",
+        opacity: visible ? 1 : 0,
+        transition: "opacity 200ms ease",
       }}
     />
   );
@@ -64,62 +57,41 @@ function Layer({
 
 export function Gifty({
   state = "idle",
-  size = 128,
-  bridge = "crossfade",
+  size = 256,
   className,
 }: {
   state?: GiftyState;
   size?: number;
-  bridge?: BridgeStrategy;
   className?: string;
 }) {
-  const man = useManifest();
-  const engineRef = useRef<GiftyEngine | null>(null);
-  const [rs, setRs] = useState<RenderState | null>(null);
-  const reduced = prefersReducedMotion();
+  // `shown` is what's currently displayed; on change we keep the previous
+  // mounted for one fade then drop it. `effective` handles one-shot auto-return.
+  const [effective, setEffective] = useState<GiftyState>(state);
 
-  // build engine once the manifest loads
   useEffect(() => {
-    if (!man) return;
-    engineRef.current = new GiftyEngine(man, { bridge, start: "idle" });
-    setRs(engineRef.current.restState());
-  }, [man, bridge]);
-
-  // react to state changes
-  useEffect(() => {
-    engineRef.current?.setState(state);
+    setEffective(state);
+    if (ONE_SHOT[state]) {
+      const id = setTimeout(() => setEffective("idle"), ONE_SHOT_MS);
+      return () => clearTimeout(id);
+    }
   }, [state]);
 
-  // animation loop
-  useEffect(() => {
-    if (!man || !engineRef.current) return;
-    if (reduced) { setRs(engineRef.current.restState()); return; }
-    let raf = 0, last = performance.now();
-    const loop = (now: number) => {
-      const dt = now - last; last = now;
-      setRs(engineRef.current!.tick(dt));
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
-  }, [man, reduced]);
+  const showIdle = effective === "idle";
 
-  if (!man || !rs) {
-    return <div className={className} style={{ width: size, height: size }} aria-label="Gifty mascot" />;
-  }
-
-  const tile = man.tile;
   return (
     <div
       className={className}
       role="img"
-      aria-label="Gifty, the Rory gift-box mascot"
+      aria-label={`Gifty mascot (${effective})`}
       style={{ position: "relative", width: size, height: size }}
     >
-      <Layer clip={rs.clip} frame={rs.frame} tile={tile} size={size} opacity={rs.blend > 0 ? 1 - rs.blend : 1} />
-      {rs.next != null && rs.blend > 0 && (
-        <Layer clip={rs.next} frame={rs.nextFrame ?? 0} tile={tile} size={size} opacity={rs.blend} />
-      )}
+      {/* idle rig sits underneath; poses fade in over it */}
+      <div style={{ position: "absolute", inset: 0, opacity: showIdle ? 1 : 0, transition: "opacity 200ms ease" }}>
+        <RigIdle size={size} />
+      </div>
+
+      {/* mount only the active pose (plus a brief fade handled by opacity) */}
+      {!showIdle && <Pose name={effective} size={size} visible />}
     </div>
   );
 }

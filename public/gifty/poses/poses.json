@@ -1,0 +1,32 @@
+{
+  "canvas": 1000,
+  "poses": {
+    "wave": {
+      "src": "poses/wave.png"
+    },
+    "thumbsup": {
+      "src": "poses/thumbsup.png"
+    },
+    "salute": {
+      "src": "poses/salute.png"
+    },
+    "proud": {
+      "src": "poses/proud.png"
+    },
+    "celebrate": {
+      "src": "poses/celebrate.png"
+    },
+    "sad": {
+      "src": "poses/sad.png"
+    },
+    "sleep": {
+      "src": "poses/sleep.png"
+    },
+    "think": {
+      "src": "poses/think.png"
+    },
+    "present": {
+      "src": "poses/present.png"
+    }
+  }
+}
