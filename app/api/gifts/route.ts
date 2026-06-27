@@ -15,9 +15,15 @@ export async function POST(req: NextRequest) {
   if (!projectId) return badRequest("projectId is required");
   if (!amount || isNaN(amount) || amount < 0.5) return badRequest("amount must be at least 0.50");
 
-  // Load project -> creator (owner)
-  const project = await prisma.project.findUnique({ where: { id: projectId } });
+  // Load project + supporter in parallel (both ids are known up front), then the
+  // creator (needs project.creatorId) — two round-trips instead of three on a
+  // slow shared host.
+  const [project, supporter] = await Promise.all([
+    prisma.project.findUnique({ where: { id: projectId } }),
+    prisma.user.findUnique({ where: { id: me.id } }),
+  ]);
   if (!project) return notFound("Project not found");
+  if (!supporter) return notFound("Supporter not found");
 
   const creatorId = project.creatorId;
   if (creatorId === me.id) return badRequest("You cannot donate to your own project");
@@ -26,15 +32,24 @@ export async function POST(req: NextRequest) {
   const creator = await prisma.user.findUnique({ where: { id: creatorId } });
   if (!creator) return notFound("Creator not found");
 
-  const supporter = await prisma.user.findUnique({ where: { id: me.id } });
-  if (!supporter) return notFound("Supporter not found");
-
+  // Fast-fail balance pre-check; the authoritative guard is the atomic decrement
+  // inside the transaction below.
   if (supporter.creditBalance < amount) {
     return badRequest("Insufficient credit balance. Please deposit funds first.");
   }
 
   const creatorUsername = creator.username ?? "";
   const supporterUsername = supporter.username ?? "";
+
+  // Creator's running GIFT_RECEIVED total — read OUTSIDE the transaction so we
+  // never hold a connection open for an aggregate. It only feeds an
+  // informational balanceAfter on the ledger row (creator.creditBalance is
+  // intentionally not maintained), so a small concurrent skew is acceptable.
+  const priorReceived = await prisma.creditTransaction.aggregate({
+    where: { userId: creator.id, type: "GIFT_RECEIVED" },
+    _sum: { amount: true },
+  });
+  const creatorBalanceAfter = (priorReceived._sum.amount ?? 0) + amount;
 
   const INSUFFICIENT = "INSUFFICIENT_FUNDS";
   let result;
@@ -73,44 +88,41 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      const priorReceived = await tx.creditTransaction.aggregate({
-        where: { userId: creator.id, type: "GIFT_RECEIVED" },
-        _sum: { amount: true },
-      });
-      const balanceAfter = (priorReceived._sum.amount ?? 0) + amount;
       await tx.creditTransaction.create({
         data: {
           userId: creator.id,
           type: "GIFT_RECEIVED",
           amount,
-          balanceAfter,
+          balanceAfter: creatorBalanceAfter,
           referenceId: gift.id,
           description: `Gift from ${supporterUsername}`,
         },
       });
       // NOTE: creator.creditBalance is intentionally NOT incremented (matches Java).
 
-      // 4. Project raise: first ACTIVE item gets the amount
-      const items = await tx.projectItem.findMany({
-        where: { projectId },
+      // 4. Project raise: the first ACTIVE item (by sortOrder) absorbs the gift.
+      // Increment atomically so two concurrent gifts to the same item cannot
+      // lose each other's contribution (a read-then-absolute-write would), and
+      // target the row directly instead of loading every item.
+      const firstActive = await tx.projectItem.findFirst({
+        where: { projectId, status: "ACTIVE" },
         orderBy: { sortOrder: "asc" },
       });
-      const firstActive = items.find((i) => i.status === "ACTIVE");
       if (firstActive) {
-        const newRaised = firstActive.raisedAmount + amount;
-        const newStatus = newRaised >= firstActive.goalAmount ? "GIFTED" : firstActive.status;
-        await tx.projectItem.update({
+        const raised = await tx.projectItem.update({
           where: { id: firstActive.id },
-          data: {
-            raisedAmount: newRaised,
-            status: newStatus,
-            ...(newStatus === "GIFTED" ? { giftedById: supporter.id } : {}),
-          },
+          data: { raisedAmount: { increment: amount } },
         });
+        if (raised.raisedAmount >= firstActive.goalAmount) {
+          await tx.projectItem.update({
+            where: { id: firstActive.id },
+            data: { status: "GIFTED", giftedById: supporter.id },
+          });
+        }
       }
 
       return gift;
-    });
+    }, { maxWait: 10_000, timeout: 20_000 });
   } catch (e) {
     if (e instanceof Error && e.message === INSUFFICIENT) {
       return badRequest("Insufficient credit balance. Please deposit funds first.");

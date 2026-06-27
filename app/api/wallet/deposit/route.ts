@@ -16,41 +16,43 @@ export async function POST(req: NextRequest) {
     return badRequest("Amount must be at least 1.00");
   }
 
-  const user = await prisma.user.findUnique({ where: { id: me.id } });
-  if (!user) return unauthorized();
-
   const now = new Date();
 
-  // Create the deposit already completed (mirrors completeDepositById).
-  const deposit = await prisma.deposit.create({
-    data: {
-      userId: me.id,
-      amount,
-      status: "COMPLETED",
-      stripeCheckoutSessionId: `cs_demo_${crypto.randomUUID()}`,
-      stripePaymentIntentId: "demo",
-      createdAt: now,
-      completedAt: now,
-    },
-  });
+  // Deposit + balance credit + ledger row are one atomic unit: either all land
+  // or none do. Credit the balance with an atomic {increment} (no read-then-
+  // absolute-write race) and read the resulting balance straight off the update.
+  const deposit = await prisma.$transaction(async (tx) => {
+    const deposit = await tx.deposit.create({
+      data: {
+        userId: me.id,
+        amount,
+        status: "COMPLETED",
+        stripeCheckoutSessionId: `cs_demo_${crypto.randomUUID()}`,
+        stripePaymentIntentId: "demo",
+        createdAt: now,
+        completedAt: now,
+      },
+    });
 
-  const newBalance = user.creditBalance + amount;
-  await prisma.user.update({
-    where: { id: me.id },
-    data: { creditBalance: newBalance },
-  });
+    const updated = await tx.user.update({
+      where: { id: me.id },
+      data: { creditBalance: { increment: amount } },
+    });
 
-  await prisma.creditTransaction.create({
-    data: {
-      userId: me.id,
-      type: "DEPOSIT",
-      amount,
-      balanceAfter: newBalance,
-      referenceId: deposit.id,
-      stripePaymentIntentId: "demo",
-      description: "Credit deposit",
-    },
-  });
+    await tx.creditTransaction.create({
+      data: {
+        userId: me.id,
+        type: "DEPOSIT",
+        amount,
+        balanceAfter: updated.creditBalance,
+        referenceId: deposit.id,
+        stripePaymentIntentId: "demo",
+        description: "Credit deposit",
+      },
+    });
+
+    return deposit;
+  }, { maxWait: 10_000, timeout: 15_000 });
 
   return ok(
     {

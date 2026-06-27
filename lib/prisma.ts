@@ -30,7 +30,20 @@ function createClient(): PrismaClient {
     }
     // Route non-transactional pool queries over HTTP fetch for low latency.
     neonConfig.poolQueryViaFetch = true;
-    const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL });
+    const adapter = new PrismaNeon(
+      {
+        connectionString: process.env.DATABASE_URL,
+        // A slow shared host can be sluggish to hand out a connection; give it
+        // room before erroring, and don't let idle sockets pile up.
+        connectionTimeoutMillis: 15_000,
+        idleTimeoutMillis: 30_000,
+      },
+      {
+        // A dropped connection on a shared host must not crash the process —
+        // log it and let the next query reconnect.
+        onPoolError: (err: unknown) => console.error("[prisma] Neon pool error:", err),
+      },
+    );
     return new PrismaClient({ adapter, log });
   } catch (err) {
     // Never let a driver-adapter setup problem take the app down — fall back to

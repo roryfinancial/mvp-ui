@@ -275,16 +275,20 @@ export async function onGift(userId: string, amount: number): Promise<void> {
 
   const ug = await getOrCreate(userId);
   const newStreak = computeStreak(ug.lastActivityDate, ug.streakDays, today);
-  const newWeekly = ug.weeklyGifted + amount;
-  await prisma.userGamification.update({
+  // Increment weeklyGifted atomically so concurrent gifts don't clobber each
+  // other's contribution; recompute the league from the authoritative new total.
+  const updated = await prisma.userGamification.update({
     where: { userId },
     data: {
       streakDays: newStreak,
       lastActivityDate: today,
-      weeklyGifted: newWeekly,
-      leagueTier: leagueFromWeeklyGifted(newWeekly),
+      weeklyGifted: { increment: amount },
     },
   });
+  const tier = leagueFromWeeklyGifted(updated.weeklyGifted);
+  if (tier !== updated.leagueTier) {
+    await prisma.userGamification.update({ where: { userId }, data: { leagueTier: tier } });
+  }
 }
 
 /**
