@@ -55,7 +55,8 @@ function Layer({
         // sheet is a horizontal strip of `tile`-wide frames, scaled to `size`
         backgroundSize: `auto ${size}px`,
         backgroundPositionX: `${-frame * tile * scale}px`,
-        imageRendering: "auto",
+        // sheets are 128px art scaled up — keep edges crisp, no bilinear smear
+        imageRendering: "pixelated",
       }}
     />
   );

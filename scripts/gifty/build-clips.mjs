@@ -64,14 +64,58 @@ async function sig(buf) {
 }
 const dist = (a, b) => { let d = 0; for (let i = 0; i < a.length; i++) { const e = a[i] - b[i]; d += e * e; } return Math.sqrt(d / a.length); };
 
-// align a raw frame: trim to alpha bbox, scale content to a common height, center on 128.
-// This is THE step that makes cross-pack doorways line up (packs are framed differently).
-async function align(buf) {
-  let t;
-  try { t = await sharp(buf).trim({ threshold: 10 }).toBuffer(); }
-  catch { t = buf; }
-  const scaled = await sharp(t).resize({ height: 104, fit: "inside" }).toBuffer();
-  return sharp(scaled).resize(TILE, TILE, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 }, position: "centre" }).png().toBuffer();
+// alpha bounding box of a raw RGBA frame
+async function alphaBox(buf) {
+  const { data, info } = await sharp(buf).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { width: w, height: h } = info;
+  let minX = w, minY = h, maxX = -1, maxY = -1;
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++)
+      if (data[(y * w + x) * 4 + 3] > 12) {
+        if (x < minX) minX = x; if (x > maxX) maxX = x;
+        if (y < minY) minY = y; if (y > maxY) maxY = y;
+      }
+  if (maxX < 0) return { left: 0, top: 0, width: w, height: h };
+  return { left: minX, top: minY, width: maxX - minX + 1, height: maxY - minY + 1 };
+}
+
+// Per-CLIP alignment: crop+scale every frame by the SAME transform (the union
+// bbox across all frames of the clip), so the character stays locked and only
+// the intended animation moves. Per-frame trimming caused jitter (each frame
+// re-centered/re-scaled to its own bbox as the arm/body moved). This is THE
+// step that (a) kills jitter and (b) makes cross-pack doorways line up.
+async function alignClip(frameBufs) {
+  // union of every frame's alpha box
+  const boxes = [];
+  for (const b of frameBufs) boxes.push(await alphaBox(b));
+  const left = Math.min(...boxes.map((b) => b.left));
+  const top = Math.min(...boxes.map((b) => b.top));
+  const right = Math.max(...boxes.map((b) => b.left + b.width));
+  const bottom = Math.max(...boxes.map((b) => b.top + b.height));
+  const region = { left, top, width: right - left, height: bottom - top };
+
+  // One shared scale for the whole clip: fit the union box to PAD% of TILE.
+  // Every frame is cropped to the SAME region then scaled by the SAME factor,
+  // so the character is pixel-locked and only the animation moves.
+  const PAD = 0.90;
+  const target = Math.round(TILE * PAD);
+  const scale = Math.min(target / region.width, target / region.height);
+  const dw = Math.round(region.width * scale);
+  const dh = Math.round(region.height * scale);
+  const padL = Math.round((TILE - dw) / 2);
+  const padT = TILE - dh - 4; // sit slightly above the bottom edge (feet near floor)
+
+  const out = [];
+  for (const b of frameBufs) {
+    const placed = await sharp(b)
+      .extract(region)
+      .resize(dw, dh, { fit: "fill" })
+      .extend({ top: padT, bottom: TILE - dh - padT, left: padL, right: TILE - dw - padL,
+                background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .png().toBuffer();
+    out.push(placed);
+  }
+  return out;
 }
 
 function unzipAll(tmp) {
@@ -96,16 +140,19 @@ async function main() {
   const packs = unzipAll(tmp);
   if (!packs.length) throw new Error("no sprite zips found in public/gifty/");
 
-  // 1) extract + align every frame; keep aligned buffers + durations + signatures
+  // 1) extract raw frames, then align the whole clip with ONE shared transform
   for (const p of packs) {
     const frames = Object.values(p.j.frames);
-    p.aligned = []; p.durs = []; p.sigs = [];
+    p.durs = frames.map((f) => f.duration);
+    const raw = [];
     for (const f of frames) {
-      const raw = await sharp(p.img).extract({ left: f.frame.x, top: f.frame.y, width: f.frame.w, height: f.frame.h })
-        .resize(TILE, TILE, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
-      const a = await align(raw);
-      p.aligned.push(a); p.durs.push(f.duration); p.sigs.push(await sig(a));
+      raw.push(await sharp(p.img)
+        .extract({ left: f.frame.x, top: f.frame.y, width: f.frame.w, height: f.frame.h })
+        .ensureAlpha().png().toBuffer());
     }
+    p.aligned = await alignClip(raw);           // per-clip union-box alignment (no jitter)
+    p.sigs = [];
+    for (const a of p.aligned) p.sigs.push(await sig(a));
   }
 
   // 2) idle rest frame = arm-weighted medoid of the idle pack

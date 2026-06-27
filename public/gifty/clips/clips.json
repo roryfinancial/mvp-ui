@@ -1,6 +1,6 @@
 {
   "idle": "idle",
-  "idleRest": 20,
+  "idleRest": 19,
   "tile": 128,
   "clips": {
     "idle": {
@@ -34,7 +34,7 @@
         43,
         43
       ],
-      "doorIn": 20,
+      "doorIn": 19,
       "spokeClass": "hub"
     },
     "think": {
@@ -68,8 +68,8 @@
         58,
         58
       ],
-      "doorIn": 24,
-      "spokeClass": "YELLOW"
+      "doorIn": 18,
+      "spokeClass": "RED"
     },
     "wave": {
       "id": "sprite-128px-frames-25-rows-5-cols-5",
@@ -102,7 +102,7 @@
         43,
         43
       ],
-      "doorIn": 8,
+      "doorIn": 12,
       "spokeClass": "RED"
     },
     "sleep": {
@@ -173,7 +173,7 @@
         55
       ],
       "doorIn": 4,
-      "spokeClass": "YELLOW"
+      "spokeClass": "RED"
     },
     "wave_hd": {
       "id": "sprite-max-px-frames-16-rows-4-cols-4",
@@ -197,8 +197,8 @@
         55,
         55
       ],
-      "doorIn": 5,
-      "spokeClass": "GREEN"
+      "doorIn": 15,
+      "spokeClass": "YELLOW"
     },
     "wave_hd2": {
       "id": "sprite-max-px-frames-36-rows-6-cols-6",
@@ -242,8 +242,8 @@
         50,
         50
       ],
-      "doorIn": 2,
-      "spokeClass": "YELLOW"
+      "doorIn": 1,
+      "spokeClass": "GREEN"
     }
   }
 }
