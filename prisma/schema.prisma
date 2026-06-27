@@ -393,8 +393,9 @@ model FounderSuggestion {
   comment    String
   pageUrl    String
   screenshot String? // compressed JPEG data URL (base64), optional
+  archived   Boolean  @default(false) // hidden from the default list, kept for reference
   createdAt  DateTime @default(now())
 
-  @@index([createdAt])
+  @@index([archived, createdAt])
   @@map("founder_suggestions")
 }

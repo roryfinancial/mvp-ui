@@ -14,11 +14,15 @@ export interface FounderSuggestionResponse {
   comment: string;
   pageUrl: string;
   screenshot: string | null;
+  archived: boolean;
   createdAt: string;
 }
 
-export async function GET() {
+// GET ?archived=true returns the archive; default returns active suggestions.
+export async function GET(req: NextRequest) {
+  const archived = new URL(req.url).searchParams.get("archived") === "true";
   const rows = await prisma.founderSuggestion.findMany({
+    where: { archived },
     orderBy: { createdAt: "desc" },
     take: 100,
   });
@@ -28,6 +32,7 @@ export async function GET() {
     comment: r.comment,
     pageUrl: r.pageUrl,
     screenshot: r.screenshot ?? null,
+    archived: r.archived,
     createdAt: r.createdAt.toISOString(),
   }));
   return ok(data);
@@ -63,6 +68,7 @@ export async function POST(req: NextRequest) {
     comment: row.comment,
     pageUrl: row.pageUrl,
     screenshot: row.screenshot ?? null,
+    archived: row.archived,
     createdAt: row.createdAt.toISOString(),
   };
   return ok(data, 201);

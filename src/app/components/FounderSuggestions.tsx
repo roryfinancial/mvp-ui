@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { domToCanvas } from "modern-screenshot";
-import { Lightbulb, X, Camera, Pencil, Square, Trash2, Send, Loader2, GripVertical, Image as ImageIcon } from "lucide-react";
+import { Lightbulb, X, Camera, Pencil, Square, Trash2, Send, Loader2, GripVertical, Image as ImageIcon, Archive, ArchiveRestore } from "lucide-react";
 import { founderSuggestionsApi, type FounderSuggestion } from "../../lib/api";
 
 // ─── Temporary cofounder feedback widget ─────────────────────────────────────
@@ -37,6 +37,7 @@ export default function FounderSuggestions() {
   // list
   const [items, setItems] = useState<FounderSuggestion[]>([]);
   const [loadingList, setLoadingList] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
 
   // screenshot + markup
@@ -73,10 +74,10 @@ export default function FounderSuggestions() {
   // ── Load list when opening the All tab ─────────────────────────────────────
   const loadList = useCallback(async () => {
     setLoadingList(true);
-    const res = await founderSuggestionsApi.list();
+    const res = await founderSuggestionsApi.list(showArchived);
     if (res.success && res.data) setItems(res.data);
     setLoadingList(false);
-  }, []);
+  }, [showArchived]);
   useEffect(() => {
     if (open && tab === "list") loadList();
   }, [open, tab, loadList]);
@@ -265,6 +266,13 @@ export default function FounderSuggestions() {
   const remove = async (id: string) => {
     setItems((prev) => prev.filter((i) => i.id !== id));
     await founderSuggestionsApi.remove(id);
+  };
+
+  // Archive (or restore) — drops the row from the current view since each view
+  // shows one side of the archived flag.
+  const setArchived = async (id: string, archived: boolean) => {
+    setItems((prev) => prev.filter((i) => i.id !== id));
+    await founderSuggestionsApi.setArchived(id, archived);
   };
 
   // ── Box overlay geometry in CSS space ──────────────────────────────────────
@@ -472,17 +480,39 @@ export default function FounderSuggestions() {
             ) : (
               // ── List tab ──
               <div className="flex flex-col gap-2">
+                {/* Active / Archived switch */}
+                <div className="flex items-center gap-1 rounded-lg bg-white/5 p-0.5 text-[11px] font-bold">
+                  <button
+                    onClick={() => setShowArchived(false)}
+                    className={`flex-1 rounded px-2 py-1 transition ${!showArchived ? "bg-amber-400/20 text-amber-200" : "text-neutral-400 hover:text-neutral-200"}`}
+                  >
+                    Active
+                  </button>
+                  <button
+                    onClick={() => setShowArchived(true)}
+                    className={`flex-1 rounded px-2 py-1 transition ${showArchived ? "bg-amber-400/20 text-amber-200" : "text-neutral-400 hover:text-neutral-200"}`}
+                  >
+                    Archived
+                  </button>
+                </div>
                 {loadingList ? (
                   <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-amber-300" /></div>
                 ) : items.length === 0 ? (
-                  <p className="py-6 text-center text-xs text-neutral-500">No suggestions yet.</p>
+                  <p className="py-6 text-center text-xs text-neutral-500">{showArchived ? "Nothing archived." : "No suggestions yet."}</p>
                 ) : (
                   items.map((it) => (
                     <div key={it.id} className="rounded-lg border border-white/10 bg-white/5 p-2.5">
                       <div className="mb-1 flex items-center gap-2">
                         <span className="rounded bg-amber-400/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-200">{it.author}</span>
                         <span className="text-[10px] text-neutral-500">{new Date(it.createdAt).toLocaleString()}</span>
-                        <button onClick={() => remove(it.id)} className="ml-auto rounded p-0.5 text-neutral-500 transition hover:bg-white/10 hover:text-red-400" title="Delete">
+                        <button
+                          onClick={() => setArchived(it.id, !it.archived)}
+                          className="ml-auto rounded p-0.5 text-neutral-500 transition hover:bg-white/10 hover:text-amber-300"
+                          title={it.archived ? "Restore" : "Archive"}
+                        >
+                          {it.archived ? <ArchiveRestore className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
+                        </button>
+                        <button onClick={() => remove(it.id)} className="rounded p-0.5 text-neutral-500 transition hover:bg-white/10 hover:text-red-400" title="Delete">
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </div>

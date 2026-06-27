@@ -835,15 +835,22 @@ export interface FounderSuggestion {
   comment: string;
   pageUrl: string;
   screenshot: string | null;
+  archived: boolean;
   createdAt: string;
 }
 
 export const founderSuggestionsApi = {
-  list: () => nextFetch<FounderSuggestion[]>("/api/founder-suggestions"),
+  list: (archived = false) =>
+    nextFetch<FounderSuggestion[]>(`/api/founder-suggestions${archived ? "?archived=true" : ""}`),
   create: (body: { author: string; comment: string; pageUrl: string; screenshot?: string | null }) =>
     nextFetch<FounderSuggestion>("/api/founder-suggestions", {
       method: "POST",
       body: JSON.stringify(body),
+    }),
+  setArchived: (id: string, archived: boolean) =>
+    nextFetch<null>(`/api/founder-suggestions/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ archived }),
     }),
   remove: (id: string) =>
     nextFetch<null>(`/api/founder-suggestions/${id}`, { method: "DELETE" }),
