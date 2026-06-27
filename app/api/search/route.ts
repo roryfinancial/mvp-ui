@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { okCached, CACHE } from "@/lib/api-helpers";
+import { ok } from "@/lib/api-helpers";
 
 type SearchUserType = "CREATOR" | "SUPPORTER";
 
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
 
   // Controller guard: min length 2, short-circuit without hitting the DB.
   if (q.length < 2) {
-    return okCached({ creators: [], supporters: [] }, CACHE.short);
+    return ok({ creators: [], supporters: [] });
   }
 
   const normalizedType = type?.toUpperCase();
@@ -60,5 +60,5 @@ export async function GET(req: NextRequest) {
     ]);
   }
 
-  return okCached({ creators, supporters }, CACHE.short);
+  return ok({ creators, supporters });
 }

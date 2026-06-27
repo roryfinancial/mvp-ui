@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { okCached, CACHE, notFound } from "@/lib/api-helpers";
+import { ok, notFound } from "@/lib/api-helpers";
 import { toResponse } from "@/lib/project-mapper";
 
 // GET /api/projects/creator/{username} — public projects of a creator, ordered by sortOrder.
@@ -20,5 +20,5 @@ export async function GET(
     include: { items: true },
   });
   const data = await Promise.all(projects.map(toResponse));
-  return okCached(data, CACHE.medium);
+  return ok(data);
 }

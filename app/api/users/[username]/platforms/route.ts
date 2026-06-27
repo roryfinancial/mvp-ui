@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth.server";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
-import { cacheHeaders, CACHE } from "@/lib/api-helpers";
 
 export async function GET(
   _req: NextRequest,
@@ -21,7 +20,7 @@ export async function GET(
     success: true,
     data: platforms.map((p) => ({ platform: p.platform, handle: p.handle ?? "", url: p.url ?? "" })),
     error: null,
-  }, { headers: cacheHeaders(CACHE.medium) });
+  });
 }
 
 export async function POST(req: NextRequest) {

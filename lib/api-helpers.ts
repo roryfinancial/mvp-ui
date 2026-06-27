@@ -16,38 +16,6 @@ export function ok<T>(data: T, status = 200) {
   return NextResponse.json({ success: true, data, error: null }, { status });
 }
 
-// Edge/CDN cache presets for PUBLIC, viewer-independent reads. On a slow shared
-// Postgres host these let Vercel's CDN answer most requests in ~10ms and hit the
-// database only when a cached copy expires — and even then it serves the stale
-// copy instantly while it refreshes once in the background (stale-while-
-// revalidate). NEVER use these on a response that depends on the logged-in user.
-//   sMaxAge — seconds the CDN treats the copy as fresh
-//   swr     — extra seconds it may serve the stale copy while revalidating
-export const CACHE = {
-  short: { sMaxAge: 30, swr: 120 }, // fast-moving lists: recent gifts, activity, search
-  medium: { sMaxAge: 120, swr: 600 }, // profiles, projects, platforms, events
-  long: { sMaxAge: 300, swr: 1800 }, // leaderboards
-} as const;
-
-/** Public stale-while-revalidate Cache-Control header for a given preset. */
-export function cacheHeaders(cache: { sMaxAge: number; swr: number }): Record<string, string> {
-  return {
-    "Cache-Control": `public, s-maxage=${cache.sMaxAge}, stale-while-revalidate=${cache.swr}`,
-  };
-}
-
-/** Like ok(), but attaches a public stale-while-revalidate Cache-Control header. */
-export function okCached<T>(
-  data: T,
-  cache: { sMaxAge: number; swr: number } = CACHE.short,
-  status = 200,
-) {
-  return NextResponse.json(
-    { success: true, data, error: null },
-    { status, headers: cacheHeaders(cache) },
-  );
-}
-
 export function fail(code: string, message: string, status = 400, details?: unknown) {
   return NextResponse.json(
     { success: false, data: null, error: { code, message, details } },

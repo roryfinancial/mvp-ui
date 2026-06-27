@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth.server";
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
-import { parseCommunities, cacheHeaders, CACHE } from "@/lib/api-helpers";
+import { parseCommunities } from "@/lib/api-helpers";
 
 export async function GET(
   _req: NextRequest,
@@ -44,7 +44,7 @@ export async function GET(
       createdAt: user.createdAt.toISOString(),
     },
     error: null,
-  }, { headers: cacheHeaders(CACHE.medium) });
+  });
 }
 
 export async function PUT(
