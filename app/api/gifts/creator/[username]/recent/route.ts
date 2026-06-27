@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { ok, notFound, getInitials, formatTimeAgo } from "@/lib/api-helpers";
+import { okCached, CACHE, notFound, getInitials, formatTimeAgo } from "@/lib/api-helpers";
 import type { RecentSupporterResponse } from "@/src/lib/api";
 
 export async function GET(
@@ -47,5 +47,5 @@ export async function GET(
     };
   });
 
-  return ok(data);
+  return okCached(data, CACHE.short);
 }

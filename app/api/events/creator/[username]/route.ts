@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { ok, notFound } from "@/lib/api-helpers";
+import { okCached, CACHE, notFound } from "@/lib/api-helpers";
 
 type EventRow = {
   id: string;
@@ -44,5 +44,5 @@ export async function GET(
     where: { creatorId: user.id, isPublic: true },
     orderBy: { eventDate: "asc" },
   });
-  return ok(events.map(toResponse));
+  return okCached(events.map(toResponse), CACHE.medium);
 }

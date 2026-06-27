@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { ok, notFound, pageParams, progressPct } from "@/lib/api-helpers";
+import { okCached, CACHE, notFound, pageParams, progressPct } from "@/lib/api-helpers";
 import type { ActivityItemResponse } from "@/lib/api";
 
 // GET /api/activity/creator/{username}
@@ -200,5 +200,5 @@ export async function GET(
   const sliced = built.slice(skip, skip + size).map((b) => b.item);
   void page;
 
-  return ok<ActivityItemResponse[]>(sliced);
+  return okCached<ActivityItemResponse[]>(sliced, CACHE.short);
 }

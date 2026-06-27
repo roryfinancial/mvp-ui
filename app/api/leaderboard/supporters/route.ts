@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { ok, getInitials } from "@/lib/api-helpers";
+import { okCached, CACHE, getInitials } from "@/lib/api-helpers";
 import type { LeaderboardEntryResponse } from "@/lib/api";
 
 export async function GET(req: NextRequest) {
@@ -63,5 +63,5 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  return ok(entries);
+  return okCached(entries, CACHE.long);
 }
