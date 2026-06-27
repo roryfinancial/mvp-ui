@@ -222,20 +222,29 @@ export async function getWeeklyLeaderboard(
   currentUserId: string,
   limit = 5
 ): Promise<WeeklyLeaderboardEntry[]> {
+  // Pull a bounded candidate set (extra headroom for users who've opted out of
+  // the leaderboard), then batch-load those users in one query and filter.
   const rows = await prisma.userGamification.findMany({
+    where: { weeklyGifted: { gt: 0 } },
     orderBy: { weeklyGifted: "desc" },
+    take: limit * 4,
   });
+  const userById = new Map(
+    (
+      await prisma.user.findMany({
+        where: { id: { in: rows.map((r) => r.userId) } },
+        select: { id: true, username: true, displayName: true, name: true, showOnLeaderboard: true },
+      })
+    ).map((u) => [u.id, u]),
+  );
+
   const entries: WeeklyLeaderboardEntry[] = [];
-  let rank = 1;
   for (const row of rows) {
     if (entries.length >= limit) break;
-    const user = await prisma.user.findUnique({
-      where: { id: row.userId },
-      select: { id: true, username: true, displayName: true, name: true, showOnLeaderboard: true },
-    });
+    const user = userById.get(row.userId);
     if (!user || !user.showOnLeaderboard) continue;
     entries.push({
-      rank: rank++,
+      rank: entries.length + 1,
       username: user.username ?? "",
       displayName: user.displayName ?? user.name ?? "",
       amount: row.weeklyGifted,

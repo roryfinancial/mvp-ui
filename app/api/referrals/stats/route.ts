@@ -26,18 +26,26 @@ export async function GET(_req: NextRequest) {
   const totalCommissionEarned = referrals.reduce((s, r) => s + r.totalCommissionEarned, 0);
 
   const { monthStart, monthEnd } = monthWindow();
+  // Sum this month's tips for every referred creator in a single grouped query,
+  // then apply each referral's commission rate (instead of one aggregate per
+  // referral).
+  const referredIds = referrals.map((r) => r.referredId);
   let commissionThisMonth = 0;
-  for (const r of referrals) {
-    const sum = await prisma.gift.aggregate({
+  if (referredIds.length > 0) {
+    const grouped = await prisma.gift.groupBy({
+      by: ["creatorId"],
       _sum: { amount: true },
       where: {
-        creatorId: r.referredId,
+        creatorId: { in: referredIds },
         status: "COMPLETED",
         createdAt: { gte: monthStart, lt: monthEnd },
       },
     });
-    const tips = sum._sum.amount ?? 0;
-    commissionThisMonth += round2(tips * (r.commissionRate / 100));
+    const tipsByCreator = new Map(grouped.map((g) => [g.creatorId, g._sum.amount ?? 0]));
+    for (const r of referrals) {
+      const tips = tipsByCreator.get(r.referredId) ?? 0;
+      commissionThisMonth += round2(tips * (r.commissionRate / 100));
+    }
   }
 
   return ok({

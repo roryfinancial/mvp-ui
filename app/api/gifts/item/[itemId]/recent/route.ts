@@ -23,14 +23,18 @@ export async function GET(
     take: limit,
   });
 
-  const data: RecentSupporterResponse[] = [];
-  for (const gift of gifts) {
-    const supporter = await prisma.user.findUnique({
-      where: { id: gift.supporterId },
-      select: { username: true, displayName: true, name: true, avatarUrl: true, image: true },
-    });
+  // Batch-load supporters in one query instead of one per gift.
+  const supporterIds = [...new Set(gifts.map((g) => g.supporterId))];
+  const supporters = await prisma.user.findMany({
+    where: { id: { in: supporterIds } },
+    select: { id: true, username: true, displayName: true, name: true, avatarUrl: true, image: true },
+  });
+  const supporterById = new Map(supporters.map((s) => [s.id, s]));
+
+  const data: RecentSupporterResponse[] = gifts.map((gift) => {
+    const supporter = supporterById.get(gift.supporterId);
     const displayName = supporter?.displayName ?? supporter?.name ?? "";
-    data.push({
+    return {
       supporterUsername: supporter?.username ?? "",
       supporterDisplayName: displayName,
       supporterInitials: getInitials(displayName),
@@ -39,8 +43,8 @@ export async function GET(
       itemTitle: item.title,
       message: gift.message ?? null,
       timeAgo: formatTimeAgo(gift.createdAt),
-    });
-  }
+    };
+  });
 
   return ok(data);
 }

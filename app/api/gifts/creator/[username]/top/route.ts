@@ -35,24 +35,27 @@ export async function GET(
     take: limit,
   });
 
-  const data: TopSupporterResponse[] = [];
-  let rank = 1;
-  for (const g of grouped) {
-    const supporter = await prisma.user.findUnique({
-      where: { id: g.supporterId },
-      select: { username: true, displayName: true, name: true, avatarUrl: true, image: true },
-    });
+  // Batch-load the grouped supporters in one query instead of one per row.
+  const supporterIds = grouped.map((g) => g.supporterId);
+  const supporters = await prisma.user.findMany({
+    where: { id: { in: supporterIds } },
+    select: { id: true, username: true, displayName: true, name: true, avatarUrl: true, image: true },
+  });
+  const supporterById = new Map(supporters.map((s) => [s.id, s]));
+
+  const data: TopSupporterResponse[] = grouped.map((g, i) => {
+    const supporter = supporterById.get(g.supporterId);
     const displayName = supporter?.displayName ?? supporter?.name ?? "";
-    data.push({
-      rank: rank++,
+    return {
+      rank: i + 1,
       supporterUsername: supporter?.username ?? "",
       supporterDisplayName: displayName,
       supporterInitials: getInitials(displayName),
       supporterAvatarUrl: supporter?.avatarUrl ?? supporter?.image ?? null,
       totalAmount: g._sum.amount ?? 0,
       contributionCount: g._count.id,
-    });
-  }
+    };
+  });
 
   return ok(data);
 }

@@ -33,15 +33,26 @@ export interface ProjectResponse {
   createdAt: string;
 }
 
-/** Map a single ProjectItem; resolves giftedByUsername via a cross-domain user lookup. */
-export async function toItemResponse(item: ProjectItem): Promise<ProjectItemResponse> {
+/**
+ * Map a single ProjectItem; resolves giftedByUsername via a cross-domain user
+ * lookup. Pass `giftedUsernames` (a userId -> username map) to skip the per-item
+ * query when mapping a batch — see toResponse.
+ */
+export async function toItemResponse(
+  item: ProjectItem,
+  giftedUsernames?: Map<string, string | null>,
+): Promise<ProjectItemResponse> {
   let giftedByUsername: string | null = null;
   if (item.giftedById) {
-    const u = await prisma.user.findUnique({
-      where: { id: item.giftedById },
-      select: { username: true },
-    });
-    giftedByUsername = u?.username ?? null;
+    if (giftedUsernames) {
+      giftedByUsername = giftedUsernames.get(item.giftedById) ?? null;
+    } else {
+      const u = await prisma.user.findUnique({
+        where: { id: item.giftedById },
+        select: { username: true },
+      });
+      giftedByUsername = u?.username ?? null;
+    }
   }
   return {
     id: item.id,
@@ -64,7 +75,17 @@ export async function toResponse(project: ProjectWithItems): Promise<ProjectResp
   const sorted = [...project.items].sort(
     (a, b) => Number(b.pinned) - Number(a.pinned) || a.sortOrder - b.sortOrder,
   );
-  const items = await Promise.all(sorted.map(toItemResponse));
+  // Resolve all gifter usernames in one query, then map items against it.
+  const giftedIds = [...new Set(sorted.map((i) => i.giftedById).filter((id): id is string => !!id))];
+  const giftedUsernames = new Map<string, string | null>();
+  if (giftedIds.length > 0) {
+    const users = await prisma.user.findMany({
+      where: { id: { in: giftedIds } },
+      select: { id: true, username: true },
+    });
+    for (const u of users) giftedUsernames.set(u.id, u.username ?? null);
+  }
+  const items = await Promise.all(sorted.map((i) => toItemResponse(i, giftedUsernames)));
   const goalAmount = sorted.reduce((s, i) => s + i.goalAmount, 0);
   const raisedAmount = sorted.reduce((s, i) => s + i.raisedAmount, 0);
   return {

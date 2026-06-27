@@ -21,30 +21,26 @@ export async function GET(req: NextRequest) {
     prisma.gift.count({ where }),
   ]);
 
-  const content: GiftHistoryResponse[] = [];
-  for (const gift of gifts) {
-    const supporter = await prisma.user.findUnique({
-      where: { id: gift.supporterId },
-      select: { username: true },
-    });
-    const creator = await prisma.user.findUnique({
-      where: { id: gift.creatorId },
-      select: { username: true },
-    });
-    const project = await prisma.project.findUnique({
-      where: { id: gift.projectId },
-      select: { name: true },
-    });
-    content.push({
-      id: gift.id,
-      supporterUsername: supporter?.username ?? "",
-      creatorUsername: creator?.username ?? "",
-      itemTitle: project?.name ?? "Unknown Project",
-      amount: gift.amount,
-      status: gift.status as GiftHistoryResponse["status"],
-      createdAt: gift.createdAt.toISOString(),
-    });
-  }
+  // Batch-load every referenced user and project in two queries (instead of
+  // three findUnique calls per gift) and resolve from in-memory maps.
+  const userIds = [...new Set(gifts.flatMap((g) => [g.supporterId, g.creatorId]))];
+  const projectIds = [...new Set(gifts.map((g) => g.projectId))];
+  const [users, projects] = await Promise.all([
+    prisma.user.findMany({ where: { id: { in: userIds } }, select: { id: true, username: true } }),
+    prisma.project.findMany({ where: { id: { in: projectIds } }, select: { id: true, name: true } }),
+  ]);
+  const usernameById = new Map(users.map((u) => [u.id, u.username ?? ""]));
+  const projectNameById = new Map(projects.map((p) => [p.id, p.name]));
+
+  const content: GiftHistoryResponse[] = gifts.map((gift) => ({
+    id: gift.id,
+    supporterUsername: usernameById.get(gift.supporterId) ?? "",
+    creatorUsername: usernameById.get(gift.creatorId) ?? "",
+    itemTitle: projectNameById.get(gift.projectId) ?? "Unknown Project",
+    amount: gift.amount,
+    status: gift.status as GiftHistoryResponse["status"],
+    createdAt: gift.createdAt.toISOString(),
+  }));
 
   return ok(paged(content, page, size, totalElements));
 }

@@ -19,28 +19,33 @@ export async function GET(
     take: limit,
   });
 
-  const data: RecentSupporterResponse[] = [];
-  for (const gift of gifts) {
-    const supporter = await prisma.user.findUnique({
-      where: { id: gift.supporterId },
-      select: { username: true, displayName: true, name: true, avatarUrl: true, image: true },
-    });
-    const project = await prisma.project.findUnique({
-      where: { id: gift.projectId },
-      select: { name: true },
-    });
+  // Batch-load supporters and projects (two queries) instead of two per gift.
+  const supporterIds = [...new Set(gifts.map((g) => g.supporterId))];
+  const projectIds = [...new Set(gifts.map((g) => g.projectId))];
+  const [supporters, projects] = await Promise.all([
+    prisma.user.findMany({
+      where: { id: { in: supporterIds } },
+      select: { id: true, username: true, displayName: true, name: true, avatarUrl: true, image: true },
+    }),
+    prisma.project.findMany({ where: { id: { in: projectIds } }, select: { id: true, name: true } }),
+  ]);
+  const supporterById = new Map(supporters.map((s) => [s.id, s]));
+  const projectNameById = new Map(projects.map((p) => [p.id, p.name]));
+
+  const data: RecentSupporterResponse[] = gifts.map((gift) => {
+    const supporter = supporterById.get(gift.supporterId);
     const displayName = supporter?.displayName ?? supporter?.name ?? "";
-    data.push({
+    return {
       supporterUsername: supporter?.username ?? "",
       supporterDisplayName: displayName,
       supporterInitials: getInitials(displayName),
       supporterAvatarUrl: supporter?.avatarUrl ?? supporter?.image ?? null,
       amount: gift.amount,
-      itemTitle: project?.name ?? "Unknown Project",
+      itemTitle: projectNameById.get(gift.projectId) ?? "Unknown Project",
       message: gift.message ?? null,
       timeAgo: formatTimeAgo(gift.createdAt),
-    });
-  }
+    };
+  });
 
   return ok(data);
 }
