@@ -29,7 +29,15 @@
   /* State */
   --destructive:         #dc2626;
   --destructive-foreground: #ffffff;
+  --success:             #22c55e;
+  --success-strong:      #16a34a;
+  --success-foreground:  #ffffff;
   --border:              #e0e0e0;
+
+  /* Rank / medal (single source for leaderboards + rank badges) */
+  --medal-gold:          #ffd700;
+  --medal-silver:        #c0c0c0;
+  --medal-bronze:        #cd7f32;
   --input:               #ffffff;
   --input-background:    #f5f5f5;
   --switch-background:   #d4d4d4;
@@ -112,6 +120,12 @@
   --color-accent-foreground:      var(--accent-foreground);
   --color-destructive:            var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success:                var(--success);
+  --color-success-strong:         var(--success-strong);
+  --color-success-foreground:     var(--success-foreground);
+  --color-medal-gold:             var(--medal-gold);
+  --color-medal-silver:           var(--medal-silver);
+  --color-medal-bronze:           var(--medal-bronze);
   --color-border:                 var(--border);
   --color-input:                  var(--input);
   --color-input-background:       var(--input-background);

@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { Gift, Heart, Zap, Shield, Trophy } from "lucide-react";
+import { RANK_COLORS } from "../../lib/colors";
 
 interface HomeProps {
   onNavigateToAuth: () => void;
@@ -9,18 +10,16 @@ interface HomeProps {
   onNavigateToSignUp?: () => void;
 }
 
-const RANK_COLORS = ["#FFD700", "#C0C0C0", "#CD7F32"] as const;
-
 const HERO_COPY = {
   creator: {
     badge: "For Creators · Keep 100%",
-    headline: <>Your project,<br /><span style={{ color: "oklch(65.6% 0.241 354.308)" }}>funded.</span></>,
+    headline: <>Your project,<br /><span style={{ color: "var(--accent)" }}>funded.</span></>,
     sub: "Set goals for your project and let your fans fund them. You keep 100% of every gift — Rory never takes a cut.",
     cta: "Start Your Project",
   },
   supporter: {
     badge: "For Supporters",
-    headline: <>Fund the creators<br /><span style={{ color: "oklch(65.6% 0.241 354.308)" }}>you love.</span></>,
+    headline: <>Fund the creators<br /><span style={{ color: "var(--accent)" }}>you love.</span></>,
     sub: "Discover creators, fund the goals that matter to them, and earn your place on the community leaderboard.",
     cta: "Find Creators to Support",
   },
@@ -32,7 +31,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e0e] border-b border-accent/40">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-nav border-b border-accent/40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <img src="/rory-word.svg" alt="Rory" className="h-9" />
           <div className="flex items-center gap-8">
@@ -57,7 +56,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
       </nav>
 
       {/* Hero — dark panel for gaming impact */}
-      <section className="pt-0 pb-0 bg-[#0e0e0e] relative overflow-hidden">
+      <section className="pt-0 pb-0 bg-nav relative overflow-hidden">
         {/* Subtle radial glow behind heading */}
         <div
           aria-hidden
@@ -108,8 +107,8 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
               <div
                 className="inline-block px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest text-white/90 border"
                 style={{
-                  borderColor: "oklch(65.6% 0.241 354.308 / 0.5)",
-                  background: "oklch(65.6% 0.241 354.308 / 0.12)",
+                  borderColor: "color-mix(in srgb, var(--accent) 50%, transparent)",
+                  background: "color-mix(in srgb, var(--accent) 12%, transparent)",
                 }}
               >
                 {copy.badge}
@@ -180,7 +179,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
             >
               <div
                 className="text-4xl font-black mb-1"
-                style={{ color: "oklch(65.6% 0.241 354.308)" }}
+                style={{ color: "var(--accent)" }}
               >
                 {item.stat}
               </div>
@@ -207,10 +206,10 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
               transition={{ duration: 0.7, ease: "easeOut" }}
             >
               <div className="flex items-center gap-2 mb-6">
-                <Gift className="w-4 h-4" style={{ color: "oklch(65.6% 0.241 354.308)" }} />
+                <Gift className="w-4 h-4" style={{ color: "var(--accent)" }} />
                 <span
                   className="text-xs font-bold uppercase tracking-widest"
-                  style={{ color: "oklch(65.6% 0.241 354.308)" }}
+                  style={{ color: "var(--accent)" }}
                 >
                   Projects
                 </span>
@@ -239,7 +238,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
                   >
                     <div
                       className="w-8 h-8 flex items-center justify-center flex-shrink-0 text-white"
-                      style={{ background: "oklch(65.6% 0.241 354.308)" }}
+                      style={{ background: "var(--accent)" }}
                     >
                       {item.icon}
                     </div>
@@ -288,7 +287,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
             >
               <div className="overflow-hidden border border-border bg-background card-game">
                 {/* Card header */}
-                <div className="bg-[#0e0e0e] px-6 py-4 flex items-center gap-3">
+                <div className="bg-nav px-6 py-4 flex items-center gap-3">
                   <Trophy className="w-5 h-5" style={{ color: RANK_COLORS[0] }} />
                   <span className="text-white font-black text-sm uppercase tracking-widest">Top Gifters</span>
                 </div>
@@ -314,7 +313,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
                       </div>
                       <div
                         className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-black text-white flex-shrink-0"
-                        style={{ background: "oklch(65.6% 0.241 354.308)" }}
+                        style={{ background: "var(--accent)" }}
                       >
                         {entry.name.slice(0, 2).toUpperCase()}
                       </div>
@@ -333,8 +332,8 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
               className="order-1 md:order-2"
             >
               <div className="flex items-center gap-2 mb-6">
-                <Heart className="w-4 h-4" style={{ color: "oklch(65.6% 0.241 354.308)" }} />
-                <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "oklch(65.6% 0.241 354.308)" }}>Community</span>
+                <Heart className="w-4 h-4" style={{ color: "var(--accent)" }} />
+                <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--accent)" }}>Community</span>
               </div>
               <h2 className="text-5xl font-black mb-6 leading-tight text-foreground tracking-tight">
                 Your fans
@@ -350,7 +349,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
       </section>
 
       {/* Final CTA */}
-      <section className="py-40 px-6 bg-[#0e0e0e] relative overflow-hidden">
+      <section className="py-40 px-6 bg-nav relative overflow-hidden">
         <div
           aria-hidden
           className="absolute inset-0 pointer-events-none"
@@ -367,7 +366,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
             <h2 className="text-7xl md:text-8xl font-black mb-8 leading-none tracking-tight text-white">
               Start your
               <br />
-              <span style={{ color: "oklch(65.6% 0.241 354.308)" }}>project.</span>
+              <span style={{ color: "var(--accent)" }}>project.</span>
             </h2>
             <p className="text-xl text-white/50 mb-12 max-w-xl mx-auto">
               Join 10,000+ creators getting gifted exactly what they want.
@@ -384,7 +383,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
             <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-10 text-sm text-white/30">
               {["Low fees for creators", "Set up in 2 minutes", "No credit card needed"].map((item) => (
                 <div key={item} className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#059669]" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-success-strong" />
                   <span>{item}</span>
                 </div>
               ))}
@@ -394,7 +393,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-16 px-6 bg-[#0e0e0e]">
+      <footer className="border-t border-white/5 py-16 px-6 bg-nav">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-5 gap-12 mb-12">
             <div className="md:col-span-2">

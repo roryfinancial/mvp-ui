@@ -6,6 +6,7 @@ import type { LeaderboardEntryResponse } from "../../lib/api";
 import { formatCurrency } from "../../lib/format";
 import { staggerFadeUp } from "../../lib/motion";
 import { EmptyState } from "./shared/EmptyState";
+import { RANK_COLORS } from "../../lib/colors";
 
 interface LeaderboardProps {
   onViewCreator?: (username: string) => void;
@@ -22,7 +23,6 @@ interface LeaderboardEntry {
   contributions?: number;
 }
 
-const RANK_COLORS = ["#FFD700", "#C0C0C0", "#CD7F32"] as const;
 
 export default function Leaderboard({ onViewCreator }: LeaderboardProps) {
   const [tab, setTab] = useState<"creators" | "supporters">("creators");
@@ -168,7 +168,7 @@ export default function Leaderboard({ onViewCreator }: LeaderboardProps) {
                 className="w-10 h-10 flex items-center justify-center font-bold text-sm border"
                 style={{
                   borderColor: entry.rank <= 3 ? RANK_COLORS[entry.rank - 1] : "var(--border)",
-                  background: entry.rank <= 3 ? `${RANK_COLORS[entry.rank - 1]}15` : "var(--muted)",
+                  background: entry.rank <= 3 ? `color-mix(in srgb, ${RANK_COLORS[entry.rank - 1]} 8%, transparent)` : "var(--muted)",
                 }}
               >
                 {entry.initials}

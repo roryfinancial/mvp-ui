@@ -174,7 +174,7 @@ export default function PublicWishlist({
                 <span className="text-foreground font-bold">{items.length} items needed</span>
                 <span className="text-subtle">{activeItems.length} remaining</span>
                 {giftedCount > 0 && (
-                  <span className="text-[#22c55e] font-medium">{giftedCount} funded</span>
+                  <span className="text-success font-medium">{giftedCount} funded</span>
                 )}
               </div>
               {totalGoal > 0 && (
@@ -192,7 +192,7 @@ export default function PublicWishlist({
               )}
               <button
                 onClick={() => openDonateModal()}
-                className="ml-auto px-6 py-2.5 bg-[#22c55e] hover:bg-[#16a34a] text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2"
+                className="ml-auto px-6 py-2.5 bg-success hover:bg-success-strong text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2"
               >
                 <Zap className="w-4 h-4" />
                 Donate to Project
@@ -232,8 +232,8 @@ export default function PublicWishlist({
                   <div
                     className={`absolute top-3 right-3 px-2 py-1 flex items-center gap-1.5 border text-[10px] font-black uppercase tracking-widest ${
                       item.status === "gifted"
-                        ? "bg-[#f0faf5] border-[#22c55e] text-[#16a34a]"
-                        : "bg-[#fff0f4] border-accent text-accent"
+                        ? "bg-success/10 border-success text-success-strong"
+                        : "bg-accent/10 border-accent text-accent"
                     }`}
                   >
                     {item.status === "gifted" ? (
@@ -260,7 +260,7 @@ export default function PublicWishlist({
                   ) : (
                     <button
                       onClick={(e) => { e.stopPropagation(); openDonateModal(item.id, item.title); }}
-                      className="w-full mt-1 py-2 bg-[#22c55e] hover:bg-[#16a34a] text-white text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5"
+                      className="w-full mt-1 py-2 bg-success hover:bg-success-strong text-white text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5"
                     >
                       <Zap className="w-3 h-3" />
                       Fund This
@@ -293,7 +293,7 @@ export default function PublicWishlist({
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  className="w-16 h-16 bg-[#22c55e] mx-auto mb-4 flex items-center justify-center"
+                  className="w-16 h-16 bg-success mx-auto mb-4 flex items-center justify-center"
                 >
                   <Check className="w-8 h-8 text-white" />
                 </motion.div>
@@ -307,7 +307,7 @@ export default function PublicWishlist({
                 {/* Header */}
                 <div className="flex items-center justify-between p-5 border-b border-border">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-[#22c55e] flex items-center justify-center">
+                    <div className="w-8 h-8 bg-success flex items-center justify-center">
                       <Zap className="w-4 h-4 text-white" />
                     </div>
                     <div>
@@ -369,7 +369,7 @@ export default function PublicWishlist({
                   <button
                     onClick={handleConfirmTip}
                     disabled={(!selectedTipAmount && !customTipAmount) || tipLoading}
-                    className="w-full py-3 bg-[#22c55e] hover:bg-[#16a34a] disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-success hover:bg-success-strong disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
                   >
                     {tipLoading ? (
                       <Loader2 className="w-4 h-4 animate-spin" />

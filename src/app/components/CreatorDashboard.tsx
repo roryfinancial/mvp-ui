@@ -380,7 +380,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                   <p className="text-foreground font-bold text-sm truncate group-hover:text-accent transition-colors">{shopifyStore.name}</p>
                   <p className="text-subtle text-[10px] uppercase tracking-wide font-bold">Shopify</p>
                 </div>
-                <div className="w-2 h-2 rounded-full bg-[#22c55e] flex-shrink-0" title="Connected" />
+                <div className="w-2 h-2 rounded-full bg-success flex-shrink-0" title="Connected" />
               </a>
             </motion.div>
           )}
@@ -388,7 +388,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
           <motion.div {...fadeUp} transition={{ duration: 0.5, delay: 0.1 }} className="mb-8">
             <SectionLabel>Overview</SectionLabel>
             <div className="space-y-2">
-              <StatMiniCard label="Total Raised" value={totalRaised} icon={TrendingUp} valueStyle={{ color: "oklch(65.6% 0.241 354.308)" }} />
+              <StatMiniCard label="Total Raised" value={totalRaised} icon={TrendingUp} valueStyle={{ color: "var(--accent)" }} />
               <StatMiniCard label="Active Items" value={totalActiveItems} icon={Gift} />
               <StatMiniCard label="Supporters" value={totalSupporters} icon={User} />
             </div>
@@ -507,7 +507,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-subtle mb-1">Total Earned</p>
-                <p className="text-4xl font-black tracking-tight" style={{ color: "oklch(65.6% 0.241 354.308)" }}>{totalRaised}</p>
+                <p className="text-4xl font-black tracking-tight" style={{ color: "var(--accent)" }}>{totalRaised}</p>
                 <p className="text-xs text-subtle font-medium mt-1">You keep 100% — Rory never takes a cut.</p>
               </div>
               <motion.button
@@ -611,7 +611,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                               {activeCount} active
                             </span>
                             <span className="flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#059669] inline-block" />
+                              <span className="w-1.5 h-1.5 rounded-full bg-success-strong inline-block" />
                               {project.items.filter(i => i.status === "completed").length} funded
                             </span>
                           </div>
@@ -630,7 +630,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                                     initial={{ width: 0 }}
                                     animate={{ width: `${pct}%` }}
                                     transition={{ duration: 1, delay: 0.3 + wIndex * 0.1 }}
-                                    style={{ background: "oklch(65.6% 0.241 354.308)" }}
+                                    style={{ background: "var(--accent)" }}
                                   />
                                 </div>
                                 <div className="flex items-center justify-between mt-1">
@@ -667,9 +667,9 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                     {/* Rows */}
                     {topSupportersLeaderboard.map((supporter, index) => {
                       const rankColors: Record<number, string> = {
-                        1: "bg-[#FFD700] text-black",
-                        2: "bg-[#C0C0C0] text-black",
-                        3: "bg-[#CD7F32] text-white",
+                        1: "bg-medal-gold text-black",
+                        2: "bg-medal-silver text-black",
+                        3: "bg-medal-bronze text-white",
                       };
                       const rankClass = rankColors[supporter.rank] || "bg-muted text-subtle";
 
@@ -993,8 +993,8 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                           <h2 className="text-3xl font-black text-foreground tracking-tight">{item.title}</h2>
                           <div className={`px-2 py-1 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest border ${
                             item.status === "completed"
-                              ? "bg-[#f0faf5] border-[#22c55e] text-[#16a34a]"
-                              : "bg-[#fff0f4] border-accent text-accent"
+                              ? "bg-success/10 border-success text-success-strong"
+                              : "bg-accent/10 border-accent text-accent"
                           }`}>
                             {item.status === "completed" ? <><Check className="w-3 h-3" />Funded</> : <><ArrowUp className="w-3 h-3" />Active</>}
                           </div>
@@ -1145,8 +1145,8 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                               </button>
                               <div className={`absolute top-2 right-2 px-2 py-1 flex items-center gap-1 border text-[10px] font-black uppercase tracking-widest ${
                                 item.status === "completed"
-                                  ? "bg-[#f0faf5] border-[#22c55e] text-[#16a34a]"
-                                  : "bg-[#fff0f4] border-accent text-accent"
+                                  ? "bg-success/10 border-success text-success-strong"
+                                  : "bg-accent/10 border-accent text-accent"
                               }`}>
                                 {item.status === "completed" ? <><Check className="w-2.5 h-2.5" />Done</> : <><ArrowUp className="w-2.5 h-2.5" />Active</>}
                               </div>

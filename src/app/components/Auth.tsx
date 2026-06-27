@@ -160,19 +160,19 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
           initial={{ opacity: 0, x: -40 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="relative w-full md:w-1/2 bg-[#0e0e0e] p-12 flex flex-col justify-center items-center text-center overflow-hidden"
-          style={{ borderRight: "2px solid oklch(65.6% 0.241 354.308 / 0.5)" }}
+          className="relative w-full md:w-1/2 bg-nav p-12 flex flex-col justify-center items-center text-center overflow-hidden"
+          style={{ borderRight: "2px solid color-mix(in srgb, var(--accent) 50%, transparent)" }}
         >
           <div
             aria-hidden
             className="absolute inset-0 pointer-events-none"
-            style={{ background: "radial-gradient(ellipse 70% 60% at 50% 70%, oklch(65.6% 0.241 354.308 / 0.1) 0%, transparent 70%)" }}
+            style={{ background: "radial-gradient(ellipse 70% 60% at 50% 70%, color-mix(in srgb, var(--accent) 10%, transparent) 0%, transparent 70%)" }}
           />
           <div className="relative z-10">
             <img src="/rory-word.svg" alt="Rory" className="h-8 mb-8 mx-auto" />
             <h2 className="text-5xl font-black text-white mb-6 leading-tight tracking-tight">
               Your project,<br />
-              <span style={{ color: "oklch(65.6% 0.241 354.308)" }}>funded.</span>
+              <span style={{ color: "var(--accent)" }}>funded.</span>
             </h2>
             <p className="text-lg text-white/60 max-w-md mx-auto leading-relaxed">
               Set goals for your project. Fans donate to help you achieve them.

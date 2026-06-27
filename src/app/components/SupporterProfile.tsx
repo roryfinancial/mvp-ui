@@ -4,6 +4,7 @@ import { User, Zap, Loader2, Users } from "lucide-react";
 import { followApi } from "../../lib/api";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { EmptyState } from "./shared/EmptyState";
+import { rankColor } from "../../lib/colors";
 
 interface FollowedCreator {
   id: string;
@@ -73,13 +74,6 @@ export default function SupporterProfile({
 
   const followedCreators = followedCreatorsProp ?? fetchedCreators;
 
-  const getRankColor = (rank: number) => {
-    if (rank === 1) return "#FFD700";
-    if (rank === 2) return "#C0C0C0";
-    if (rank === 3) return "#CD7F32";
-    return undefined;
-  };
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Hero Section */}
@@ -124,7 +118,7 @@ export default function SupporterProfile({
                   </div>
                   <div className="w-px h-10 bg-white/20" />
                   <div className="text-center">
-                    <p className="text-2xl font-black text-[#FFD700]">{bestRank}</p>
+                    <p className="text-2xl font-black text-medal-gold">{bestRank}</p>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-white/50">Best Rank</p>
                   </div>
                 </div>
@@ -147,7 +141,7 @@ export default function SupporterProfile({
             <p className="text-[10px] font-bold uppercase tracking-widest text-subtle">Following</p>
           </div>
           <div className="flex-1 p-4 bg-muted border border-border text-center">
-            <p className="text-lg font-black text-[#FFD700]">{bestRank}</p>
+            <p className="text-lg font-black text-medal-gold">{bestRank}</p>
             <p className="text-[10px] font-bold uppercase tracking-widest text-subtle">Best Rank</p>
           </div>
         </div>
@@ -196,7 +190,7 @@ export default function SupporterProfile({
                     {creator.name}
                   </h3>
                   {creator.rank && (
-                    <p className="text-[10px] text-[#22c55e] font-bold mt-0.5">#{creator.rank} Global</p>
+                    <p className="text-[10px] text-success font-bold mt-0.5">#{creator.rank} Global</p>
                   )}
                 </div>
               </motion.div>
@@ -226,7 +220,7 @@ export default function SupporterProfile({
                 {entry.rank && (
                   <div
                     className="w-8 h-8 flex items-center justify-center text-xs font-black text-white flex-shrink-0"
-                    style={{ backgroundColor: getRankColor(entry.rank) ?? "var(--accent)" }}
+                    style={{ backgroundColor: rankColor(entry.rank) ?? "var(--accent)" }}
                   >
                     #{entry.rank}
                   </div>
@@ -245,7 +239,7 @@ export default function SupporterProfile({
 
                 {/* Amount */}
                 <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <Zap className="w-3.5 h-3.5 text-[#22c55e]" />
+                  <Zap className="w-3.5 h-3.5 text-success" />
                   <span className="text-sm font-black text-foreground">{entry.amount}</span>
                 </div>
               </motion.div>

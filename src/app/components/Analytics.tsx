@@ -16,7 +16,7 @@ type Metric = "revenue" | "supporters" | "gifts" | "avgContribution" | "referral
 type TimePeriod = "week" | "month" | "year";
 
 const metricConfig: Record<Metric, { label: string; color: string; accentClass: string; borderClass: string; badgeClass: string; iconColor: string }> = {
-  revenue:          { label: "Net Revenue Over Time",          color: "oklch(65.6% 0.241 354.308)",   accentClass: "bg-purple-600/10",   borderClass: "border-purple-500/20", badgeClass: "text-purple-400 bg-purple-600/20", iconColor: "text-purple-400" },
+  revenue:          { label: "Net Revenue Over Time",          color: "var(--accent)",   accentClass: "bg-purple-600/10",   borderClass: "border-purple-500/20", badgeClass: "text-purple-400 bg-purple-600/20", iconColor: "text-purple-400" },
   supporters:       { label: "Supporter Growth",              color: "oklch(72% 0.2 350)",            accentClass: "bg-pink-600/10",     borderClass: "border-pink-500/20",   badgeClass: "text-pink-400 bg-pink-600/20",     iconColor: "text-pink-400" },
   gifts:            { label: "Gifts Over Time",               color: "oklch(60% 0.2 250)",            accentClass: "bg-blue-600/10",     borderClass: "border-blue-500/20",   badgeClass: "text-blue-400 bg-blue-600/20",     iconColor: "text-blue-400" },
   avgContribution:  { label: "Avg. Contribution Over Time",   color: "oklch(65% 0.18 155)",           accentClass: "bg-green-600/10",    borderClass: "border-green-500/20",  badgeClass: "text-green-400 bg-green-600/20",   iconColor: "text-green-400" },

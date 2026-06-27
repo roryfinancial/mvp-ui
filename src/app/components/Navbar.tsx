@@ -79,7 +79,7 @@ export default function Navbar({ creditBalance, userType, gamification }: Navbar
   const navLinks = userType === "creator" ? creatorLinks : supporterLinks;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e0e] border-b border-accent/40">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-nav border-b border-accent/40">
       <div className="max-w-full mx-auto px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <img src="/rory-word.svg" alt="Rory" className="h-9" />

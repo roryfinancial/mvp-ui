@@ -272,7 +272,7 @@ export default function CreatorProfile({
             initial={{ y: -40, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -40, opacity: 0 }}
-            className="fixed top-0 left-0 right-0 z-50 bg-[#0e0e0e] border-b border-border px-6 py-3 flex items-center justify-between"
+            className="fixed top-0 left-0 right-0 z-50 bg-nav border-b border-border px-6 py-3 flex items-center justify-between"
           >
             <div className="text-xl font-black text-white tracking-tight">Rory</div>
             <div className="flex items-center gap-4">
@@ -313,7 +313,7 @@ export default function CreatorProfile({
                   <Check className="w-3 h-3 text-white" />
                 </div>
               </div>
-              <p className="text-[#22c55e] text-sm font-bold mb-3">Ranked #{rank} Globally</p>
+              <p className="text-success text-sm font-bold mb-3">Ranked #{rank} Globally</p>
               <p className="text-white/75 text-sm max-w-lg leading-relaxed mb-6">{description}</p>
 
               {/* Action buttons — change based on auth state */}
@@ -331,7 +331,7 @@ export default function CreatorProfile({
                   // Guest: gated CTA
                   <button
                     onClick={() => navigate("/auth")}
-                    className="px-6 py-2.5 text-sm font-black bg-[#22c55e] hover:bg-[#16a34a] text-white transition-all uppercase tracking-wider flex items-center gap-2"
+                    className="px-6 py-2.5 text-sm font-black bg-success hover:bg-success-strong text-white transition-all uppercase tracking-wider flex items-center gap-2"
                   >
                     <LogIn className="w-4 h-4" />
                     Sign In to Support
@@ -341,7 +341,7 @@ export default function CreatorProfile({
                   <>
                     <button
                       onClick={() => requireAuth(() => setShowQuickTip(true))}
-                      className="px-6 py-2.5 text-sm font-black bg-[#22c55e] hover:bg-[#16a34a] text-white transition-all uppercase tracking-wider flex items-center gap-2"
+                      className="px-6 py-2.5 text-sm font-black bg-success hover:bg-success-strong text-white transition-all uppercase tracking-wider flex items-center gap-2"
                     >
                       <Zap className="w-4 h-4" />
                       Quick Tip
@@ -684,7 +684,7 @@ export default function CreatorProfile({
           >
             {tipConfirmed ? (
               <div className="p-10 text-center">
-                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 20 }} className="w-16 h-16 bg-[#22c55e] mx-auto mb-4 flex items-center justify-center">
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 300, damping: 20 }} className="w-16 h-16 bg-success mx-auto mb-4 flex items-center justify-center">
                   <Check className="w-8 h-8 text-white" />
                 </motion.div>
                 <h3 className="text-lg font-black text-foreground mb-1">Tip Sent!</h3>
@@ -694,7 +694,7 @@ export default function CreatorProfile({
               <>
                 <div className="flex items-center justify-between p-5 border-b border-border">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-[#22c55e] flex items-center justify-center">
+                    <div className="w-8 h-8 bg-success flex items-center justify-center">
                       <Zap className="w-4 h-4 text-white" />
                     </div>
                     <div>
@@ -739,7 +739,7 @@ export default function CreatorProfile({
                                       <span className="text-xs font-bold text-foreground truncate">{item.title}</span>
                                     </div>
                                     {isFunded ? (
-                                      <span className="text-[10px] font-black uppercase tracking-widest text-[#16a34a] flex-shrink-0">Funded</span>
+                                      <span className="text-[10px] font-black uppercase tracking-widest text-success-strong flex-shrink-0">Funded</span>
                                     ) : item.goalAmount ? (
                                       <span className="text-[10px] font-bold text-subtle flex-shrink-0">
                                         ${(item.raisedAmount ?? 0).toLocaleString()} / ${item.goalAmount.toLocaleString()}
@@ -754,7 +754,7 @@ export default function CreatorProfile({
                                       <div className="w-full h-1 bg-secondary overflow-hidden">
                                         <div
                                           className="h-full transition-all"
-                                          style={{ width: `${pct}%`, background: "oklch(65.6% 0.241 354.308)" }}
+                                          style={{ width: `${pct}%`, background: "var(--accent)" }}
                                         />
                                       </div>
                                     </div>
@@ -802,7 +802,7 @@ export default function CreatorProfile({
                   <button
                     onClick={handleConfirmTip}
                     disabled={!selectedProjectId || (!selectedTipAmount && !customTipAmount) || tipLoading}
-                    className="w-full py-3 bg-[#22c55e] hover:bg-[#16a34a] disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-success hover:bg-success-strong disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
                   >
                     {tipLoading ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
