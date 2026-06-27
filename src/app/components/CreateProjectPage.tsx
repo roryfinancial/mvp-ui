@@ -177,7 +177,7 @@ export default function CreateProjectPage({ onBack, onComplete }: CreateProjectP
                           Change Image
                         </div>
                       </div>
-                      <button onClick={removeCover} className="absolute top-3 right-3 w-7 h-7 bg-background border border-border flex items-center justify-center text-foreground hover:bg-red-50 hover:text-red-500 transition-colors z-10">
+                      <button onClick={removeCover} className="absolute top-3 right-3 w-7 h-7 bg-background border border-border flex items-center justify-center text-foreground hover:bg-destructive/10 hover:text-destructive transition-colors z-10">
                         <X className="w-3.5 h-3.5" />
                       </button>
                     </>
@@ -281,7 +281,7 @@ export default function CreateProjectPage({ onBack, onComplete }: CreateProjectP
                           {goals.length > 1 && (
                             <button
                               onClick={(e) => { e.stopPropagation(); removeGoal(goal.id); }}
-                              className="w-7 h-7 flex items-center justify-center text-subtle hover:text-red-500 hover:bg-red-50 transition-colors flex-shrink-0"
+                              className="w-7 h-7 flex items-center justify-center text-subtle hover:text-destructive hover:bg-destructive/10 transition-colors flex-shrink-0"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -407,7 +407,7 @@ export default function CreateProjectPage({ onBack, onComplete }: CreateProjectP
 
             {/* ── Error ───────────────────────────────────────────────── */}
             {error && (
-              <div className="p-3 border border-red-300 bg-red-50 text-red-700 text-sm">
+              <div className="p-3 border border-destructive/30 bg-destructive/10 text-destructive text-sm">
                 {error}
               </div>
             )}

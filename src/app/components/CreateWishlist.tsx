@@ -99,7 +99,7 @@ export default function CreateWishlist({ onBack, onCreateProject }: CreateProjec
                         Change Image
                       </div>
                     </div>
-                    <button onClick={removeImage} className="absolute top-3 right-3 w-7 h-7 bg-background border border-border flex items-center justify-center text-foreground hover:bg-red-50 hover:text-red-500 transition-colors z-10">
+                    <button onClick={removeImage} className="absolute top-3 right-3 w-7 h-7 bg-background border border-border flex items-center justify-center text-foreground hover:bg-destructive/10 hover:text-destructive transition-colors z-10">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </>
@@ -144,7 +144,7 @@ export default function CreateWishlist({ onBack, onCreateProject }: CreateProjec
             </div>
 
             {error && (
-              <div className="p-3 border border-red-300 bg-red-50 text-red-700 text-sm">
+              <div className="p-3 border border-destructive/30 bg-destructive/10 text-destructive text-sm">
                 {error}
               </div>
             )}

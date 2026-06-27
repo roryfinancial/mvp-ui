@@ -28,7 +28,7 @@ const EVENT_ICON: Record<FeedEvent["type"], string> = {
 
 const EVENT_COLOR: Record<FeedEvent["type"], string> = {
   gift:      "text-accent/80",
-  milestone: "text-yellow-400/80",
+  milestone: "text-warning/80",
   league_up: "text-cyan-400/80",
   new_item:  "text-green-400/80",
   streak:    "text-orange-400/80",

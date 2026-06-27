@@ -8,8 +8,8 @@ interface DailyQuestsProps {
 
 const DIFFICULTY_COLORS: Record<DailyQuest["difficulty"], string> = {
   easy:   "text-success border-success/30 bg-success/10",
-  medium: "text-yellow-500 border-yellow-500/30 bg-yellow-500/10",
-  hard:   "text-red-500 border-red-500/30 bg-red-500/10",
+  medium: "text-warning border-warning/30 bg-warning/10",
+  hard:   "text-destructive border-destructive/30 bg-destructive/10",
 };
 
 export default function DailyQuests({ quests }: DailyQuestsProps) {
@@ -61,7 +61,7 @@ export default function DailyQuests({ quests }: DailyQuestsProps) {
       </div>
 
       {allDone && (
-        <div className="text-center text-xs font-black text-yellow-500 py-2 border border-yellow-500/30 bg-yellow-500/5 rounded">
+        <div className="text-center text-xs font-black text-warning py-2 border border-warning/30 bg-warning/5 rounded">
           All quests complete! +50 XP bonus earned
         </div>
       )}

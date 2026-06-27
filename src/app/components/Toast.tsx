@@ -16,9 +16,9 @@ const KIND_STYLES: Record<ToastKind, { bg: string; border: string; icon: React.R
   gift:    { bg: "bg-pink-500/10",     border: "border-pink-500/40",      icon: <Gift className="w-4 h-4 text-pink-400" /> },
   quest:   { bg: "bg-success/10",    border: "border-success/40",     icon: <CheckCircle className="w-4 h-4 text-green-400" /> },
   success: { bg: "bg-emerald-500/10",  border: "border-emerald-500/40",   icon: <CheckCircle className="w-4 h-4 text-emerald-400" /> },
-  levelup: { bg: "bg-yellow-400/10",   border: "border-yellow-400/50",    icon: <Star className="w-4 h-4 text-yellow-400" /> },
-  funded:  { bg: "bg-yellow-400/10",   border: "border-yellow-400/50",    icon: <span className="text-base">🎰</span> },
-  error:   { bg: "bg-red-500/10",      border: "border-red-500/40",       icon: <span className="text-base text-red-400">✕</span> },
+  levelup: { bg: "bg-warning/10",   border: "border-warning/50",    icon: <Star className="w-4 h-4 text-warning" /> },
+  funded:  { bg: "bg-warning/10",   border: "border-warning/50",    icon: <span className="text-base">🎰</span> },
+  error:   { bg: "bg-destructive/10",      border: "border-destructive/40",       icon: <span className="text-base text-destructive">✕</span> },
   info:    { bg: "bg-blue-500/10",     border: "border-blue-500/40",      icon: <span className="text-base text-blue-400">ℹ</span> },
 };
 

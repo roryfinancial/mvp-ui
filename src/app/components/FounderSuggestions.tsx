@@ -297,7 +297,7 @@ export default function FounderSuggestions() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-5 right-5 z-[9998] flex items-center gap-2 rounded-full bg-amber-400 px-4 py-2.5 text-sm font-semibold text-black shadow-lg shadow-amber-500/30 transition hover:bg-amber-300"
+          className="fixed bottom-5 right-5 z-[9998] flex items-center gap-2 rounded-full bg-warning px-4 py-2.5 text-sm font-semibold text-black shadow-lg shadow-warning/30 transition hover:bg-amber-300"
           title="Founder Suggestions"
         >
           <Lightbulb className="h-4 w-4" />
@@ -316,7 +316,7 @@ export default function FounderSuggestions() {
             onPointerDown={onHeaderPointerDown}
             onPointerMove={onHeaderPointerMove}
             onPointerUp={onHeaderPointerUp}
-            className="flex cursor-grab items-center gap-2 border-b border-white/10 bg-gradient-to-r from-amber-500/20 to-transparent px-3 py-2.5 active:cursor-grabbing"
+            className="flex cursor-grab items-center gap-2 border-b border-white/10 bg-gradient-to-r from-warning/20 to-transparent px-3 py-2.5 active:cursor-grabbing"
           >
             <GripVertical className="h-4 w-4 text-amber-300/70" />
             <Lightbulb className="h-4 w-4 text-amber-300" />
@@ -361,7 +361,7 @@ export default function FounderSuggestions() {
                         onClick={() => setAuthor(name)}
                         className={`flex-1 rounded-md border px-2 py-1.5 text-xs font-semibold transition ${
                           author === name
-                            ? "border-amber-400 bg-amber-400 text-black"
+                            ? "border-warning bg-warning text-black"
                             : "border-white/10 bg-white/5 text-neutral-300 hover:border-white/20"
                         }`}
                       >
@@ -379,7 +379,7 @@ export default function FounderSuggestions() {
                     onChange={(e) => setComment(e.target.value)}
                     rows={3}
                     placeholder="What would improve this view / layout?"
-                    className="w-full resize-none rounded-md border border-white/10 bg-black/30 px-2.5 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 focus:border-amber-400/60 focus:outline-none"
+                    className="w-full resize-none rounded-md border border-white/10 bg-black/30 px-2.5 py-2 text-sm text-neutral-100 placeholder:text-neutral-500 focus:border-warning/60 focus:outline-none"
                   />
                 </div>
 
@@ -388,7 +388,7 @@ export default function FounderSuggestions() {
                   <button
                     onClick={capture}
                     disabled={capturing}
-                    className="flex items-center justify-center gap-2 rounded-md border border-dashed border-white/20 bg-white/5 px-3 py-2 text-xs font-medium text-neutral-300 transition hover:border-amber-400/50 hover:text-amber-200 disabled:opacity-60"
+                    className="flex items-center justify-center gap-2 rounded-md border border-dashed border-white/20 bg-white/5 px-3 py-2 text-xs font-medium text-neutral-300 transition hover:border-warning/50 hover:text-amber-200 disabled:opacity-60"
                   >
                     {capturing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
                     {capturing ? "Capturing view…" : "Attach screenshot of this view (optional)"}
@@ -399,14 +399,14 @@ export default function FounderSuggestions() {
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => setTool("pen")}
-                        className={`flex items-center gap-1 rounded px-2 py-1 text-xs transition ${tool === "pen" ? "bg-red-500/20 text-red-300" : "bg-white/5 text-neutral-300 hover:bg-white/10"}`}
+                        className={`flex items-center gap-1 rounded px-2 py-1 text-xs transition ${tool === "pen" ? "bg-destructive/20 text-destructive/30" : "bg-white/5 text-neutral-300 hover:bg-white/10"}`}
                         title="Red pen"
                       >
                         <Pencil className="h-3.5 w-3.5" /> Pen
                       </button>
                       <button
                         onClick={box ? () => setTool("box") : addBox}
-                        className={`flex items-center gap-1 rounded px-2 py-1 text-xs transition ${tool === "box" && box ? "bg-amber-400/20 text-amber-200" : "bg-white/5 text-neutral-300 hover:bg-white/10"}`}
+                        className={`flex items-center gap-1 rounded px-2 py-1 text-xs transition ${tool === "box" && box ? "bg-warning/20 text-amber-200" : "bg-white/5 text-neutral-300 hover:bg-white/10"}`}
                         title="Highlight box"
                       >
                         <Square className="h-3.5 w-3.5" /> {box ? "Box" : "Add box"}
@@ -454,7 +454,7 @@ export default function FounderSuggestions() {
                               onPointerDown={onBoxPointerDown("resize")}
                               onPointerMove={onBoxPointerMove}
                               onPointerUp={onBoxPointerUp}
-                              className="absolute -bottom-1.5 -right-1.5 h-3.5 w-3.5 cursor-se-resize rounded-sm border border-black/40 bg-amber-400"
+                              className="absolute -bottom-1.5 -right-1.5 h-3.5 w-3.5 cursor-se-resize rounded-sm border border-black/40 bg-warning"
                             />
                           </div>
                         );
@@ -466,12 +466,12 @@ export default function FounderSuggestions() {
                   </div>
                 )}
 
-                {error && <p className="text-xs text-red-400">{error}</p>}
+                {error && <p className="text-xs text-destructive">{error}</p>}
 
                 <button
                   onClick={submit}
                   disabled={submitting}
-                  className="flex items-center justify-center gap-2 rounded-md bg-amber-400 px-3 py-2 text-sm font-semibold text-black transition hover:bg-amber-300 disabled:opacity-60"
+                  className="flex items-center justify-center gap-2 rounded-md bg-warning px-3 py-2 text-sm font-semibold text-black transition hover:bg-amber-300 disabled:opacity-60"
                 >
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   Save suggestion
@@ -484,13 +484,13 @@ export default function FounderSuggestions() {
                 <div className="flex items-center gap-1 rounded-lg bg-white/5 p-0.5 text-[11px] font-bold">
                   <button
                     onClick={() => setShowArchived(false)}
-                    className={`flex-1 rounded px-2 py-1 transition ${!showArchived ? "bg-amber-400/20 text-amber-200" : "text-neutral-400 hover:text-neutral-200"}`}
+                    className={`flex-1 rounded px-2 py-1 transition ${!showArchived ? "bg-warning/20 text-amber-200" : "text-neutral-400 hover:text-neutral-200"}`}
                   >
                     Active
                   </button>
                   <button
                     onClick={() => setShowArchived(true)}
-                    className={`flex-1 rounded px-2 py-1 transition ${showArchived ? "bg-amber-400/20 text-amber-200" : "text-neutral-400 hover:text-neutral-200"}`}
+                    className={`flex-1 rounded px-2 py-1 transition ${showArchived ? "bg-warning/20 text-amber-200" : "text-neutral-400 hover:text-neutral-200"}`}
                   >
                     Archived
                   </button>
@@ -503,7 +503,7 @@ export default function FounderSuggestions() {
                   items.map((it) => (
                     <div key={it.id} className="rounded-lg border border-white/10 bg-white/5 p-2.5">
                       <div className="mb-1 flex items-center gap-2">
-                        <span className="rounded bg-amber-400/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-200">{it.author}</span>
+                        <span className="rounded bg-warning/20 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-200">{it.author}</span>
                         <span className="text-[10px] text-neutral-500">{new Date(it.createdAt).toLocaleString()}</span>
                         <button
                           onClick={() => setArchived(it.id, !it.archived)}
@@ -512,7 +512,7 @@ export default function FounderSuggestions() {
                         >
                           {it.archived ? <ArchiveRestore className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
                         </button>
-                        <button onClick={() => remove(it.id)} className="rounded p-0.5 text-neutral-500 transition hover:bg-white/10 hover:text-red-400" title="Delete">
+                        <button onClick={() => remove(it.id)} className="rounded p-0.5 text-neutral-500 transition hover:bg-white/10 hover:text-destructive" title="Delete">
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
                       </div>

@@ -18,7 +18,7 @@ interface ReferralsProps {}
 const commissionTiers = [
   { label: "Starter", range: "0–5 referrals", rate: "5%", color: "bg-purple-600/15", border: "border-purple-500/30", badge: "text-purple-400 bg-purple-500/20" },
   { label: "Builder", range: "6–15 referrals", rate: "7%", color: "bg-pink-600/15", border: "border-pink-500/30", badge: "text-pink-400 bg-pink-500/20" },
-  { label: "Pro", range: "16–30 referrals", rate: "9%", color: "bg-amber-600/15", border: "border-amber-500/30", badge: "text-amber-400 bg-amber-500/20" },
+  { label: "Pro", range: "16–30 referrals", rate: "9%", color: "bg-amber-600/15", border: "border-warning/30", badge: "text-warning bg-warning/20" },
   { label: "Elite", range: "31+ referrals", rate: "12%", color: "bg-emerald-600/15", border: "border-emerald-500/30", badge: "text-emerald-400 bg-emerald-500/20" },
 ];
 
@@ -33,7 +33,7 @@ function formatDate(iso: string): string {
 const statusStyle: Record<string, string> = {
   ACTIVE:   "text-emerald-400 bg-emerald-500/15 border border-emerald-500/30",
   INACTIVE: "text-muted-foreground  bg-muted  border border-border",
-  PENDING:  "text-amber-400  bg-amber-500/15  border border-amber-500/30",
+  PENDING:  "text-warning  bg-warning/15  border border-warning/30",
 };
 
 export default function Referrals(_: ReferralsProps) {
@@ -180,12 +180,12 @@ export default function Referrals(_: ReferralsProps) {
                 delay: 0.1,
               },
               {
-                icon: <Users className="w-8 h-8 text-amber-400" />,
+                icon: <Users className="w-8 h-8 text-warning" />,
                 label: "Active Referrals",
                 value: String(activeCount),
                 change: `${activeCount} of ${totalCount}`,
-                badgeClass: "text-amber-400 bg-amber-500/20",
-                border: "border-amber-500/20",
+                badgeClass: "text-warning bg-warning/20",
+                border: "border-warning/20",
                 bg: "bg-amber-600/10",
                 delay: 0.26,
               },

@@ -402,7 +402,7 @@ export default function Settings({
 
                   <div className="pt-6 mt-6 border-t border-border">
                     <SectionLabel>Danger Zone</SectionLabel>
-                    <button className="px-4 py-2 border border-red-500/40 text-red-500 hover:bg-red-500/10 text-sm font-bold transition-colors">
+                    <button className="px-4 py-2 border border-destructive/40 text-destructive hover:bg-destructive/10 text-sm font-bold transition-colors">
                       Delete Account
                     </button>
                   </div>
@@ -493,7 +493,7 @@ export default function Settings({
                                     Cancel
                                   </button>
                                 </div>
-                                {depositError && <p className="text-red-500 text-xs">{depositError}</p>}
+                                {depositError && <p className="text-destructive text-xs">{depositError}</p>}
                                 <p className="text-subtle text-[11px]">You'll be redirected to Stripe to complete payment</p>
                               </div>
                             )}
@@ -521,7 +521,7 @@ export default function Settings({
                               ) : connectStatus?.connected ? (
                                 <div>
                                   <div className="flex items-center gap-2 mb-3">
-                                    <AlertCircle className="w-5 h-5 text-yellow-500" />
+                                    <AlertCircle className="w-5 h-5 text-warning" />
                                     <div>
                                       <p className="text-sm font-bold text-foreground">Setup incomplete</p>
                                       <p className="text-xs text-subtle">Complete your Stripe account to receive tips</p>
@@ -551,7 +551,7 @@ export default function Settings({
                                   >
                                     {connectLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><ExternalLink className="w-4 h-4" /> Set Up Payouts</>}
                                   </motion.button>
-                                  {connectError && <p className="text-red-500 text-xs mt-2">{connectError}</p>}
+                                  {connectError && <p className="text-destructive text-xs mt-2">{connectError}</p>}
                                 </div>
                               )}
                             </div>
@@ -591,11 +591,11 @@ export default function Settings({
                                 <div className={`w-8 h-8 flex items-center justify-center flex-shrink-0 ${
                                   tx.type === "DEPOSIT" ? "bg-success/10" :
                                   tx.type === "GIFT_RECEIVED" ? "bg-blue-500/10" :
-                                  "bg-red-500/10"
+                                  "bg-destructive/10"
                                 }`}>
                                   {tx.type === "DEPOSIT" ? <ArrowDownLeft className="w-4 h-4 text-success" /> :
                                    tx.type === "GIFT_RECEIVED" ? <ArrowDownLeft className="w-4 h-4 text-blue-500" /> :
-                                   <ArrowUpRight className="w-4 h-4 text-red-500" />}
+                                   <ArrowUpRight className="w-4 h-4 text-destructive" />}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm font-bold text-foreground truncate">{tx.description}</p>
@@ -605,7 +605,7 @@ export default function Settings({
                                 </div>
                                 <div className="flex-shrink-0 text-right">
                                   <p className={`text-sm font-black ${
-                                    tx.type === "GIFT_SENT" ? "text-red-500" : "text-success"
+                                    tx.type === "GIFT_SENT" ? "text-destructive" : "text-success"
                                   }`}>
                                     {tx.type === "GIFT_SENT" ? "-" : "+"}${tx.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                   </p>
@@ -813,7 +813,7 @@ export default function Settings({
                               </div>
                               <button
                                 onClick={() => handleDisconnectPlatform(cp.platform)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-500/10 border border-red-500/30 transition-colors"
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-destructive hover:bg-destructive/10 border border-destructive/30 transition-colors"
                               >
                                 <Trash2 className="w-3 h-3" />
                                 Disconnect

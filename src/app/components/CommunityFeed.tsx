@@ -17,10 +17,10 @@ const TABS: { id: FeedTab; label: string; icon: React.ReactNode }[] = [
 ];
 
 const PLATFORM_ICON: Record<string, { label: string; color: string }> = {
-  YOUTUBE:   { label: "YouTube",   color: "bg-red-500" },
+  YOUTUBE:   { label: "YouTube",   color: "bg-destructive" },
   TWITCH:    { label: "Twitch",    color: "bg-purple-500" },
   TWITTER:   { label: "X",         color: "bg-foreground" },
-  INSTAGRAM: { label: "Instagram", color: "bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600" },
+  INSTAGRAM: { label: "Instagram", color: "bg-gradient-to-tr from-warning via-pink-500 to-purple-600" },
   TIKTOK:    { label: "TikTok",    color: "bg-foreground" },
 };
 
@@ -277,7 +277,7 @@ function PostCard({ post, index, onLike, onGift, onNavigate }: PostCardProps) {
             {contentBadge && (
               <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${
                 isLive
-                  ? "text-white bg-red-500 animate-pulse"
+                  ? "text-white bg-destructive animate-pulse"
                   : "text-muted-foreground bg-muted"
               }`}>
                 {contentBadge}
@@ -360,13 +360,13 @@ function PostCard({ post, index, onLike, onGift, onNavigate }: PostCardProps) {
           <motion.button
             whileTap={{ scale: 0.85 }}
             onClick={() => onLike(post.id)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-full hover:bg-red-500/10 transition-colors group"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-full hover:bg-destructive/10 transition-colors group"
           >
             <Heart
-              className={`w-[18px] h-[18px] transition-all ${post.likedByMe ? "text-red-500 fill-red-500 scale-110" : "text-muted-foreground group-hover:text-red-400"}`}
+              className={`w-[18px] h-[18px] transition-all ${post.likedByMe ? "text-destructive fill-destructive scale-110" : "text-muted-foreground group-hover:text-destructive"}`}
             />
             {post.likeCount > 0 && (
-              <span className={`text-xs font-bold ${post.likedByMe ? "text-red-500" : "text-muted-foreground"}`}>
+              <span className={`text-xs font-bold ${post.likedByMe ? "text-destructive" : "text-muted-foreground"}`}>
                 {formatNumber(post.likeCount)}
               </span>
             )}

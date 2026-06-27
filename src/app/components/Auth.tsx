@@ -292,7 +292,7 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
                   {error && (
                     <motion.div
                       initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                      className="flex items-center gap-2 mb-4 px-4 py-3 border border-red-500/30 bg-red-500/5 text-red-500 text-sm"
+                      className="flex items-center gap-2 mb-4 px-4 py-3 border border-destructive/30 bg-destructive/5 text-destructive text-sm"
                     >
                       <AlertCircle className="w-4 h-4 shrink-0" />{error}
                     </motion.div>
@@ -390,7 +390,7 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
                   {error && (
                     <motion.div
                       initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                      className="flex items-center gap-2 mb-4 px-4 py-3 border border-red-500/30 bg-red-500/5 text-red-500 text-sm"
+                      className="flex items-center gap-2 mb-4 px-4 py-3 border border-destructive/30 bg-destructive/5 text-destructive text-sm"
                     >
                       <AlertCircle className="w-4 h-4 shrink-0" />{error}
                     </motion.div>
@@ -489,7 +489,7 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
                   {error && (
                     <motion.div
                       initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
-                      className="flex items-center gap-2 mb-4 px-4 py-3 border border-red-500/30 bg-red-500/5 text-red-500 text-sm"
+                      className="flex items-center gap-2 mb-4 px-4 py-3 border border-destructive/30 bg-destructive/5 text-destructive text-sm"
                     >
                       <AlertCircle className="w-4 h-4 shrink-0" />{error}
                     </motion.div>

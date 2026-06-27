@@ -314,7 +314,7 @@ export default function ConnectPlatforms({ userType, onBack, onContinue }: Conne
                     {isConnected ? (
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDisconnect(platform.id); }}
-                        className="w-8 h-8 flex items-center justify-center bg-accent text-white hover:bg-red-600 transition-colors"
+                        className="w-8 h-8 flex items-center justify-center bg-accent text-white hover:bg-destructive transition-colors"
                       >
                         {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                       </button>
@@ -363,7 +363,7 @@ export default function ConnectPlatforms({ userType, onBack, onContinue }: Conne
                           {platform.urlHint}
                         </p>
                         {errors[platform.id] && (
-                          <p className="text-[11px] text-red-500 mt-1">{errors[platform.id]}</p>
+                          <p className="text-[11px] text-destructive mt-1">{errors[platform.id]}</p>
                         )}
                       </div>
                     </motion.div>
@@ -372,8 +372,8 @@ export default function ConnectPlatforms({ userType, onBack, onContinue }: Conne
 
                 {/* Error display for OAuth platforms */}
                 {errors[platform.id] && OAUTH_PLATFORMS.has(platform.id) && !isConnected && (
-                  <div className="px-4 py-2 border border-t-0 border-red-500/30 bg-red-500/5">
-                    <p className="text-[11px] text-red-500">{errors[platform.id]}</p>
+                  <div className="px-4 py-2 border border-t-0 border-destructive/30 bg-destructive/5">
+                    <p className="text-[11px] text-destructive">{errors[platform.id]}</p>
                   </div>
                 )}
               </motion.div>

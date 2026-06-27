@@ -493,7 +493,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
         {/* Main Content */}
         <main className="order-1 lg:order-2 flex-1 p-8 bg-background">
           {dataError && (
-            <div className="mb-6 p-4 border border-red-300 bg-red-50 text-red-700 text-sm font-medium">
+            <div className="mb-6 p-4 border border-destructive/30 bg-destructive/10 text-destructive text-sm font-medium">
               {dataError}
             </div>
           )}
@@ -590,7 +590,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                           )}
                           <button
                             onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: "project", projectId: project.id }); }}
-                            className="absolute top-2 left-2 w-7 h-7 bg-background/80 backdrop-blur-sm border border-border hover:bg-red-500 hover:border-red-500 hover:text-white text-subtle flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                            className="absolute top-2 left-2 w-7 h-7 bg-background/80 backdrop-blur-sm border border-border hover:bg-destructive hover:border-destructive hover:text-white text-subtle flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
                             title="Delete project"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -912,7 +912,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                                     if (res.success) setEvents(prev => prev.filter(e => e.id !== event.id));
                                   })();
                                 }}
-                                className="absolute top-2 left-2 w-7 h-7 bg-background/80 backdrop-blur-sm border border-border hover:bg-red-500 hover:border-red-500 hover:text-white text-subtle flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                                className="absolute top-2 left-2 w-7 h-7 bg-background/80 backdrop-blur-sm border border-border hover:bg-destructive hover:border-destructive hover:text-white text-subtle flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
                                 title="Delete event"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -1073,7 +1073,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                           whileHover={{ scale: 1.01 }}
                           whileTap={{ scale: 0.99 }}
                           onClick={() => setDeleteTarget({ type: "project", projectId: currentProject.id })}
-                          className="flex items-center gap-2 px-4 py-2 border border-border hover:bg-red-500 hover:border-red-500 hover:text-white text-subtle font-bold text-xs uppercase tracking-wide transition-colors"
+                          className="flex items-center gap-2 px-4 py-2 border border-border hover:bg-destructive hover:border-destructive hover:text-white text-subtle font-bold text-xs uppercase tracking-wide transition-colors"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           Delete
@@ -1132,7 +1132,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                               <Gift className="w-12 h-12 text-subtle" />
                               <button
                                 onClick={(e) => { e.stopPropagation(); setDeleteTarget({ type: "item", projectId: currentProject.id, itemId: item.id }); }}
-                                className="absolute top-2 left-2 w-7 h-7 bg-background/80 backdrop-blur-sm border border-border hover:bg-red-500 hover:border-red-500 hover:text-white text-subtle flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                                className="absolute top-2 left-2 w-7 h-7 bg-background/80 backdrop-blur-sm border border-border hover:bg-destructive hover:border-destructive hover:text-white text-subtle flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
                                 title="Delete item"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -1183,8 +1183,8 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
             >
               <div className="flex items-center justify-between p-5 border-b border-border">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-red-500/10 flex items-center justify-center">
-                    <Trash2 className="w-4 h-4 text-red-500" />
+                  <div className="w-8 h-8 bg-destructive/10 flex items-center justify-center">
+                    <Trash2 className="w-4 h-4 text-destructive" />
                   </div>
                   <h3 className="text-sm font-black text-foreground">
                     Delete {deleteTarget.type === "project" ? "Project" : "Item"}
@@ -1219,7 +1219,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                 <button
                   onClick={handleDelete}
                   disabled={deleteLoading}
-                  className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 bg-destructive hover:bg-destructive disabled:opacity-50 text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
                 >
                   {deleteLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                   {deleteLoading ? "Deleting..." : "Delete"}

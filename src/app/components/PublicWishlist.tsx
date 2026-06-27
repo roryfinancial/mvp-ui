@@ -365,7 +365,7 @@ export default function PublicWishlist({
                 {/* Confirm */}
                 <div className="p-5">
                   {tipError && (
-                    <p className="text-red-500 text-xs font-medium mb-3">{tipError}</p>
+                    <p className="text-destructive text-xs font-medium mb-3">{tipError}</p>
                   )}
                   <button
                     onClick={handleConfirmTip}

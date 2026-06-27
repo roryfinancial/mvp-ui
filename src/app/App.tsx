@@ -361,7 +361,7 @@ function SettingsRoute({
         <div className={`fixed top-4 right-4 z-50 px-4 py-3 text-sm font-medium border shadow-lg ${
           toast.type === "success"
             ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-500"
-            : "bg-red-500/10 border-red-500/30 text-red-500"
+            : "bg-destructive/10 border-destructive/30 text-destructive"
         }`}>
           {toast.message}
         </div>

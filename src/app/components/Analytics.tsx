@@ -20,7 +20,7 @@ const metricConfig: Record<Metric, { label: string; color: string; accentClass: 
   supporters:       { label: "Supporter Growth",              color: "oklch(72% 0.2 350)",            accentClass: "bg-pink-600/10",     borderClass: "border-pink-500/20",   badgeClass: "text-pink-400 bg-pink-600/20",     iconColor: "text-pink-400" },
   gifts:            { label: "Gifts Over Time",               color: "oklch(60% 0.2 250)",            accentClass: "bg-blue-600/10",     borderClass: "border-blue-500/20",   badgeClass: "text-blue-400 bg-blue-600/20",     iconColor: "text-blue-400" },
   avgContribution:  { label: "Avg. Contribution Over Time",   color: "oklch(65% 0.18 155)",           accentClass: "bg-green-600/10",    borderClass: "border-success/20",  badgeClass: "text-green-400 bg-green-600/20",   iconColor: "text-green-400" },
-  referralEarnings: { label: "Referral Earnings Over Time",   color: "oklch(72% 0.18 80)",            accentClass: "bg-amber-600/10",    borderClass: "border-amber-500/20",  badgeClass: "text-amber-400 bg-amber-600/20",   iconColor: "text-amber-400" },
+  referralEarnings: { label: "Referral Earnings Over Time",   color: "oklch(72% 0.18 80)",            accentClass: "bg-amber-600/10",    borderClass: "border-warning/20",  badgeClass: "text-warning bg-amber-600/20",   iconColor: "text-warning" },
   commissionEarned: { label: "Commission Earned Over Time",   color: "oklch(68% 0.15 185)",           accentClass: "bg-teal-600/10",     borderClass: "border-teal-500/20",   badgeClass: "text-teal-400 bg-teal-600/20",     iconColor: "text-teal-400" },
 };
 
@@ -105,7 +105,7 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
   ];
 
   const referralStatCards: { metric: Metric; icon: React.ReactNode; label: string; value: string; change: string }[] = [
-    { metric: "referralEarnings", icon: <Link2 className="w-10 h-10 text-amber-400" />,       label: "Referral Earnings",    value: stats.referralEarnings,           change: stats.referralEarningsChange },
+    { metric: "referralEarnings", icon: <Link2 className="w-10 h-10 text-warning" />,       label: "Referral Earnings",    value: stats.referralEarnings,           change: stats.referralEarningsChange },
     { metric: "commissionEarned", icon: <TrendingUp className="w-10 h-10 text-teal-400" />,   label: "Commission Earned",    value: stats.commissionEarned,           change: stats.commissionEarnedChange },
   ];
 
@@ -415,7 +415,7 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.45 }}
-            className="mt-8 p-8 bg-amber-600/10 border border-amber-500/20"
+            className="mt-8 p-8 bg-amber-600/10 border border-warning/20"
           >
             <div className="flex items-start justify-between flex-wrap gap-4 mb-6">
               <div>
@@ -426,7 +426,7 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={onNavigateReferrals}
-                className="flex items-center gap-2 px-5 py-2.5 bg-amber-600/15 border border-amber-500/30 text-amber-400 font-medium text-sm hover:bg-amber-600/25 transition-all"
+                className="flex items-center gap-2 px-5 py-2.5 bg-amber-600/15 border border-warning/30 text-warning font-medium text-sm hover:bg-amber-600/25 transition-all"
               >
                 Manage Referrals
                 <ArrowRight className="w-4 h-4" />
@@ -435,12 +435,12 @@ export default function Analytics({ onNavigateReferrals }: AnalyticsProps) {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               {[
-                { label: "Active Referred Creators", value: "3", sub: "of 5 total", color: "text-amber-400" },
+                { label: "Active Referred Creators", value: "3", sub: "of 5 total", color: "text-warning" },
                 {
                   label: "Referral Earnings",
                   value: stats.referralEarnings,
                   sub: `${stats.referralEarningsChange} vs prior ${timePeriod}`,
-                  color: "text-amber-400",
+                  color: "text-warning",
                 },
                 {
                   label: "Commission Earned",

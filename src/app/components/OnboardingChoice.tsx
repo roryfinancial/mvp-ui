@@ -256,7 +256,7 @@ export default function OnboardingChoice({ userType: initialUserType, onBack, on
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-2 p-3 mb-4 border border-red-300 bg-red-50 text-red-700 text-sm"
+              className="flex items-center gap-2 p-3 mb-4 border border-destructive/30 bg-destructive/10 text-destructive text-sm"
             >
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               {error}
@@ -540,7 +540,7 @@ export default function OnboardingChoice({ userType: initialUserType, onBack, on
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-2 p-3 mb-4 border border-red-300 bg-red-50 text-red-700 text-sm"
+              className="flex items-center gap-2 p-3 mb-4 border border-destructive/30 bg-destructive/10 text-destructive text-sm"
             >
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               {error}

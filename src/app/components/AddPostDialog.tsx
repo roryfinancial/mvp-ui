@@ -140,7 +140,7 @@ export default function AddPostDialog({ open, onClose, onPostCreated, preselecte
                   {loadingPreview ? <Loader2 className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />}
                 </button>
               </div>
-              {previewError && <p className="text-xs text-red-500 mt-1">{previewError}</p>}
+              {previewError && <p className="text-xs text-destructive mt-1">{previewError}</p>}
             </div>
 
             {/* Preview Card */}
@@ -198,7 +198,7 @@ export default function AddPostDialog({ open, onClose, onPostCreated, preselecte
             {/* Submit */}
             {preview && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                {submitError && <p className="text-xs text-red-500 mb-2">{submitError}</p>}
+                {submitError && <p className="text-xs text-destructive mb-2">{submitError}</p>}
                 <button
                   onClick={handleSubmit}
                   disabled={submitting || success}

@@ -15,7 +15,7 @@ interface CreatorCardProps {
 
 function urgencyChip(c: CreatorFeedItem): { label: string; color: string } | null {
   const pct = c.raisedAmount / c.goalAmount;
-  if (pct >= 0.9) return { label: "⏰ Almost Funded", color: "bg-yellow-400/20 text-yellow-400 border-yellow-400/40" };
+  if (pct >= 0.9) return { label: "⏰ Almost Funded", color: "bg-warning/20 text-warning border-warning/40" };
   if (c.giftsLast24h >= 5) return { label: "🔥 On a Roll", color: "bg-orange-400/20 text-orange-400 border-orange-400/40" };
   const ageHours = (Date.now() - new Date(c.createdAt).getTime()) / 3_600_000;
   if (ageHours < 48) return { label: "✨ New Item", color: "bg-purple-400/20 text-purple-400 border-purple-400/40" };
@@ -24,7 +24,7 @@ function urgencyChip(c: CreatorFeedItem): { label: string; color: string } | nul
 
 function progressBarColor(pct: number): string {
   if (pct >= 1) return "bg-success";
-  if (pct >= 0.9) return "bg-yellow-400";
+  if (pct >= 0.9) return "bg-warning";
   return "bg-accent";
 }
 

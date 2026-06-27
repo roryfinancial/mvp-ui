@@ -10,7 +10,7 @@ interface XPBarProps {
 const LEAGUE_BG: Record<GamificationState["leagueTier"], string> = {
   bronze:  "bg-amber-600/20 border-amber-600/40",
   silver:  "bg-slate-400/20 border-slate-400/40",
-  gold:    "bg-yellow-400/20 border-yellow-400/40",
+  gold:    "bg-warning/20 border-warning/40",
   diamond: "bg-cyan-400/20 border-cyan-400/40",
 };
 

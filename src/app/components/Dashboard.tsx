@@ -229,7 +229,7 @@ export default function Dashboard({ userType, onBack }: DashboardProps) {
                           <div className="w-14 h-14 rounded-full bg-purple-600 flex items-center justify-center font-bold text-lg">
                             {creator.avatar}
                           </div>
-                          <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-[#0a0a0a] border-2 border-yellow-500 flex items-center justify-center text-xs">
+                          <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-[#0a0a0a] border-2 border-warning flex items-center justify-center text-xs">
                             {index + 1}
                           </div>
                         </div>

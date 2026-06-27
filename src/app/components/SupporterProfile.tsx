@@ -179,7 +179,7 @@ export default function SupporterProfile({
                     </div>
                   )}
                   {creator.isLive && (
-                    <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-red-600 text-white text-[8px] font-black uppercase flex items-center gap-1">
+                    <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-destructive text-white text-[8px] font-black uppercase flex items-center gap-1">
                       <span className="w-1 h-1 bg-white rounded-full animate-pulse" />
                       Live
                     </div>
