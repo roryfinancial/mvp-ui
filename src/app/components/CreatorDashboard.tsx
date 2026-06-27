@@ -305,8 +305,32 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
 
   if (dataLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-accent" />
+      <div className="min-h-screen bg-background text-foreground">
+        <div className="flex flex-col lg:grid lg:grid-cols-[320px_1fr] gap-0 min-h-screen pt-[57px]">
+          {/* Sidebar skeleton */}
+          <aside className="w-full lg:h-[calc(100vh-57px)] bg-muted p-6 flex flex-col gap-8 border-r border-border">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full skeleton" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-28 skeleton" />
+                <div className="h-2 w-16 skeleton" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-12 w-full skeleton" />)}
+            </div>
+            <div className="space-y-2">
+              {Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-9 w-full skeleton" />)}
+            </div>
+          </aside>
+          {/* Main skeleton */}
+          <main className="flex-1 p-8 space-y-8">
+            <div className="h-28 w-full skeleton" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-44 w-full skeleton" />)}
+            </div>
+          </main>
+        </div>
       </div>
     );
   }
