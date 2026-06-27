@@ -160,8 +160,7 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
           initial={{ opacity: 0, x: -40 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="relative w-full md:w-1/2 bg-nav p-12 flex flex-col justify-center items-center text-center overflow-hidden"
-          style={{ borderRight: "2px solid color-mix(in srgb, var(--accent) 50%, transparent)" }}
+          className="relative w-full md:w-1/2 bg-nav p-12 flex flex-col justify-center items-center text-center overflow-hidden border-r-2 border-accent/50"
         >
           <div
             aria-hidden
@@ -172,7 +171,7 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
             <img src="/rory-word.svg" alt="Rory" className="h-8 mb-8 mx-auto" />
             <h2 className="text-5xl font-black text-white mb-6 leading-tight tracking-tight">
               Your project,<br />
-              <span style={{ color: "var(--accent)" }}>funded.</span>
+              <span className="text-accent">funded.</span>
             </h2>
             <p className="text-lg text-white/60 max-w-md mx-auto leading-relaxed">
               Set goals for your project. Fans donate to help you achieve them.
@@ -360,7 +359,7 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
                 exit={{ opacity: 0, x: -24 }}
                 transition={{ duration: 0.22 }}
               >
-                <p className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">Verification</p>
+                <p className="eyebrow mb-3">Verification</p>
                 <h1 className="text-3xl font-black text-foreground mb-2 tracking-tight">
                   {channel === "email" ? "Check your email." : "Check your phone."}
                 </h1>
@@ -437,7 +436,7 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
                 exit={{ opacity: 0, x: -24 }}
                 transition={{ duration: 0.22 }}
               >
-                <p className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">Almost there</p>
+                <p className="eyebrow mb-3">Almost there</p>
                 <h1 className="text-3xl font-black text-foreground mb-2 tracking-tight">Check your email.</h1>
                 <p className="text-sm text-subtle mb-8">
                   We sent a confirmation link to{" "}
@@ -461,7 +460,7 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
                 exit={{ opacity: 0, x: -24 }}
                 transition={{ duration: 0.22 }}
               >
-                <p className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">
+                <p className="eyebrow mb-3">
                   {mode === "signup" ? "Create Account" : "Password"}
                 </p>
                 <h1 className="text-3xl font-black text-foreground mb-2 tracking-tight">

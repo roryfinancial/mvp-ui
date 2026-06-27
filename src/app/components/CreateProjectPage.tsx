@@ -136,7 +136,7 @@ export default function CreateProjectPage({ onBack, onComplete }: CreateProjectP
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="mb-12"
           >
-            <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">New Project</div>
+            <div className="eyebrow mb-2">New Project</div>
             <h1 className="text-5xl font-black text-foreground mb-3 tracking-tight">Create a Project</h1>
             <p className="text-lg text-muted-foreground">
               Define your project and set funding goals. Supporters will see each goal and can donate directly.
@@ -151,7 +151,7 @@ export default function CreateProjectPage({ onBack, onComplete }: CreateProjectP
           >
             {/* ── Project Details ─────────────────────────────────────────── */}
             <div className="space-y-6">
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-subtle">
+              <div className="flex items-center gap-2 eyebrow">
                 <span className="w-6 h-6 bg-accent text-white flex items-center justify-center text-[10px] font-black">1</span>
                 Project Details
               </div>
@@ -226,7 +226,7 @@ export default function CreateProjectPage({ onBack, onComplete }: CreateProjectP
             {/* ── Funding Goals ────────────────────────────────────────── */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-subtle">
+                <div className="flex items-center gap-2 eyebrow">
                   <span className="w-6 h-6 bg-accent text-white flex items-center justify-center text-[10px] font-black">2</span>
                   Funding Goals
                 </div>
@@ -373,7 +373,7 @@ export default function CreateProjectPage({ onBack, onComplete }: CreateProjectP
                 animate={{ opacity: 1, y: 0 }}
                 className="p-5 border border-border bg-muted/50 space-y-3"
               >
-                <div className="text-[10px] font-black uppercase tracking-widest text-subtle">Project Preview</div>
+                <div className="eyebrow">Project Preview</div>
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h3 className="text-lg font-black text-foreground">{name}</h3>

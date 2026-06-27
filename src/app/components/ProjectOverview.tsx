@@ -62,7 +62,7 @@ export default function ProjectOverview({
             </div>
 
             <div className="flex-1">
-              <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">{projectName}</div>
+              <div className="eyebrow mb-2">{projectName}</div>
               <h1 className="text-5xl font-black text-foreground mb-4 tracking-tight">{projectTitle}</h1>
               <button
                 onClick={onViewCreator}

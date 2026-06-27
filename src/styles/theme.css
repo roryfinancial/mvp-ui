@@ -165,12 +165,31 @@
 
   /* ── Gaming feel: CTA glow + card depth ──────────────────────────────────── */
   .btn-cta {
-    background: oklch(65.6% 0.241 354.308);
+    background: var(--accent);
     box-shadow: var(--shadow-cta);
     transition: box-shadow 0.2s ease, transform 0.15s ease;
   }
   .btn-cta:hover {
-    box-shadow: 0 6px 28px oklch(65.6% 0.241 354.308 / 0.45);
+    box-shadow: 0 6px 28px color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  /* Secondary "confirm/gift" CTA — green sibling of .btn-cta */
+  .btn-success {
+    background: var(--success);
+    transition: background-color 0.15s ease, transform 0.15s ease;
+  }
+  .btn-success:hover {
+    background: var(--success-strong);
+  }
+
+  /* ── Repeated label + status-tag patterns (single source) ────────────────── */
+  .eyebrow {
+    @apply text-[10px] font-black uppercase tracking-widest text-subtle;
+  }
+  .tag-funded {
+    @apply bg-success/10 border-success text-success-strong;
+  }
+  .tag-active {
+    @apply bg-accent/10 border-accent text-accent;
   }
   .card-game {
     box-shadow: var(--shadow-card);

@@ -65,7 +65,7 @@ export default function CreateWishlist({ onBack, onCreateProject }: CreateProjec
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="mb-12"
           >
-            <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">New Project</div>
+            <div className="eyebrow mb-2">New Project</div>
             <h1 className="text-5xl font-black text-foreground mb-3 tracking-tight">Create a Project</h1>
             <p className="text-lg text-muted-foreground">
               A project has a funding goal made up of the items needed to achieve it. Fans donate directly to the project.

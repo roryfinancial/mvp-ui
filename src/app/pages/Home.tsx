@@ -13,13 +13,13 @@ interface HomeProps {
 const HERO_COPY = {
   creator: {
     badge: "For Creators · Keep 100%",
-    headline: <>Your project,<br /><span style={{ color: "var(--accent)" }}>funded.</span></>,
+    headline: <>Your project,<br /><span className="text-accent">funded.</span></>,
     sub: "Set goals for your project and let your fans fund them. You keep 100% of every gift — Rory never takes a cut.",
     cta: "Start Your Project",
   },
   supporter: {
     badge: "For Supporters",
-    headline: <>Fund the creators<br /><span style={{ color: "var(--accent)" }}>you love.</span></>,
+    headline: <>Fund the creators<br /><span className="text-accent">you love.</span></>,
     sub: "Discover creators, fund the goals that matter to them, and earn your place on the community leaderboard.",
     cta: "Find Creators to Support",
   },
@@ -58,11 +58,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
       {/* Hero — dark panel for gaming impact */}
       <section className="pt-0 pb-0 bg-nav relative overflow-hidden">
         {/* Subtle radial glow behind heading */}
-        <div
-          aria-hidden
-          className="absolute inset-0 pointer-events-none"
-          style={{}}
-        />
+        <div aria-hidden className="absolute inset-0 pointer-events-none" />
         <div className="max-w-7xl mx-auto px-6 pt-40 pb-32 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -104,13 +100,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
               transition={{ duration: 0.35 }}
               className="block mb-8"
             >
-              <div
-                className="inline-block px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest text-white/90 border"
-                style={{
-                  borderColor: "color-mix(in srgb, var(--accent) 50%, transparent)",
-                  background: "color-mix(in srgb, var(--accent) 12%, transparent)",
-                }}
-              >
+              <div className="inline-block px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest text-white/90 border border-accent/50 bg-accent/10">
                 {copy.badge}
               </div>
             </motion.div>
@@ -178,8 +168,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
               className="text-center"
             >
               <div
-                className="text-4xl font-black mb-1"
-                style={{ color: "var(--accent)" }}
+                className="text-4xl font-black mb-1 text-accent"
               >
                 {item.stat}
               </div>
@@ -206,10 +195,9 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
               transition={{ duration: 0.7, ease: "easeOut" }}
             >
               <div className="flex items-center gap-2 mb-6">
-                <Gift className="w-4 h-4" style={{ color: "var(--accent)" }} />
+                <Gift className="w-4 h-4 text-accent" />
                 <span
-                  className="text-xs font-bold uppercase tracking-widest"
-                  style={{ color: "var(--accent)" }}
+                  className="text-xs font-bold uppercase tracking-widest text-accent"
                 >
                   Projects
                 </span>
@@ -237,8 +225,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
                     className="flex items-start gap-4 p-4 border border-border bg-background card-game"
                   >
                     <div
-                      className="w-8 h-8 flex items-center justify-center flex-shrink-0 text-white"
-                      style={{ background: "var(--accent)" }}
+                      className="w-8 h-8 flex items-center justify-center flex-shrink-0 text-white bg-accent"
                     >
                       {item.icon}
                     </div>
@@ -312,8 +299,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
                         #{entry.rank}
                       </div>
                       <div
-                        className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-black text-white flex-shrink-0"
-                        style={{ background: "var(--accent)" }}
+                        className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-black text-white flex-shrink-0 bg-accent"
                       >
                         {entry.name.slice(0, 2).toUpperCase()}
                       </div>
@@ -332,8 +318,8 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
               className="order-1 md:order-2"
             >
               <div className="flex items-center gap-2 mb-6">
-                <Heart className="w-4 h-4" style={{ color: "var(--accent)" }} />
-                <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--accent)" }}>Community</span>
+                <Heart className="w-4 h-4 text-accent" />
+                <span className="text-xs font-bold uppercase tracking-widest text-accent">Community</span>
               </div>
               <h2 className="text-5xl font-black mb-6 leading-tight text-foreground tracking-tight">
                 Your fans
@@ -350,11 +336,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
 
       {/* Final CTA */}
       <section className="py-40 px-6 bg-nav relative overflow-hidden">
-        <div
-          aria-hidden
-          className="absolute inset-0 pointer-events-none"
-          style={{}}
-        />
+        <div aria-hidden className="absolute inset-0 pointer-events-none" />
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -366,7 +348,7 @@ export default function Home({ onNavigateToAuth, onNavigateToLogin, onNavigateTo
             <h2 className="text-7xl md:text-8xl font-black mb-8 leading-none tracking-tight text-white">
               Start your
               <br />
-              <span style={{ color: "var(--accent)" }}>project.</span>
+              <span className="text-accent">project.</span>
             </h2>
             <p className="text-xl text-white/50 mb-12 max-w-xl mx-auto">
               Join 10,000+ creators getting gifted exactly what they want.

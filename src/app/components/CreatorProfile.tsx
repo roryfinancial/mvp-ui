@@ -331,7 +331,7 @@ export default function CreatorProfile({
                   // Guest: gated CTA
                   <button
                     onClick={() => navigate("/auth")}
-                    className="px-6 py-2.5 text-sm font-black bg-success hover:bg-success-strong text-white transition-all uppercase tracking-wider flex items-center gap-2"
+                    className="px-6 py-2.5 text-sm font-black btn-success text-white transition-all uppercase tracking-wider flex items-center gap-2"
                   >
                     <LogIn className="w-4 h-4" />
                     Sign In to Support
@@ -341,7 +341,7 @@ export default function CreatorProfile({
                   <>
                     <button
                       onClick={() => requireAuth(() => setShowQuickTip(true))}
-                      className="px-6 py-2.5 text-sm font-black bg-success hover:bg-success-strong text-white transition-all uppercase tracking-wider flex items-center gap-2"
+                      className="px-6 py-2.5 text-sm font-black btn-success text-white transition-all uppercase tracking-wider flex items-center gap-2"
                     >
                       <Zap className="w-4 h-4" />
                       Quick Tip
@@ -647,7 +647,7 @@ export default function CreatorProfile({
       {/* ── Guest bottom CTA ────────────────────────────────────────────────── */}
       {isGuest && (
         <div className="border-t border-border bg-muted py-16 px-6 text-center">
-          <p className="text-[10px] font-black uppercase tracking-widest text-subtle mb-4">Want to support {creatorName}?</p>
+          <p className="eyebrow mb-4">Want to support {creatorName}?</p>
           <h3 className="text-3xl font-black text-foreground mb-4 tracking-tight">Create a free account.</h3>
           <p className="text-muted-foreground mb-8 max-w-md mx-auto">Donate to their project. Low platform fees, always.</p>
           <button
@@ -709,7 +709,7 @@ export default function CreatorProfile({
 
                 {/* Step 1: Select Project */}
                 <div className="p-5 border-b border-border">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">1. Choose a project</div>
+                  <div className="eyebrow mb-3">1. Choose a project</div>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {projects.map((w) => (
                       <div key={w.id}>
@@ -771,7 +771,7 @@ export default function CreatorProfile({
 
                 {/* Step 2: Amount */}
                 <div className={`p-5 border-b border-border ${!selectedProjectId ? "opacity-40 pointer-events-none" : ""}`}>
-                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">2. Tip amount</div>
+                  <div className="eyebrow mb-3">2. Tip amount</div>
                   <div className="flex flex-wrap gap-2 mb-3">
                     {[5, 10, 25, 50, 100].map((amt) => (
                       <button
@@ -802,7 +802,7 @@ export default function CreatorProfile({
                   <button
                     onClick={handleConfirmTip}
                     disabled={!selectedProjectId || (!selectedTipAmount && !customTipAmount) || tipLoading}
-                    className="w-full py-3 bg-success hover:bg-success-strong disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 btn-success disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
                   >
                     {tipLoading ? (
                       <Loader2 className="w-4 h-4 animate-spin" />

@@ -80,7 +80,7 @@ export default function CreateEventPage({ onBack, onComplete }: CreateEventPageP
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="mb-12"
           >
-            <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">New Event</div>
+            <div className="eyebrow mb-2">New Event</div>
             <h1 className="text-5xl font-black text-foreground mb-3 tracking-tight">Create an Event</h1>
             <p className="text-lg text-muted-foreground">
               Add an upcoming event to your profile so your supporters know where to find you.
@@ -222,7 +222,7 @@ export default function CreateEventPage({ onBack, onComplete }: CreateEventPageP
                 animate={{ opacity: 1, y: 0 }}
                 className="p-5 border border-border bg-muted/50 space-y-2"
               >
-                <div className="text-[10px] font-black uppercase tracking-widest text-subtle">Preview</div>
+                <div className="eyebrow">Preview</div>
                 <h3 className="text-lg font-black text-foreground">{title}</h3>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1.5">

@@ -140,7 +140,7 @@ export default function Navbar({ creditBalance, userType, gamification }: Navbar
               >
                 {searchResults.creators.length > 0 && (
                   <div className="p-3">
-                    <h3 className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2 px-2">Creators</h3>
+                    <h3 className="eyebrow mb-2 px-2">Creators</h3>
                     {searchResults.creators.map((creator, index) => (
                       <div
                         key={index}
@@ -158,7 +158,7 @@ export default function Navbar({ creditBalance, userType, gamification }: Navbar
                 )}
                 {searchResults.supporters.length > 0 && (
                   <div className="p-3 border-t border-border">
-                    <h3 className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2 px-2">Supporters</h3>
+                    <h3 className="eyebrow mb-2 px-2">Supporters</h3>
                     {searchResults.supporters.map((supporter, index) => (
                       <div
                         key={index}

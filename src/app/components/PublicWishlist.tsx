@@ -192,7 +192,7 @@ export default function PublicWishlist({
               )}
               <button
                 onClick={() => openDonateModal()}
-                className="ml-auto px-6 py-2.5 bg-success hover:bg-success-strong text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2"
+                className="ml-auto px-6 py-2.5 btn-success text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center gap-2"
               >
                 <Zap className="w-4 h-4" />
                 Donate to Project
@@ -204,7 +204,7 @@ export default function PublicWishlist({
 
       {/* Items Needed Grid */}
       <div className="max-w-5xl mx-auto px-6 pb-16">
-        <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-4 flex items-center gap-2">
+        <div className="eyebrow mb-4 flex items-center gap-2">
           <span className="w-3 h-px bg-accent" />
           Items Needed
         </div>
@@ -232,8 +232,8 @@ export default function PublicWishlist({
                   <div
                     className={`absolute top-3 right-3 px-2 py-1 flex items-center gap-1.5 border text-[10px] font-black uppercase tracking-widest ${
                       item.status === "gifted"
-                        ? "bg-success/10 border-success text-success-strong"
-                        : "bg-accent/10 border-accent text-accent"
+                        ? "tag-funded"
+                        : "tag-active"
                     }`}
                   >
                     {item.status === "gifted" ? (
@@ -260,7 +260,7 @@ export default function PublicWishlist({
                   ) : (
                     <button
                       onClick={(e) => { e.stopPropagation(); openDonateModal(item.id, item.title); }}
-                      className="w-full mt-1 py-2 bg-success hover:bg-success-strong text-white text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5"
+                      className="w-full mt-1 py-2 btn-success text-white text-[10px] font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-1.5"
                     >
                       <Zap className="w-3 h-3" />
                       Fund This
@@ -331,7 +331,7 @@ export default function PublicWishlist({
 
                 {/* Select Amount */}
                 <div className="p-5 border-b border-border">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">Donation amount</div>
+                  <div className="eyebrow mb-3">Donation amount</div>
                   <div className="flex flex-wrap gap-2 mb-3">
                     {[5, 10, 25, 50, 100].map((amount) => (
                       <button
@@ -369,7 +369,7 @@ export default function PublicWishlist({
                   <button
                     onClick={handleConfirmTip}
                     disabled={(!selectedTipAmount && !customTipAmount) || tipLoading}
-                    className="w-full py-3 bg-success hover:bg-success-strong disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 btn-success disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
                   >
                     {tipLoading ? (
                       <Loader2 className="w-4 h-4 animate-spin" />

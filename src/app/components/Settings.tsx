@@ -295,7 +295,7 @@ export default function Settings({
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="mb-10"
           >
-            <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">Account</div>
+            <div className="eyebrow mb-2">Account</div>
             <h1 className="text-5xl font-black text-foreground tracking-tight">Settings</h1>
           </motion.div>
 
@@ -333,7 +333,7 @@ export default function Settings({
               {/* Profile */}
               {activeSection === "profile" && (
                 <div className="space-y-6">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-6">Profile Settings</div>
+                  <div className="eyebrow mb-6">Profile Settings</div>
 
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Display Name</label>
@@ -375,7 +375,7 @@ export default function Settings({
               {/* Account */}
               {activeSection === "account" && (
                 <div className="space-y-6">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-6">Account Settings</div>
+                  <div className="eyebrow mb-6">Account Settings</div>
 
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Email Address</label>
@@ -400,7 +400,7 @@ export default function Settings({
                   </motion.button>
 
                   <div className="pt-6 mt-6 border-t border-border">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3">Danger Zone</div>
+                    <div className="eyebrow mb-3">Danger Zone</div>
                     <button className="px-4 py-2 border border-red-500/40 text-red-500 hover:bg-red-500/10 text-sm font-bold transition-colors">
                       Delete Account
                     </button>
@@ -411,7 +411,7 @@ export default function Settings({
               {/* Balance Section */}
               {activeSection === "balance" && (
                 <div className="space-y-6">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-6">Credit & Spending</div>
+                  <div className="eyebrow mb-6">Credit & Spending</div>
 
                   {depositSuccess && (
                     <motion.div
@@ -443,7 +443,7 @@ export default function Settings({
                       <div className="p-6 border border-border bg-muted card-game">
                         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
                           <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">Current Balance</p>
+                            <p className="eyebrow mb-2">Current Balance</p>
                             <p className="text-4xl font-black text-foreground">
                               ${(walletSummary?.creditBalance ?? creditBalance ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </p>
@@ -508,7 +508,7 @@ export default function Settings({
                         <div className="p-6 border border-border bg-muted card-game">
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
-                              <p className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">Payout Setup</p>
+                              <p className="eyebrow mb-2">Payout Setup</p>
                               {connectStatus?.chargesEnabled ? (
                                 <div className="flex items-center gap-2">
                                   <CheckCircle2 className="w-5 h-5 text-green-500" />
@@ -561,19 +561,19 @@ export default function Settings({
                       {/* Summary stats */}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="p-6 border border-border bg-muted card-game">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-subtle mb-4">Total Deposited</p>
+                          <p className="eyebrow mb-4">Total Deposited</p>
                           <p className="text-3xl font-black text-foreground">
                             ${(walletSummary?.totalDeposited ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                         </div>
                         <div className="p-6 border border-border bg-muted card-game">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-subtle mb-4">Total Spent</p>
+                          <p className="eyebrow mb-4">Total Spent</p>
                           <p className="text-3xl font-black text-foreground">
                             ${(walletSummary?.totalSpent ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                         </div>
                         <div className="p-6 border border-border bg-muted card-game">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-subtle mb-4">Gifts Sent</p>
+                          <p className="eyebrow mb-4">Gifts Sent</p>
                           <p className="text-3xl font-black text-foreground">
                             {walletSummary?.giftsSentCount ?? 0}
                           </p>
@@ -583,7 +583,7 @@ export default function Settings({
                       {/* Transaction history */}
                       {transactions.length > 0 && (
                         <div>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-subtle mb-4">Recent Transactions</p>
+                          <p className="eyebrow mb-4">Recent Transactions</p>
                           <div className="space-y-2">
                             {transactions.map((tx) => (
                               <div key={tx.id} className="flex items-center gap-4 p-4 border border-border bg-muted">
@@ -623,7 +623,7 @@ export default function Settings({
               {activeSection === "communities" && (
                 <div className="space-y-6">
                   <div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">Your Communities</div>
+                    <div className="eyebrow mb-2">Your Communities</div>
                     <p className="text-muted-foreground text-sm">Tap to join or leave communities. Your feed and recommendations will update to match.</p>
                   </div>
 
@@ -721,7 +721,7 @@ export default function Settings({
               {/* Customization */}
               {activeSection === "customization" && (
                 <div className="space-y-6">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-6">Customization</div>
+                  <div className="eyebrow mb-6">Customization</div>
 
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Theme</label>
@@ -782,7 +782,7 @@ export default function Settings({
               {activeSection === "platforms" && (
                 <div className="space-y-6">
                   <div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">Connected Platforms</div>
+                    <div className="eyebrow mb-2">Connected Platforms</div>
                     <p className="text-muted-foreground text-sm">Link your social media accounts so we can auto-sync your posts.</p>
                   </div>
 
@@ -935,7 +935,7 @@ export default function Settings({
               {/* Notifications */}
               {activeSection === "notifications" && (
                 <div className="space-y-4">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-6">Notification Preferences</div>
+                  <div className="eyebrow mb-6">Notification Preferences</div>
 
                   {[
                     { label: "Email Notifications", sub: "Receive updates via email", value: emailNotifications, onChange: () => setEmailNotifications(!emailNotifications) },
@@ -957,7 +957,7 @@ export default function Settings({
               {/* Privacy */}
               {activeSection === "privacy" && (
                 <div className="space-y-4">
-                  <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-6">Privacy & Security</div>
+                  <div className="eyebrow mb-6">Privacy & Security</div>
 
                   <div className="flex items-center justify-between p-4 border border-border bg-muted">
                     <div>

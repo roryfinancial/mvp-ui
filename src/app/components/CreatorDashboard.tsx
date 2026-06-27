@@ -506,8 +506,8 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
           >
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-subtle mb-1">Total Earned</p>
-                <p className="text-4xl font-black tracking-tight" style={{ color: "var(--accent)" }}>{totalRaised}</p>
+                <p className="eyebrow mb-1">Total Earned</p>
+                <p className="text-4xl font-black tracking-tight text-accent">{totalRaised}</p>
                 <p className="text-xs text-subtle font-medium mt-1">You keep 100% — Rory never takes a cut.</p>
               </div>
               <motion.button
@@ -627,10 +627,10 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                               <div>
                                 <div className="w-full h-1 bg-secondary overflow-hidden">
                                   <motion.div
+                                    className="h-full bg-accent"
                                     initial={{ width: 0 }}
                                     animate={{ width: `${pct}%` }}
                                     transition={{ duration: 1, delay: 0.3 + wIndex * 0.1 }}
-                                    style={{ background: "var(--accent)" }}
                                   />
                                 </div>
                                 <div className="flex items-center justify-between mt-1">
@@ -658,10 +658,10 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                   <div className="border border-border overflow-hidden">
                     {/* Header */}
                     <div className="grid grid-cols-[48px_1fr_100px_100px] sm:grid-cols-[48px_1fr_120px_120px] gap-3 px-5 py-3 bg-muted border-b border-border">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-subtle">#</span>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-subtle">Supporter</span>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-subtle text-right">Tips</span>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-subtle text-right">Total</span>
+                      <span className="eyebrow">#</span>
+                      <span className="eyebrow">Supporter</span>
+                      <span className="eyebrow text-right">Tips</span>
+                      <span className="eyebrow text-right">Total</span>
                     </div>
 
                     {/* Rows */}
@@ -993,8 +993,8 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                           <h2 className="text-3xl font-black text-foreground tracking-tight">{item.title}</h2>
                           <div className={`px-2 py-1 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest border ${
                             item.status === "completed"
-                              ? "bg-success/10 border-success text-success-strong"
-                              : "bg-accent/10 border-accent text-accent"
+                              ? "tag-funded"
+                              : "tag-active"
                           }`}>
                             {item.status === "completed" ? <><Check className="w-3 h-3" />Funded</> : <><ArrowUp className="w-3 h-3" />Active</>}
                           </div>
@@ -1145,8 +1145,8 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                               </button>
                               <div className={`absolute top-2 right-2 px-2 py-1 flex items-center gap-1 border text-[10px] font-black uppercase tracking-widest ${
                                 item.status === "completed"
-                                  ? "bg-success/10 border-success text-success-strong"
-                                  : "bg-accent/10 border-accent text-accent"
+                                  ? "tag-funded"
+                                  : "tag-active"
                               }`}>
                                 {item.status === "completed" ? <><Check className="w-2.5 h-2.5" />Done</> : <><ArrowUp className="w-2.5 h-2.5" />Active</>}
                               </div>

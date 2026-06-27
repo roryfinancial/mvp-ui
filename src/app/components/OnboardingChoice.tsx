@@ -209,7 +209,7 @@ export default function OnboardingChoice({ userType: initialUserType, onBack, on
 
           <div className="space-y-4 mb-6">
             <div>
-              <label className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2 block">Your Rory link *</label>
+              <label className="eyebrow mb-2 block">Your Rory link *</label>
               <div className="flex items-stretch border border-border bg-background focus-within:ring-2 focus-within:ring-accent transition-shadow">
                 <span className="flex items-center px-3 bg-muted border-r border-border text-subtle font-bold text-sm select-none">rory.com/</span>
                 <input
@@ -231,7 +231,7 @@ export default function OnboardingChoice({ userType: initialUserType, onBack, on
               )}
             </div>
             <div>
-              <label className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2 block">Display Name</label>
+              <label className="eyebrow mb-2 block">Display Name</label>
               <input
                 type="text"
                 value={displayName}
@@ -241,7 +241,7 @@ export default function OnboardingChoice({ userType: initialUserType, onBack, on
               />
             </div>
             <div>
-              <label className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2 block">Referral Code</label>
+              <label className="eyebrow mb-2 block">Referral Code</label>
               <input
                 type="text"
                 value={referralCode}
@@ -523,7 +523,7 @@ export default function OnboardingChoice({ userType: initialUserType, onBack, on
                   {platform.icon}
                 </div>
                 <div className="flex-1">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-subtle mb-1 block">{platform.label}</label>
+                  <label className="eyebrow mb-1 block">{platform.label}</label>
                   <input
                     type="text"
                     value={socials[platform.key]}
@@ -631,7 +631,7 @@ export default function OnboardingChoice({ userType: initialUserType, onBack, on
 
             {displayCreators.length > 0 && displayCreators[0].name !== "Loading..." && (
               <div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3 flex items-center gap-2">
+                <div className="eyebrow mb-3 flex items-center gap-2">
                   <TrendingUp className="w-3 h-3" />
                   Top Creators
                 </div>
@@ -683,7 +683,7 @@ export default function OnboardingChoice({ userType: initialUserType, onBack, on
 
             {displayCreators.length > 0 && displayCreators[0].name !== "Loading..." && (
               <div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-3 flex items-center gap-2">
+                <div className="eyebrow mb-3 flex items-center gap-2">
                   <Heart className="w-3 h-3" />
                   Top Creators to Support
                 </div>

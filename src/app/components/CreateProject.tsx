@@ -94,7 +94,7 @@ export default function CreateProject({ onBack, onCreateProject }: CreateProject
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="mb-12"
           >
-            <div className="text-[10px] font-black uppercase tracking-widest text-subtle mb-2">Project</div>
+            <div className="eyebrow mb-2">Project</div>
             <h1 className="text-5xl font-black text-foreground mb-3 tracking-tight">Add an Item</h1>
             <p className="text-lg text-muted-foreground">Add a new item needed for your project goal.</p>
           </motion.div>
