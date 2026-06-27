@@ -4,6 +4,7 @@ import type { GamificationState, BadgeId } from "../../lib/types";
 import { xpProgress, leagueBadgeColor, leagueLabel } from "../../lib/gamification";
 import { gamificationApi, type WeeklyLeaderboardEntry } from "../../lib/api";
 import { Sounds } from "../../lib/sounds";
+import { ProgressBar } from "./shared/ProgressBar";
 import type { ToastKind } from "./Toast";
 
 interface GamificationSidebarProps {
@@ -58,13 +59,7 @@ export default function GamificationSidebar({ gamification, onToast }: Gamificat
           <div className="text-4xl font-black text-accent">{gamification.level}</div>
           <div className="text-xs text-muted-foreground mt-1">{current} / {needed} XP to next</div>
         </div>
-        <div className="h-2 bg-secondary rounded-full overflow-hidden">
-          <motion.div
-            className="h-full bg-accent rounded-full"
-            animate={{ width: `${pct * 100}%` }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          />
-        </div>
+        <ProgressBar value={pct * 100} className="h-2 bg-secondary" rounded />
         <div className="text-xs text-muted-foreground text-center">{gamification.xp} total XP</div>
       </div>
 
@@ -78,7 +73,7 @@ export default function GamificationSidebar({ gamification, onToast }: Gamificat
             <div className="text-xs text-muted-foreground">2x XP on all gifts</div>
           </div>
         </div>
-        <div className="text-xs text-green-500 py-1 border border-green-500/30 bg-green-500/5 text-center rounded">
+        <div className="text-xs text-success py-1 border border-success/30 bg-success/5 text-center rounded">
           Active today
         </div>
       </div>

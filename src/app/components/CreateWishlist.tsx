@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { SectionLabel } from "./shared/SectionLabel";
 import { useState, useRef } from "react";
 import { Upload, X, ImageIcon, Loader2 } from "lucide-react";
 import { projectApi } from "../../lib/api";
@@ -65,7 +66,7 @@ export default function CreateWishlist({ onBack, onCreateProject }: CreateProjec
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="mb-12"
           >
-            <div className="eyebrow mb-2">New Project</div>
+            <SectionLabel className="mb-2">New Project</SectionLabel>
             <h1 className="text-5xl font-black text-foreground mb-3 tracking-tight">Create a Project</h1>
             <p className="text-lg text-muted-foreground">
               A project has a funding goal made up of the items needed to achieve it. Fans donate directly to the project.

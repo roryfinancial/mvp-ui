@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { SectionLabel } from "./shared/SectionLabel";
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { User, Bell, Lock, Mail, Key, Shield, DollarSign, Palette, Sun, Moon, Monitor, Users, Check, Loader2, ArrowUpRight, ArrowDownLeft, Plus, ExternalLink, CheckCircle2, AlertCircle, Link2, Trash2, Volume2, VolumeX } from "lucide-react";
@@ -295,7 +296,7 @@ export default function Settings({
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="mb-10"
           >
-            <div className="eyebrow mb-2">Account</div>
+            <SectionLabel className="mb-2">Account</SectionLabel>
             <h1 className="text-5xl font-black text-foreground tracking-tight">Settings</h1>
           </motion.div>
 
@@ -333,7 +334,7 @@ export default function Settings({
               {/* Profile */}
               {activeSection === "profile" && (
                 <div className="space-y-6">
-                  <div className="eyebrow mb-6">Profile Settings</div>
+                  <SectionLabel className="mb-6">Profile Settings</SectionLabel>
 
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Display Name</label>
@@ -375,7 +376,7 @@ export default function Settings({
               {/* Account */}
               {activeSection === "account" && (
                 <div className="space-y-6">
-                  <div className="eyebrow mb-6">Account Settings</div>
+                  <SectionLabel className="mb-6">Account Settings</SectionLabel>
 
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Email Address</label>
@@ -400,7 +401,7 @@ export default function Settings({
                   </motion.button>
 
                   <div className="pt-6 mt-6 border-t border-border">
-                    <div className="eyebrow mb-3">Danger Zone</div>
+                    <SectionLabel>Danger Zone</SectionLabel>
                     <button className="px-4 py-2 border border-red-500/40 text-red-500 hover:bg-red-500/10 text-sm font-bold transition-colors">
                       Delete Account
                     </button>
@@ -411,15 +412,15 @@ export default function Settings({
               {/* Balance Section */}
               {activeSection === "balance" && (
                 <div className="space-y-6">
-                  <div className="eyebrow mb-6">Credit & Spending</div>
+                  <SectionLabel className="mb-6">Credit & Spending</SectionLabel>
 
                   {depositSuccess && (
                     <motion.div
                       initial={{ opacity: 0, y: -8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center gap-3 p-4 border border-green-500/30 bg-green-500/5"
+                      className="flex items-center gap-3 p-4 border border-success/30 bg-success/5"
                     >
-                      <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0" />
+                      <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0" />
                       <div>
                         <p className="text-sm font-bold text-foreground">Deposit successful</p>
                         <p className="text-xs text-subtle">Your balance is updating — this may take a moment.</p>
@@ -443,7 +444,7 @@ export default function Settings({
                       <div className="p-6 border border-border bg-muted card-game">
                         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
                           <div>
-                            <p className="eyebrow mb-2">Current Balance</p>
+                            <SectionLabel className="mb-2">Current Balance</SectionLabel>
                             <p className="text-4xl font-black text-foreground">
                               ${(walletSummary?.creditBalance ?? creditBalance ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </p>
@@ -508,10 +509,10 @@ export default function Settings({
                         <div className="p-6 border border-border bg-muted card-game">
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1">
-                              <p className="eyebrow mb-2">Payout Setup</p>
+                              <SectionLabel className="mb-2">Payout Setup</SectionLabel>
                               {connectStatus?.chargesEnabled ? (
                                 <div className="flex items-center gap-2">
-                                  <CheckCircle2 className="w-5 h-5 text-green-500" />
+                                  <CheckCircle2 className="w-5 h-5 text-success" />
                                   <div>
                                     <p className="text-sm font-bold text-foreground">Payouts enabled</p>
                                     <p className="text-xs text-subtle">You can receive tips from supporters</p>
@@ -561,19 +562,19 @@ export default function Settings({
                       {/* Summary stats */}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div className="p-6 border border-border bg-muted card-game">
-                          <p className="eyebrow mb-4">Total Deposited</p>
+                          <SectionLabel className="mb-4">Total Deposited</SectionLabel>
                           <p className="text-3xl font-black text-foreground">
                             ${(walletSummary?.totalDeposited ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                         </div>
                         <div className="p-6 border border-border bg-muted card-game">
-                          <p className="eyebrow mb-4">Total Spent</p>
+                          <SectionLabel className="mb-4">Total Spent</SectionLabel>
                           <p className="text-3xl font-black text-foreground">
                             ${(walletSummary?.totalSpent ?? 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                         </div>
                         <div className="p-6 border border-border bg-muted card-game">
-                          <p className="eyebrow mb-4">Gifts Sent</p>
+                          <SectionLabel className="mb-4">Gifts Sent</SectionLabel>
                           <p className="text-3xl font-black text-foreground">
                             {walletSummary?.giftsSentCount ?? 0}
                           </p>
@@ -583,16 +584,16 @@ export default function Settings({
                       {/* Transaction history */}
                       {transactions.length > 0 && (
                         <div>
-                          <p className="eyebrow mb-4">Recent Transactions</p>
+                          <SectionLabel className="mb-4">Recent Transactions</SectionLabel>
                           <div className="space-y-2">
                             {transactions.map((tx) => (
                               <div key={tx.id} className="flex items-center gap-4 p-4 border border-border bg-muted">
                                 <div className={`w-8 h-8 flex items-center justify-center flex-shrink-0 ${
-                                  tx.type === "DEPOSIT" ? "bg-green-500/10" :
+                                  tx.type === "DEPOSIT" ? "bg-success/10" :
                                   tx.type === "GIFT_RECEIVED" ? "bg-blue-500/10" :
                                   "bg-red-500/10"
                                 }`}>
-                                  {tx.type === "DEPOSIT" ? <ArrowDownLeft className="w-4 h-4 text-green-500" /> :
+                                  {tx.type === "DEPOSIT" ? <ArrowDownLeft className="w-4 h-4 text-success" /> :
                                    tx.type === "GIFT_RECEIVED" ? <ArrowDownLeft className="w-4 h-4 text-blue-500" /> :
                                    <ArrowUpRight className="w-4 h-4 text-red-500" />}
                                 </div>
@@ -604,7 +605,7 @@ export default function Settings({
                                 </div>
                                 <div className="flex-shrink-0 text-right">
                                   <p className={`text-sm font-black ${
-                                    tx.type === "GIFT_SENT" ? "text-red-500" : "text-green-500"
+                                    tx.type === "GIFT_SENT" ? "text-red-500" : "text-success"
                                   }`}>
                                     {tx.type === "GIFT_SENT" ? "-" : "+"}${tx.amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                   </p>
@@ -623,7 +624,7 @@ export default function Settings({
               {activeSection === "communities" && (
                 <div className="space-y-6">
                   <div>
-                    <div className="eyebrow mb-2">Your Communities</div>
+                    <SectionLabel className="mb-2">Your Communities</SectionLabel>
                     <p className="text-muted-foreground text-sm">Tap to join or leave communities. Your feed and recommendations will update to match.</p>
                   </div>
 
@@ -721,7 +722,7 @@ export default function Settings({
               {/* Customization */}
               {activeSection === "customization" && (
                 <div className="space-y-6">
-                  <div className="eyebrow mb-6">Customization</div>
+                  <SectionLabel className="mb-6">Customization</SectionLabel>
 
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Theme</label>
@@ -782,7 +783,7 @@ export default function Settings({
               {activeSection === "platforms" && (
                 <div className="space-y-6">
                   <div>
-                    <div className="eyebrow mb-2">Connected Platforms</div>
+                    <SectionLabel className="mb-2">Connected Platforms</SectionLabel>
                     <p className="text-muted-foreground text-sm">Link your social media accounts so we can auto-sync your posts.</p>
                   </div>
 
@@ -935,7 +936,7 @@ export default function Settings({
               {/* Notifications */}
               {activeSection === "notifications" && (
                 <div className="space-y-4">
-                  <div className="eyebrow mb-6">Notification Preferences</div>
+                  <SectionLabel className="mb-6">Notification Preferences</SectionLabel>
 
                   {[
                     { label: "Email Notifications", sub: "Receive updates via email", value: emailNotifications, onChange: () => setEmailNotifications(!emailNotifications) },
@@ -957,7 +958,7 @@ export default function Settings({
               {/* Privacy */}
               {activeSection === "privacy" && (
                 <div className="space-y-4">
-                  <div className="eyebrow mb-6">Privacy & Security</div>
+                  <SectionLabel className="mb-6">Privacy & Security</SectionLabel>
 
                   <div className="flex items-center justify-between p-4 border border-border bg-muted">
                     <div>

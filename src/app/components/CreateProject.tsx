@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { SectionLabel } from "./shared/SectionLabel";
 import { useState, useRef, useEffect } from "react";
 import { Upload, X, ImageIcon, Loader2 } from "lucide-react";
 import { projectApi } from "../../lib/api";
@@ -94,7 +95,7 @@ export default function CreateProject({ onBack, onCreateProject }: CreateProject
             transition={{ duration: 0.8, ease: "easeOut" }}
             className="mb-12"
           >
-            <div className="eyebrow mb-2">Project</div>
+            <SectionLabel className="mb-2">Project</SectionLabel>
             <h1 className="text-5xl font-black text-foreground mb-3 tracking-tight">Add an Item</h1>
             <p className="text-lg text-muted-foreground">Add a new item needed for your project goal.</p>
           </motion.div>

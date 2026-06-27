@@ -218,7 +218,7 @@ function ItemGiftedCard({ item }: { item: ActivityItemResponse }) {
           <span className="font-bold">{project.itemTitle || project.projectName}</span> fully funded!
         </p>
         <div className="w-full h-1.5 bg-muted mt-1.5 overflow-hidden">
-          <div className="h-full bg-green-500 w-full" />
+          <div className="h-full bg-success w-full" />
         </div>
       </div>
       <span className="text-[10px] text-subtle shrink-0">{timeAgo(item.timestamp)}</span>

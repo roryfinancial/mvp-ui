@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { SectionLabel } from "./shared/SectionLabel";
 
 import { User } from "lucide-react";
 
@@ -62,7 +63,7 @@ export default function ProjectOverview({
             </div>
 
             <div className="flex-1">
-              <div className="eyebrow mb-2">{projectName}</div>
+              <SectionLabel className="mb-2">{projectName}</SectionLabel>
               <h1 className="text-5xl font-black text-foreground mb-4 tracking-tight">{projectTitle}</h1>
               <button
                 onClick={onViewCreator}

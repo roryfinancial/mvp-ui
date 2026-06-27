@@ -6,6 +6,7 @@ import { feedApi } from "../../lib/api";
 import type { FeedPostResponse } from "../../lib/api";
 import type { ToastKind } from "./Toast";
 import { useNavigate } from "react-router-dom";
+import { ProgressBar } from "./shared/ProgressBar";
 
 type FeedTab = "foryou" | "following" | "trending";
 
@@ -406,14 +407,14 @@ function PostCard({ post, index, onLike, onGift, onNavigate }: PostCardProps) {
               </motion.button>
             </div>
             <div className="flex items-center gap-3">
-              <div className="flex-1 h-2 bg-background rounded-full overflow-hidden">
-                <motion.div
-                  className="h-full bg-gradient-to-r from-accent to-accent/70 rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${post.linkedProject.progress * 100}%` }}
-                  transition={{ duration: 0.8, delay: 0.2 }}
-                />
-              </div>
+              <ProgressBar
+                value={post.linkedProject.progress * 100}
+                className="flex-1 h-2 bg-background"
+                barClassName="bg-gradient-to-r from-accent to-accent/70"
+                rounded
+                duration={0.8}
+                delay={0.2}
+              />
               <span className="text-xs font-black text-foreground flex-shrink-0">
                 {Math.round(post.linkedProject.progress * 100)}%
               </span>

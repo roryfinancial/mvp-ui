@@ -12,6 +12,7 @@ import { SectionLabel } from "./shared/SectionLabel";
 import { UserListItem } from "./shared/UserListItem";
 import { EmptyState } from "./shared/EmptyState";
 import { StatMiniCard } from "./shared/StatMiniCard";
+import { ProgressBar } from "./shared/ProgressBar";
 import { fadeUp, fadeUpFast, fadeIn, scaleIn, btnHover, staggerFadeUp, staggerSlideLeft } from "../../lib/motion";
 import { formatCurrency, formatEventDate, formatShortDate, formatCompact, calcProgress, parseMoney } from "../../lib/format";
 
@@ -506,7 +507,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
           >
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
               <div>
-                <p className="eyebrow mb-1">Total Earned</p>
+                <SectionLabel className="mb-1">Total Earned</SectionLabel>
                 <p className="text-4xl font-black tracking-tight text-accent">{totalRaised}</p>
                 <p className="text-xs text-subtle font-medium mt-1">You keep 100% — Rory never takes a cut.</p>
               </div>
@@ -625,14 +626,7 @@ export default function CreatorDashboard({ username: propUsername, initialProjec
                             const pct = calcProgress(totalRaisedAmt, totalGoalAmt);
                             return (
                               <div>
-                                <div className="w-full h-1 bg-secondary overflow-hidden">
-                                  <motion.div
-                                    className="h-full bg-accent"
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${pct}%` }}
-                                    transition={{ duration: 1, delay: 0.3 + wIndex * 0.1 }}
-                                  />
-                                </div>
+                                <ProgressBar value={pct} className="w-full h-1 bg-secondary" duration={1} delay={0.3 + wIndex * 0.1} />
                                 <div className="flex items-center justify-between mt-1">
                                   <span className="text-[10px] text-subtle font-bold">{formatCurrency(totalRaisedAmt)} raised</span>
                                   <span className="text-[10px] text-subtle font-bold">{pct}%</span>

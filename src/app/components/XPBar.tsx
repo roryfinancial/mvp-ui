@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import type { GamificationState } from "../../lib/types";
 import { xpProgress, leagueBadgeColor, leagueLabel } from "../../lib/gamification";
+import { ProgressBar } from "./shared/ProgressBar";
 
 interface XPBarProps {
   gamification: GamificationState;
@@ -33,14 +34,7 @@ export default function XPBar({ gamification }: XPBarProps) {
       {/* Level + XP bar */}
       <div className="flex items-center gap-2">
         <span className="text-xs font-black text-accent">Lv.{gamification.level}</span>
-        <div className="w-24 h-2 bg-white/10 overflow-hidden">
-          <motion.div
-            className="h-full bg-accent"
-            initial={{ width: 0 }}
-            animate={{ width: `${pct * 100}%` }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          />
-        </div>
+        <ProgressBar value={pct * 100} className="w-24 h-2 bg-white/10" />
         <span className="text-[10px] text-white/40">{current}/{needed}</span>
       </div>
 

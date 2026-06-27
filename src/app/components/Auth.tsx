@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
+import { SectionLabel } from "./shared/SectionLabel";
 import { useState, useRef, useEffect } from "react";
 import { Mail, Lock, ArrowLeft, AlertCircle, Loader2, Pencil, Zap } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
@@ -179,7 +180,7 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
             <div className="mt-12 space-y-3">
               {["Trusted by 10,000+ creators", "Built for creators", "Low platform fees, always"].map(line => (
                 <div key={line} className="flex items-center gap-3 text-white/50 text-sm">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-success flex-shrink-0" />
                   <span>{line}</span>
                 </div>
               ))}
@@ -359,7 +360,7 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
                 exit={{ opacity: 0, x: -24 }}
                 transition={{ duration: 0.22 }}
               >
-                <p className="eyebrow mb-3">Verification</p>
+                <SectionLabel>Verification</SectionLabel>
                 <h1 className="text-3xl font-black text-foreground mb-2 tracking-tight">
                   {channel === "email" ? "Check your email." : "Check your phone."}
                 </h1>
@@ -436,7 +437,7 @@ export default function Auth({ mode = "login", onBack, onAuthComplete, onSwitchM
                 exit={{ opacity: 0, x: -24 }}
                 transition={{ duration: 0.22 }}
               >
-                <p className="eyebrow mb-3">Almost there</p>
+                <SectionLabel>Almost there</SectionLabel>
                 <h1 className="text-3xl font-black text-foreground mb-2 tracking-tight">Check your email.</h1>
                 <p className="text-sm text-subtle mb-8">
                   We sent a confirmation link to{" "}

@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
+import { SectionLabel } from "./shared/SectionLabel";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -647,7 +648,7 @@ export default function CreatorProfile({
       {/* ── Guest bottom CTA ────────────────────────────────────────────────── */}
       {isGuest && (
         <div className="border-t border-border bg-muted py-16 px-6 text-center">
-          <p className="eyebrow mb-4">Want to support {creatorName}?</p>
+          <SectionLabel className="mb-4">Want to support {creatorName}?</SectionLabel>
           <h3 className="text-3xl font-black text-foreground mb-4 tracking-tight">Create a free account.</h3>
           <p className="text-muted-foreground mb-8 max-w-md mx-auto">Donate to their project. Low platform fees, always.</p>
           <button
@@ -709,7 +710,7 @@ export default function CreatorProfile({
 
                 {/* Step 1: Select Project */}
                 <div className="p-5 border-b border-border">
-                  <div className="eyebrow mb-3">1. Choose a project</div>
+                  <SectionLabel>1. Choose a project</SectionLabel>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {projects.map((w) => (
                       <div key={w.id}>
@@ -771,7 +772,7 @@ export default function CreatorProfile({
 
                 {/* Step 2: Amount */}
                 <div className={`p-5 border-b border-border ${!selectedProjectId ? "opacity-40 pointer-events-none" : ""}`}>
-                  <div className="eyebrow mb-3">2. Tip amount</div>
+                  <SectionLabel>2. Tip amount</SectionLabel>
                   <div className="flex flex-wrap gap-2 mb-3">
                     {[5, 10, 25, 50, 100].map((amt) => (
                       <button

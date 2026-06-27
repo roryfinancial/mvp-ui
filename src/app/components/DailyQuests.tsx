@@ -1,12 +1,13 @@
 import { motion } from "motion/react";
 import type { DailyQuest } from "../../lib/types";
+import { ProgressBar } from "./shared/ProgressBar";
 
 interface DailyQuestsProps {
   quests: DailyQuest[];
 }
 
 const DIFFICULTY_COLORS: Record<DailyQuest["difficulty"], string> = {
-  easy:   "text-green-500 border-green-500/30 bg-green-500/10",
+  easy:   "text-success border-success/30 bg-success/10",
   medium: "text-yellow-500 border-yellow-500/30 bg-yellow-500/10",
   hard:   "text-red-500 border-red-500/30 bg-red-500/10",
 };
@@ -23,13 +24,12 @@ export default function DailyQuests({ quests }: DailyQuestsProps) {
       </div>
 
       {/* Progress bar */}
-      <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-        <motion.div
-          className="h-full bg-accent rounded-full"
-          animate={{ width: `${quests.length > 0 ? (completedCount / quests.length) * 100 : 0}%` }}
-          transition={{ duration: 0.4 }}
-        />
-      </div>
+      <ProgressBar
+        value={quests.length > 0 ? (completedCount / quests.length) * 100 : 0}
+        className="h-1.5 bg-secondary"
+        rounded
+        duration={0.4}
+      />
 
       {/* Quest list */}
       <div className="space-y-2">
@@ -40,11 +40,11 @@ export default function DailyQuests({ quests }: DailyQuestsProps) {
               quest.locked
                 ? "opacity-40 border-border bg-secondary"
                 : quest.completed
-                ? "border-green-500/30 bg-green-500/5"
+                ? "border-success/30 bg-success/5"
                 : "border-border bg-background"
             }`}
           >
-            <div className={`w-5 h-5 border-2 flex items-center justify-center flex-shrink-0 rounded-sm ${quest.completed ? "border-green-500 bg-green-500" : "border-muted-foreground/30"}`}>
+            <div className={`w-5 h-5 border-2 flex items-center justify-center flex-shrink-0 rounded-sm ${quest.completed ? "border-success bg-success" : "border-muted-foreground/30"}`}>
               {quest.completed && <span className="text-white text-xs font-black">✓</span>}
             </div>
             <div className="flex-1 min-w-0">

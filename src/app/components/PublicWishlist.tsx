@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { SectionLabel } from "./shared/SectionLabel";
 import { useEffect, useState } from "react";
 import { User, Check, Zap, X, DollarSign, ArrowUp, ArrowLeft, Loader2 } from "lucide-react";
 import { projectApi, giftApi } from "../../lib/api";
@@ -331,7 +332,7 @@ export default function PublicWishlist({
 
                 {/* Select Amount */}
                 <div className="p-5 border-b border-border">
-                  <div className="eyebrow mb-3">Donation amount</div>
+                  <SectionLabel>Donation amount</SectionLabel>
                   <div className="flex flex-wrap gap-2 mb-3">
                     {[5, 10, 25, 50, 100].map((amount) => (
                       <button

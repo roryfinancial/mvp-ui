@@ -14,7 +14,7 @@ const KIND_STYLES: Record<ToastKind, { bg: string; border: string; icon: React.R
   xp:      { bg: "bg-accent/10",       border: "border-accent/40",        icon: <Zap className="w-4 h-4 text-accent" /> },
   badge:   { bg: "bg-purple-500/10",   border: "border-purple-500/40",    icon: <Trophy className="w-4 h-4 text-purple-400" /> },
   gift:    { bg: "bg-pink-500/10",     border: "border-pink-500/40",      icon: <Gift className="w-4 h-4 text-pink-400" /> },
-  quest:   { bg: "bg-green-500/10",    border: "border-green-500/40",     icon: <CheckCircle className="w-4 h-4 text-green-400" /> },
+  quest:   { bg: "bg-success/10",    border: "border-success/40",     icon: <CheckCircle className="w-4 h-4 text-green-400" /> },
   success: { bg: "bg-emerald-500/10",  border: "border-emerald-500/40",   icon: <CheckCircle className="w-4 h-4 text-emerald-400" /> },
   levelup: { bg: "bg-yellow-400/10",   border: "border-yellow-400/50",    icon: <Star className="w-4 h-4 text-yellow-400" /> },
   funded:  { bg: "bg-yellow-400/10",   border: "border-yellow-400/50",    icon: <span className="text-base">🎰</span> },

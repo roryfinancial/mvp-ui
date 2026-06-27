@@ -4,6 +4,7 @@ import type { CreatorFeedItem } from "../../lib/types";
 import { Sounds } from "../../lib/sounds";
 import ConfettiBurst from "./Confetti";
 import type { ToastKind } from "./Toast";
+import { ProgressBar } from "./shared/ProgressBar";
 
 interface CreatorCardProps {
   creator: CreatorFeedItem;
@@ -22,7 +23,7 @@ function urgencyChip(c: CreatorFeedItem): { label: string; color: string } | nul
 }
 
 function progressBarColor(pct: number): string {
-  if (pct >= 1) return "bg-green-500";
+  if (pct >= 1) return "bg-success";
   if (pct >= 0.9) return "bg-yellow-400";
   return "bg-accent";
 }
@@ -82,14 +83,7 @@ export default function CreatorCard({ creator, recommendationReason, onGift, onT
           <span className="text-white/60">${creator.raisedAmount.toLocaleString()} raised</span>
           <span className="text-white/40">of ${creator.goalAmount.toLocaleString()}</span>
         </div>
-        <div className="h-2 bg-white/10">
-          <motion.div
-            className={`h-full ${progressBarColor(pct)}`}
-            initial={{ width: 0 }}
-            animate={{ width: `${pct * 100}%` }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          />
-        </div>
+        <ProgressBar value={pct * 100} className="h-2 bg-white/10" barClassName={progressBarColor(pct)} />
       </div>
 
       {/* Stats */}
