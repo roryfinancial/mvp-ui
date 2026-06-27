@@ -221,6 +221,87 @@
   }
 }
 
+/* ─── Interaction polish ──────────────────────────────────────────────────── */
+@layer base {
+  /* Accessible keyboard focus ring as a baseline for anything not already
+     styling its own focus state (mouse clicks don't trigger :focus-visible). */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Consistent disabled affordance across the app */
+  button:disabled,
+  [aria-disabled="true"],
+  input:disabled,
+  select:disabled,
+  textarea:disabled {
+    cursor: not-allowed;
+  }
+
+  /* On-brand text selection */
+  ::selection {
+    background: oklch(65.6% 0.241 354.308 / 0.25);
+  }
+
+  /* Smooth in-page anchor scrolling; images shouldn't be drag-ghosted */
+  html {
+    scroll-behavior: smooth;
+  }
+  img {
+    -webkit-user-drag: none;
+    user-select: none;
+  }
+
+  /* Subtle, theme-aware scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border: 2px solid var(--background);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--subtle);
+  }
+}
+
+/* Respect users who prefer reduced motion (the app leans on animation) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── Loading skeleton shimmer ────────────────────────────────────────────── */
+@keyframes skeleton-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--muted) 25%,
+    var(--secondary) 50%,
+    var(--muted) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
 /* ─── Overfill shimmer for 100%+ funded items ────────────────────────────── */
 @keyframes overfill-shimmer {
   0%   { background-position: -200% 0; }
