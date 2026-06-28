@@ -125,6 +125,37 @@ def images():
 def render(name):
     return send_from_directory(a.renders, name)
 
+@app.route("/parts/<render>/<part>")
+def part_file(render, part):
+    """Serve a previously-saved part PNG (so the editor can load it to touch up)."""
+    d = os.path.join(a.out, render)
+    return send_from_directory(d, part)
+
+@app.route("/source_dataurl")
+def source_dataurl():
+    """Full-res source render as a data-url — the paint canvas uses it as the
+    backdrop and as the color source for the eyedropper."""
+    if cur["img"] is None:
+        return jsonify(error="embed first"), 400
+    buf = io.BytesIO(); Image.fromarray(cur["img"], "RGB").save(buf, "PNG")
+    return jsonify(png="data:image/png;base64," + base64.b64encode(buf.getvalue()).decode(),
+                   w=cur["W"], h=cur["H"])
+
+@app.route("/save_canvas", methods=["POST"])
+def save_canvas():
+    """Save an RGBA layer painted/edited in the browser canvas. The canvas sends
+    the full edited part as a base64 PNG; we write it as <render>/<part>.png."""
+    j = request.json
+    data = base64.b64decode(j["png"].split(",", 1)[1])
+    im = Image.open(io.BytesIO(data)).convert("RGBA")
+    if im.size != (cur["W"], cur["H"]):
+        im = im.resize((cur["W"], cur["H"]), Image.NEAREST)
+    base = os.path.splitext(cur["name"])[0]
+    d = os.path.join(a.out, base); os.makedirs(d, exist_ok=True)
+    path = os.path.join(d, j["part"] + ".png")
+    im.save(path)
+    return jsonify(ok=True, path=os.path.relpath(path))
+
 # cache SAM image embeddings so switching renders is instant (set_image is ~5s)
 _emb = {}  # name -> (features, input_size, original_size, img, W, H)
 

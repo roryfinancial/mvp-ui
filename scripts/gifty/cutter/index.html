@@ -76,6 +76,40 @@
   <button id="savebody" class="ghost">💾 Save body</button>
   <small>Builds the box behind arms/face by removing saved parts and painting in the holes.</small>
 
+  <h3>✏️ Manual edit</h3>
+  <button id="editToggle">Enter edit mode</button>
+  <div id="editPanel" style="display:none">
+    <div class="row">
+      <button id="t-brush" class="on">brush</button>
+      <button id="t-erase" class="ghost">erase</button>
+    </div>
+    <div class="row">
+      <button id="t-smudge" class="ghost">blur</button>
+      <button id="t-average" class="ghost">average</button>
+    </div>
+    <div class="row">
+      <button id="t-eyedrop" class="ghost">🎯 pick color</button>
+      <input id="swatch" type="color" value="#2f6bf5" style="width:46px;height:30px;padding:0;border:0;background:none">
+    </div>
+    <div class="row">
+      <button id="z-front" class="on">paint in front</button>
+      <button id="z-behind" class="ghost">paint behind</button>
+    </div>
+    <small>“behind” only fills transparent gaps (eye/mouth holes) — won’t cover existing pixels.</small>
+    <label style="display:block;margin-top:6px">brush size <span id="bslbl">28</span></label>
+    <input id="brushsize" type="range" min="2" max="120" value="28" style="width:100%">
+    <label style="display:block;margin-top:6px">softness <span id="softlbl">0</span>%</label>
+    <input id="softness" type="range" min="0" max="100" value="0" style="width:100%">
+    <label style="display:block;margin-top:6px">blur / average strength <span id="bllbl">4</span></label>
+    <input id="blurstr" type="range" min="1" max="20" value="4" style="width:100%">
+    <div class="row">
+      <button id="editundo" class="ghost">↶ undo</button>
+      <button id="loadpart" class="ghost">load saved part</button>
+    </div>
+    <button id="saveCanvas">💾 Save edited part</button>
+    <small>Brush paints with the swatch color (full opacity). Erase removes pixels. Blur softens where you drag. Use 🎯 then click image to sample a color.</small>
+  </div>
+
   <div id="saved" style="margin-top:8px;font-size:12px;opacity:.8"></div>
 </div>
 
@@ -83,6 +117,7 @@
   <div id="stage">
     <img id="img" alt="">
     <img id="mask" alt="">
+    <canvas id="paint" style="position:absolute;inset:0;width:100%;height:100%;display:none"></canvas>
     <div id="pts"></div>
   </div>
   <div id="info"></div>
@@ -152,6 +187,7 @@ function load(name){
 }
 
 $("#stage").onclick=e=>{
+  if(edit.on) return;                 // in edit mode the canvas owns clicks, not SAM
   const r=$("#stage").getBoundingClientRect();
   const x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height;
   cur.points.push({x,y,label:e.shiftKey?0:cur.mode});
@@ -206,6 +242,141 @@ $("#derivebody").onclick=()=>{
 $("#savebody").onclick=()=>{
   fetch("/save_body",{method:"POST",headers:{"content-type":"application/json"},body:"{}"})
     .then(r=>r.json()).then(d=>{$("#saved").textContent=d.path?("saved "+d.path):("error: "+d.error);});
+};
+
+/* ───────────── Manual edit (paint) layer ───────────── */
+const cv=$("#paint"), ctx=cv.getContext("2d",{willReadFrequently:true});
+let edit={on:false,tool:"brush",size:28,blur:4,soft:0,color:"#2f6bf5",zmode:"front",drawing:false,last:null,history:[]};
+let srcImg=null; // full-res source for eyedropper sampling
+
+function pushHistory(){ if(edit.history.length>20)edit.history.shift(); edit.history.push(ctx.getImageData(0,0,cv.width,cv.height)); }
+
+async function startEdit(){
+  // size canvas to the source resolution, load current cutout (or blank) into it
+  const meta=await fetch("/source_dataurl").then(r=>r.json());
+  cv.width=meta.w; cv.height=meta.h;
+  srcImg=new Image(); srcImg.src=meta.png;
+  // try to seed canvas from the current mask preview's cutout via /segment cutout, else blank
+  if(cur.points.length){
+    const d=await fetch("/segment",{method:"POST",headers:{"content-type":"application/json"},
+      body:JSON.stringify({points:cur.points,maxCoverage:cur.cov,view:"cutout",smooth:cur.smooth,colorTol:cur.ctol})}).then(r=>r.json());
+    await drawDataUrl(d.png);
+  } else { ctx.clearRect(0,0,cv.width,cv.height); }
+  edit.history=[]; pushHistory();
+  // hide the backdrop entirely while editing so erase reveals the checkerboard
+  // (transparent), not a faded copy of the original art.
+  cv.style.display="block"; $("#img").style.opacity="0"; $("#mask").removeAttribute("src");
+}
+function drawDataUrl(url){return new Promise(res=>{if(!url){ctx.clearRect(0,0,cv.width,cv.height);return res();}const im=new Image();im.onload=()=>{ctx.clearRect(0,0,cv.width,cv.height);ctx.drawImage(im,0,0,cv.width,cv.height);res();};im.src=url;});}
+
+$("#editToggle").onclick=()=>{
+  edit.on=!edit.on;
+  $("#editPanel").style.display=edit.on?"block":"none";
+  $("#editToggle").textContent=edit.on?"Exit edit mode":"Enter edit mode";
+  if(edit.on) startEdit(); else { cv.style.display="none"; $("#img").style.opacity=cur.view==="overlay"?"1":"0"; }
+};
+
+// tool buttons
+function pick(tool){edit.tool=tool;["brush","erase","smudge","average","eyedrop"].forEach(t=>{const b=$("#t-"+t);if(b){b.classList.toggle("on",t===tool);b.classList.toggle("ghost",t!==tool);}});}
+$("#t-brush").onclick=()=>pick("brush");
+$("#t-erase").onclick=()=>pick("erase");
+$("#t-smudge").onclick=()=>pick("smudge");
+$("#t-average").onclick=()=>pick("average");
+$("#t-eyedrop").onclick=()=>pick("eyedrop");
+$("#swatch").oninput=e=>{edit.color=e.target.value;};
+function setZ(z){edit.zmode=z;$("#z-front").classList.toggle("on",z==="front");$("#z-front").classList.toggle("ghost",z!=="front");$("#z-behind").classList.toggle("on",z==="behind");$("#z-behind").classList.toggle("ghost",z!=="behind");}
+$("#z-front").onclick=()=>setZ("front");
+$("#z-behind").onclick=()=>setZ("behind");
+$("#brushsize").oninput=e=>{edit.size=+e.target.value;$("#bslbl").textContent=e.target.value;};
+$("#softness").oninput=e=>{edit.soft=+e.target.value/100;$("#softlbl").textContent=e.target.value;};
+$("#blurstr").oninput=e=>{edit.blur=+e.target.value;$("#bllbl").textContent=e.target.value;};
+$("#editundo").onclick=()=>{if(edit.history.length>1){edit.history.pop();ctx.putImageData(edit.history[edit.history.length-1],0,0);}};
+$("#loadpart").onclick=async()=>{
+  const render=cur.img.replace(/\.png$/,"");
+  const url="/parts/"+encodeURIComponent(render)+"/"+encodeURIComponent(cur.part)+".png";
+  await drawDataUrl(url+"?t="+Date.now()); pushHistory();
+};
+
+function canvasXY(e){const r=cv.getBoundingClientRect();return [Math.round((e.clientX-r.left)/r.width*cv.width),Math.round((e.clientY-r.top)/r.height*cv.height)];}
+// a radial gradient brush head: opaque core, feathered edge controlled by softness
+function softGrad(x,y,r,rgba){
+  const inner=r*(1-edit.soft);           // soft=0 → hard edge; soft=1 → fades from center
+  const g=ctx.createRadialGradient(x,y,Math.max(0,inner),x,y,r);
+  g.addColorStop(0,rgba);g.addColorStop(1,rgba.replace(/[\d.]+\)$/,"0)"));
+  return g;
+}
+function hexToRgba(hex,a){const n=parseInt(hex.slice(1),16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
+
+function stamp(x,y){
+  const s=edit.size, r=s/2;
+  if(edit.tool==="erase"){
+    ctx.save();ctx.globalCompositeOperation="destination-out";
+    ctx.fillStyle=edit.soft>0?softGrad(x,y,r,"rgba(0,0,0,1)"):"rgba(0,0,0,1)";
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.restore();
+  }
+  else if(edit.tool==="brush"){
+    ctx.save();
+    // front = paint over everything; behind = only fill transparent gaps (holes)
+    ctx.globalCompositeOperation = edit.zmode==="behind" ? "destination-over" : "source-over";
+    ctx.fillStyle=edit.soft>0?softGrad(x,y,r,hexToRgba(edit.color,1)):edit.color;
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.restore();
+  }
+  else if(edit.tool==="smudge"){ // local blur: downscale-up a patch, clip to brush
+    const x0=Math.max(0,x-r|0),y0=Math.max(0,y-r|0);const w=Math.min(cv.width-x0,s|0),h=Math.min(cv.height-y0,s|0);if(w<2||h<2)return;
+    const patch=ctx.getImageData(x0,y0,w,h);
+    const tmp=document.createElement("canvas");tmp.width=w;tmp.height=h;tmp.getContext("2d").putImageData(patch,0,0);
+    const k=Math.max(2,Math.round(edit.blur));const sm=document.createElement("canvas");sm.width=Math.max(1,Math.round(w/k));sm.height=Math.max(1,Math.round(h/k));
+    const sx=sm.getContext("2d");sx.imageSmoothingEnabled=true;sx.drawImage(tmp,0,0,sm.width,sm.height);
+    const tx=tmp.getContext("2d");tx.imageSmoothingEnabled=true;tx.clearRect(0,0,w,h);tx.drawImage(sm,0,0,w,h);
+    ctx.save();ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.clip();ctx.drawImage(tmp,x0,y0);ctx.restore();
+  }
+  else if(edit.tool==="average"){ // recolor OPAQUE pixels toward local mean RGB; alpha untouched
+    const x0=Math.max(0,(x-r)|0),y0=Math.max(0,(y-r)|0);const w=Math.min(cv.width-x0,s|0),h=Math.min(cv.height-y0,s|0);if(w<1||h<1)return;
+    const img=ctx.getImageData(x0,y0,w,h),d=img.data;
+    // mean of opaque pixels only
+    let sr=0,sg=0,sb=0,c=0;
+    for(let i=0;i<d.length;i+=4){if(d[i+3]>20){sr+=d[i];sg+=d[i+1];sb+=d[i+2];c++;}}
+    if(!c)return; const mr=sr/c,mg=sg/c,mb=sb/c;
+    const strength=Math.min(1,edit.blur/20*0.9+0.1); // map strength slider → blend amount
+    const cx=x-x0,cy=y-y0;
+    for(let py=0;py<h;py++)for(let px=0;px<w;px++){
+      const i=(py*w+px)*4; if(d[i+3]<=20)continue;            // never touch transparent (no adding pixels)
+      const dist=Math.hypot(px-cx,py-cy)/r; if(dist>1)continue;
+      const fall=edit.soft>0?(1-dist)*(1-edit.soft)+ (dist<1?1:0)*edit.soft : 1; // soft falloff
+      const t=strength*(edit.soft>0?Math.max(0,1-dist):1);
+      d[i]  =d[i]  +(mr-d[i])  *t;
+      d[i+1]=d[i+1]+(mg-d[i+1])*t;
+      d[i+2]=d[i+2]+(mb-d[i+2])*t;
+      // alpha left exactly as-is → cannot add or remove pixels
+    }
+    ctx.putImageData(img,x0,y0);
+  }
+}
+cv.addEventListener("click",e=>{e.stopPropagation();}); // never let edit clicks reach #stage/SAM
+cv.addEventListener("pointerdown",e=>{
+  if(!edit.on)return;
+  e.stopPropagation();
+  if(edit.tool==="eyedrop"){const [x,y]=canvasXY(e);
+    // sample from the SOURCE image (not the cutout) for true colors
+    const t=document.createElement("canvas");t.width=cv.width;t.height=cv.height;const tc=t.getContext("2d");tc.drawImage(srcImg,0,0,cv.width,cv.height);
+    const p=tc.getImageData(x,y,1,1).data;const hex="#"+[p[0],p[1],p[2]].map(v=>v.toString(16).padStart(2,"0")).join("");
+    edit.color=hex;$("#swatch").value=hex;pick("brush");return;}
+  edit.drawing=true;edit.last=canvasXY(e);stamp(...edit.last);
+});
+cv.addEventListener("pointermove",e=>{
+  if(!edit.on||!edit.drawing)return;
+  const [x,y]=canvasXY(e);const [lx,ly]=edit.last;
+  const dist=Math.hypot(x-lx,y-ly),step=Math.max(1,edit.size/4);
+  for(let d=0;d<=dist;d+=step)stamp(Math.round(lx+(x-lx)*d/(dist||1)),Math.round(ly+(y-ly)*d/(dist||1)));
+  edit.last=[x,y];
+});
+window.addEventListener("pointerup",()=>{if(edit.drawing){edit.drawing=false;pushHistory();}});
+
+$("#saveCanvas").onclick=()=>{
+  const png=cv.toDataURL("image/png");
+  fetch("/save_canvas",{method:"POST",headers:{"content-type":"application/json"},
+    body:JSON.stringify({part:cur.part,png})})
+    .then(r=>r.json()).then(d=>{$("#saved").textContent=d.path?("saved "+d.path):("err "+d.error);});
 };
 </script>
 </body>
