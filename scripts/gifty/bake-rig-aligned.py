@@ -226,59 +226,47 @@ def main():
             emit(f"pupil_{mood}_{s}", render, f"pupil_{s}", meta, mode=("none" if render==BASE else "warp"), fix_white=True)
         pupils[mood] = {"l": f"pupil_{mood}_l", "r": f"pupil_{mood}_r"}
 
-    # Eyelids: keep the per-eye face-warp (this places + sizes them correctly,
-    # resting at ~half coverage). Each side is the same cut, warped to its eye.
-    eyelid = {}
-    for s in ("l", "r"):
-        if emit(f"eyelid_{s}", EYELID, f"eyelid_{s}", meta, mode="warp"):
-            eyelid[s] = f"eyelid_{s}"
-    # Per-eye lid REST nudge (frac of canvas). The right lid rests a touch low in
-    # the 3/4 view → lift it slightly so the eyes look even (not sleepy/lopsided).
-    lidRest = {"l": 0.0, "r": -0.007}
+    # ── Eyelids: a clean THIN CAP at the TOP of each eye (covers ~18% of the eye
+    #    height, pupils clear). The raw cut lids were lumpy and differently shaped;
+    #    a constructed ellipse-cap is clean + identical per eye. The LASH traces
+    #    the cap's own visible bottom edge so it sits exactly on the lid. ──
+    LID_FILL = (30, 107, 196)   # the eyelid blue
+    LASH = (40, 72, 120)        # lash, slightly lighter than the eye outline
 
-    # Lash-line: ONE clean drawn arc (a gentle smile-curve), placed at each eye's
-    # lid bottom, scaled to the eye width and rotated to the eye's angle. Built —
-    # not traced from the messy lid edge — so the two lashes are symmetric by
-    # construction.
-    lashline = {}
-    LASH = (40, 72, 120)
-    ey_top, ey_h = {}, {}
-    def eye_geom(layer_eye, layer_lid, side):
-        eye = np.array(Image.open(f"{OUT}/{layer_eye}.png").convert("RGBA"))[..., 3]
-        lid = np.array(Image.open(f"{OUT}/{layer_lid}.png").convert("RGBA"))[..., 3]
+    def eye_geom(side):
+        eye = np.array(Image.open(f"{OUT}/eye_normal_{side}.png").convert("RGBA"))[..., 3]
         cnts, _ = cv2.findContours((eye > 120).astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         (cx, cy), _, ang = cv2.fitEllipse(max(cnts, key=cv2.contourArea))
-        xs = np.where(eye > 120)[1]; w = xs.max() - xs.min()
-        ys = np.where(eye > 120)[0]; ey_top[side] = int(ys.min()); ey_h[side] = int(ys.max() - ys.min())
-        lid_bot = np.where(lid > 120)[0].max()
-        return cx, lid_bot, w, ang
+        xs = np.where(eye > 120)[1]; ys = np.where(eye > 120)[0]
+        return cx, xs.min(), xs.max(), ys.min(), ys.max(), ang
+
+    eyelid, lashline = {}, {}
+    lidRest = {"l": 0.0, "r": 0.0}   # cap is built per-eye, no nudge needed
     for s in ("l", "r"):
-        if not eyelid.get(s):
-            continue
-        cx, ybot, w, ang = eye_geom(f"eye_normal_{s}", f"eyelid_{s}", s)
-        canvas = Image.new("RGBA", (C, C), (0, 0, 0, 0))
-        d = ImageDraw.Draw(canvas)
-        # arc spanning ~70% of eye width, gentle downward bow; thickness ~ eye/22
-        half = w * 0.36
-        bow = w * 0.10           # how much the middle dips
-        th = max(4, int(w / 18))
-        pts = []
-        for t in np.linspace(0, 1, 30):
-            x = -half + 2 * half * t
-            y = -bow * (1 - (2 * t - 1) ** 2)    # convex-UP: dips at ends, peaks in middle (∩)
-            pts.append((x, y))
-        # eye ellipse angle is measured from vertical; normalize to a small tilt
+        ecx, x0, x1, y0, y1, ang = eye_geom(s)
+        ew, eh = x1 - x0, y1 - y0
         tilt = ang if ang < 90 else ang - 180
-        a = np.deg2rad(tilt)
-        ca, sa = np.cos(a), np.sin(a)
-        # Place the lash near the TOP of the eye (just above the pupil), not at the
-        # lid's full bottom (which dips into the pupil). Use the eye's own bbox:
-        # lash baseline ≈ eye_top + 20% of eye height.
-        eye_top = ey_top[s]; eye_h = ey_h[s]
-        ybase = int(eye_top + eye_h * 0.20)
-        place = [(cx + (px * ca - py * sa), ybase + (px * sa + py * ca)) for px, py in pts]
-        d.line(place, fill=LASH + (255,), width=th, joint="curve")
-        canvas.save(f"{OUT}/lashline_{s}.png")
+        # ellipse-cap: most of it sits ABOVE the eye so only a thin cap shows.
+        cap_h = int(eh * 0.34); cap_w = int(ew * 1.06)
+        cap_cy = int(y0 - cap_h * 0.45 + eh * 0.18)   # visible cap bottom ≈ y0 + 18% eh
+        cap = np.zeros((C, C), np.uint8)
+        cv2.ellipse(cap, (int(ecx), cap_cy), (cap_w // 2, cap_h), tilt, 0, 360, 255, -1)
+        cap = cv2.GaussianBlur(cap, (0, 0), 1.2)      # tiny AA
+        lid = np.zeros((C, C, 4), np.uint8)
+        lid[..., 0], lid[..., 1], lid[..., 2], lid[..., 3] = (*LID_FILL, 0)
+        lid[..., 3] = cap
+        Image.fromarray(lid, "RGBA").save(f"{OUT}/eyelid_{s}.png")
+        meta[f"eyelid_{s}"] = bbox(lid); eyelid[s] = f"eyelid_{s}"
+
+        # lash = bottom edge of this cap (traced from its own contour → matches the
+        # lid curve exactly). Drawn full-strength, no feather.
+        vis = (cap > 120).astype(np.uint8)
+        edge = vis - cv2.erode(vis, np.ones((3, 3), np.uint8))
+        eys = np.where(vis > 0)[0]
+        edge[: int(eys.min() + (eys.max() - eys.min()) * 0.55)] = 0   # bottom half only
+        edge = cv2.dilate(edge, np.ones((5, 5), np.uint8))
+        lash = np.zeros((C, C, 4), np.uint8); lash[edge > 0] = (*LASH, 255)
+        Image.fromarray(lash, "RGBA").save(f"{OUT}/lashline_{s}.png")
         lashline[s] = f"lashline_{s}"
 
     # white-only masks per mood eye — the bright interior only (no navy outline),
