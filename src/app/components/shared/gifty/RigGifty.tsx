@@ -269,6 +269,29 @@ export function RigGifty({
     };
   };
 
+  // Full-canvas sprite style for the MASKED eye layers (eyelid + lashline).
+  // Unlike `placeStyle` (which sizes the div to its TIGHT place box), this paints
+  // the atlas cell into a FULL-CANVAS (size×size) div at the layer's place coords —
+  // the SAME background mapping `webMaskStyle` uses for the mask. The masked
+  // wrapper and these layers then share one coord space, so the eye-white mask
+  // clips the lid exactly like the HQ full-canvas <img> path does.
+  const fullCanvasSpriteStyle = (layer: string): React.CSSProperties | null => {
+    const L = wd.layers[layer];
+    if (!L) return null;
+    const divW = L.place.w * size, divH = L.place.h * size;
+    const scaleX = divW / L.cell.sw, scaleY = divH / L.cell.sh;
+    const bgW = wd.atlas.w * scaleX, bgH = wd.atlas.h * scaleY;
+    const posX = L.place.x * size - L.cell.sx * scaleX;
+    const posY = L.place.y * size - L.cell.sy * scaleY;
+    return {
+      position: "absolute", inset: 0, width: size, height: size,
+      backgroundImage: `url(${atlasUrl})`,
+      backgroundRepeat: "no-repeat",
+      backgroundSize: `${bgW}px ${bgH}px`,
+      backgroundPosition: `${posX}px ${posY}px`,
+    };
+  };
+
   const eyelidEl = (side: "l" | "r") => {
     const lid = SRC.eyelid?.[side];
     if (!lid || happyEyesClosed) return null;
@@ -279,11 +302,11 @@ export function RigGifty({
     const drop = restNudge + blink * LID_CLOSE * size;
 
     if (tier === "web") {
-      const lidBase = placeStyle(lid);
+      const lidBase = fullCanvasSpriteStyle(lid);
       const mask = webMaskStyle(maskLayer);
       if (!lidBase || !mask) return null;
       const lashLayer = SRC.lashline?.[side];
-      const lashBase = lashLayer ? placeStyle(lashLayer) : null;
+      const lashBase = lashLayer ? fullCanvasSpriteStyle(lashLayer) : null;
       // mask sits on the STATIC full-canvas wrapper (fixed to the eye); the lid +
       // lash sprites slide INSIDE it by `drop`, revealed only within the eye-white.
       return (
