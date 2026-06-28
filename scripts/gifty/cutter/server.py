@@ -6,7 +6,7 @@ Run inside the venv (torch + segment-anything):
      --out public/gifty/parts --ckpt <sam_vit_b.pth> --model vit_b
 Open http://localhost:8077
 """
-import argparse, base64, io, os, glob, threading
+import argparse, base64, io, os, glob, threading, json
 import numpy as np
 import cv2
 import torch
@@ -155,6 +155,36 @@ def save_canvas():
     path = os.path.join(d, j["part"] + ".png")
     im.save(path)
     return jsonify(ok=True, path=os.path.relpath(path))
+
+# ── Anchor points (per render) ──────────────────────────────────────────────
+# Two points per render in 0..1 fractions:
+#   anchor = a landmark present in EVERY render (e.g. the bow knot)
+#   center = the character origin/pivot (e.g. center of the box face)
+# The vector center→anchor encodes each render's scale + orientation, so any
+# part cut from that render can be mapped into a shared "base" coordinate space.
+ANCHORS_PATH = os.path.join(a.out, "anchors.json")
+
+def _load_anchors():
+    if os.path.isfile(ANCHORS_PATH):
+        try: return json.load(open(ANCHORS_PATH))
+        except Exception: return {}
+    return {}
+
+@app.route("/anchors")
+def anchors_get():
+    return jsonify(_load_anchors())
+
+@app.route("/anchors", methods=["POST"])
+def anchors_set():
+    """Save/merge anchor+center for one render. Body: {render, anchor:{x,y}, center:{x,y}}."""
+    j = request.json
+    data = _load_anchors()
+    base = os.path.splitext(j["render"])[0]
+    data[base] = {"quad": j.get("quad")}   # quad = {TL,TR,BR,BL} corners in 0..1
+    os.makedirs(a.out, exist_ok=True)
+    json.dump(data, open(ANCHORS_PATH, "w"), indent=1)
+    return jsonify(ok=True, saved=base, total=len(data))
+
 
 # cache SAM image embeddings so switching renders is instant (set_image is ~5s)
 _emb = {}  # name -> (features, input_size, original_size, img, W, H)
