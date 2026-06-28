@@ -232,6 +232,9 @@ def main():
     for s in ("l", "r"):
         if emit(f"eyelid_{s}", EYELID, f"eyelid_{s}", meta, mode="warp"):
             eyelid[s] = f"eyelid_{s}"
+    # Per-eye lid REST nudge (frac of canvas). The right lid rests a touch low in
+    # the 3/4 view → lift it slightly so the eyes look even (not sleepy/lopsided).
+    lidRest = {"l": 0.0, "r": -0.007}
 
     # Lash-line: derive the bottom-edge band from EACH side's own warped lid, so
     # the lash follows that eye's true rotation/curve (the eyes sit at slightly
@@ -321,7 +324,8 @@ def main():
     bq = anchors[BASE].get("quad")
     json.dump({"canvas": C, "order": order, "base": BASE_LAYERS, "meta": meta,
                "mouths": mouths, "eyes": eyes, "pupils": pupils,
-               "eyelid": eyelid, "lashline": lashline, "eyeMask": eyeMask, "puppy": puppy,
+               "eyelid": eyelid, "lashline": lashline, "lidRest": lidRest,
+               "eyeMask": eyeMask, "puppy": puppy,
                "armR": arm_r, "armL": arm_l, "legs": legs,
                "defaults": {"mouth": "smile", "eyes": "normal", "pupils": "normal",
                             "armR": "thumbsup", "armL": "down", "legs": "stand"},

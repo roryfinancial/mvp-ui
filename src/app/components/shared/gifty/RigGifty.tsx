@@ -27,6 +27,8 @@ interface Rig {
   eyes: Record<string, { l: string; r: string }>;
   pupils: Record<string, { l: string; r: string }>;
   eyelid?: { l?: string; r?: string };  // cut eyelid layers (slide down to blink)
+  lashline?: { l?: string; r?: string };// crisp lighter border on the lid bottom edge
+  lidRest?: { l?: number; r?: number }; // per-eye rest nudge (frac) to even the lids
   eyeMask?: Record<string, { l?: string; r?: string }>; // white-only clip per mood
   puppy?: string | null;                // standalone baked bashful look
   armR: Record<string, string>;
@@ -178,7 +180,8 @@ export function RigGifty({
     // clip to the white-only mask (bright interior, no navy outline); fall back to
     // the full eye-white if a mask isn't present.
     const maskLayer = rig.eyeMask?.[eyeMood]?.[side] || rig.eyes[eyeMood][side];
-    const drop = blink * LID_CLOSE * size;
+    const restNudge = (rig.lidRest?.[side] ?? 0) * size;   // even the two lids
+    const drop = restNudge + blink * LID_CLOSE * size;
     const maskUrl = `url(${URL}/${maskLayer}.png)`;
     // mask sits on the STATIC parent (fixed to the eye); the lid <img> slides
     // INSIDE it, so the lid is revealed only within the eye-white shape.
@@ -193,6 +196,11 @@ export function RigGifty({
         <img src={`${URL}/${lid}.png`} alt="" draggable={false}
           style={{ position: "absolute", inset: 0, width: size, height: size,
                    transform: `translateY(${drop}px)`, willChange: "transform" }} />
+        {rig.lashline?.[side] && (
+          <img src={`${URL}/${rig.lashline[side]}.png`} alt="" draggable={false}
+            style={{ position: "absolute", inset: 0, width: size, height: size,
+                     transform: `translateY(${drop}px)`, willChange: "transform" }} />
+        )}
       </div>
     );
   };

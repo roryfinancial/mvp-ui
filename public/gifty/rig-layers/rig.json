@@ -451,6 +451,10 @@
   "l": "lashline_l",
   "r": "lashline_r"
  },
+ "lidRest": {
+  "l": 0.0,
+  "r": -0.007
+ },
  "eyeMask": {
   "normal": {
    "l": "eyemask_normal_l",
