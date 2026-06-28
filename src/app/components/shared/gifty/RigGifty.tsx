@@ -167,25 +167,36 @@ export function RigGifty({
     );
   };
 
-  // sliding cut eyelid: the tall lid art translates DOWN over the eye, clipped to
-  // the socket so only its descending part shows. blink=0 → fully up (hidden).
+  // sliding cut eyelid. The lid art already sits resting just above/over the eye
+  // top. On blink it slides DOWN by the socket height to cover the eye. The clip
+  // box spans from above the eye to the eye bottom so only the descending lid is
+  // visible (its resting position is hidden just above the clip top).
   const eyelidEl = (side: "l" | "r") => {
     const lid = rig.eyelid?.[side];
-    if (!lid || !rig.meta[lid] || happyEyesClosed) return null;
+    const lm = lid ? rig.meta[lid] : null;
+    if (!lid || !lm || happyEyesClosed) return null;
     const sock = moodSockets[side];
-    const H = (sock.bot - sock.top) * size;
-    // travel: lid starts fully above the socket, slides down to cover ~100% on blink
-    const drop = -H * (1 - blink) - H * 0.15;   // 0.15 = slight rest tuck above eye
-    const L = (sock.cx - sock.w * 0.85) * size;
-    const W = sock.w * 1.7 * size;
-    const T = (sock.top - sock.h * 0.9) * size;
-    const clipH = (sock.bot - (sock.top - sock.h * 0.9)) * size;
+    // The lid art's own height; park it fully ABOVE the eye when open, slide it
+    // down so its bottom reaches the eye bottom when closed.
+    const lidH = lm.h * size;
+    const lidBottomFrac = lm.y + lm.h;          // where the lid art's bottom sits
+    const closedShift = (sock.bot - lidBottomFrac) * size; // align lid bottom → eye bottom
+    const parkUp = -(lm.h + 0.02) * size;       // fully above the eye when open
+    const drop = parkUp + (closedShift - parkUp) * blink;  // open→closed
+    // clip box: TIGHT to this eye's socket (so a wide lid only shows over the eye),
+    // extended slightly above so the parked lid is hidden, down to the eye bottom.
+    const padX = sock.w * 0.18;
+    const clipTopFrac = sock.top - 0.03;        // just above the eye (hides parked lid)
+    const L = (sock.cx - sock.w / 2 - padX) * size;
+    const Wpx = (sock.w + padX * 2) * size;
+    const Tpx = clipTopFrac * size;
+    const clipH = (sock.bot - clipTopFrac + 0.01) * size;
     return (
       <div key={`lid-${side}`} aria-hidden
-        style={{ position: "absolute", left: L, top: T + bob, width: W, height: clipH,
+        style={{ position: "absolute", left: L, top: Tpx + bob, width: Wpx, height: clipH,
                  overflow: "hidden", pointerEvents: "none" }}>
         <img src={`${URL}/${lid}.png`} alt="" draggable={false}
-          style={{ position: "absolute", left: -L, top: -T, width: size, height: size,
+          style={{ position: "absolute", left: -L, top: -Tpx, width: size, height: size,
                    transform: `translateY(${drop}px)`, willChange: "transform" }} />
       </div>
     );
