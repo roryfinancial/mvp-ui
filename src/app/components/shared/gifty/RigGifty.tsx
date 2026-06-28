@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from "react";
  */
 
 type Box = { cx: number; cy: number; x: number; y: number; w: number; h: number };
+type Quad = { TL: { x: number; y: number }; TR: { x: number; y: number }; BR: { x: number; y: number }; BL: { x: number; y: number } };
 interface Rig {
   canvas: number;
   order: string[];
@@ -25,6 +26,10 @@ interface Rig {
   eyes: Record<string, { l: string; r: string }>;
   pupils: Record<string, { l: string; r: string }>;
   defaults: { mouth: string; eyes: string; pupils: string };
+  // base render's face quad (0..1) — all parts are warped into this plane.
+  // carried for future face-space re-projection (flat PFP view, head turns).
+  faceQuad?: Quad;
+  baseRender?: string;
 }
 
 export type Mood = "normal" | "happy" | "smug" | "proud" | "shy" | "thinking";
