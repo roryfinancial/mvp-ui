@@ -8,7 +8,7 @@ import { RigGifty, type Mood } from "./shared/gifty/RigGifty";
  * wave. All driven by swapping/animating real cut layers.
  */
 
-const MOODS: Mood[] = ["normal", "happy", "smug", "proud", "shy", "thinking"];
+const MOODS: Mood[] = ["normal", "happy", "smug", "proud", "shy", "thinking", "puppy"];
 
 const ARM_R = ["thumbsup", "wave", "fist", "salute", "down", "sad", "open", "present", "calm"];
 const ARM_L = ["thumbsup", "down", "wave", "hip", "salute", "sad", "open", "hold", "calm"];

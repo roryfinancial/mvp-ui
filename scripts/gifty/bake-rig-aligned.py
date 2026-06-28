@@ -116,10 +116,20 @@ MOUTHS = {
 }
 EYES = {
     "normal": BASE,
-    "smug":   "Gemini_Generated_Image_u1b4qyu1b4qyu1b4",
+    "smug":   "Gemini_Generated_Image_r9wewpr9wewpr9we",   # de-lidded, cheeky bottom curve
     "happy":  "Gemini_Generated_Image_vcp61avcp61avcp6",
 }
-PUPILS = {"normal": BASE}
+# pupils per mood (smug now has its own separated pupils that can dart)
+PUPILS = {
+    "normal": BASE,
+    "smug":   "Gemini_Generated_Image_r9wewpr9wewpr9we",
+}
+# the sliding eyelid (cut art) — warped into base face-plane, slides down to blink.
+# z-order: eye-white → pupil → EYELID → body (body crops the tall lid top).
+EYELID = "Gemini_Generated_Image_u1b4qyu1b4qyu1b4"
+# special standalone "puppy" look: one baked layer (brow+eye+pupil+lid). Hides all
+# other eye features; only a subtle sniffle stretch, no blink.
+PUPPY = "Gemini_Generated_Image_bfzncmbfzncmbfzn"
 
 # Arm/leg VARIANTS. Limbs aren't on the face plane, so they use a SIMILARITY
 # transform (mode="scale"): scaled by the source render's face-quad size vs base
@@ -196,8 +206,22 @@ def main():
             emit(f"pupil_{mood}_{s}", render, f"pupil_{s}", meta, mode=("none" if render==BASE else "warp"))
         pupils[mood] = {"l": f"pupil_{mood}_l", "r": f"pupil_{mood}_r"}
 
+    # sliding eyelid (cut art) — warped into base face-plane
+    eyelid = {}
+    for s in ("l", "r"):
+        if emit(f"eyelid_{s}", EYELID, f"eyelid_{s}", meta, mode="warp"):
+            eyelid[s] = f"eyelid_{s}"
+
+    # special baked "puppy" look (single layer, warped into face-plane)
+    puppy = None
+    if emit("puppy", PUPPY, "puppy_eyes", meta, mode="warp"):
+        puppy = "puppy"
+
+    # z-order: body first, then face on top. Eyelid sits in front of the eye but
+    # is clip-cropped (socket box) in code so only its descending part shows.
     order = ["body", "__legs__", "__armL__", "__armR__", "bow",
-             "eyebrow_l", "eyebrow_r", "__eyes__", "__pupils__", "__mouth__"]
+             "eyebrow_l", "eyebrow_r",
+             "__eyes__", "__pupils__", "__eyelid__", "__puppy__", "__mouth__"]
 
     # Per-eye, PER-MOOD socket geometry (lids must hug each mood's actual eye).
     # 'normal' is reliable; for other moods use that mood's eye-white bbox but
@@ -227,6 +251,7 @@ def main():
     bq = anchors[BASE].get("quad")
     json.dump({"canvas": C, "order": order, "base": BASE_LAYERS, "meta": meta,
                "mouths": mouths, "eyes": eyes, "pupils": pupils,
+               "eyelid": eyelid, "puppy": puppy,
                "armR": arm_r, "armL": arm_l, "legs": legs,
                "defaults": {"mouth": "smile", "eyes": "normal", "pupils": "normal",
                             "armR": "thumbsup", "armL": "down", "legs": "stand"},
