@@ -87,9 +87,27 @@ def bbox(rgba):
             "x": round(float(xs.min())/C, 4), "y": round(float(ys.min())/C, 4),
             "w": round(float(xs.max()-xs.min()+1)/C, 4), "h": round(float(ys.max()-ys.min()+1)/C, 4)}
 
-def emit(name, render_folder, part, meta, mode="warp"):
+def neutralize_whites(rgba):
+    """Remove AI-generation yellow/cream cast from WHITES only. Bright, low-
+    saturation pixels (eye whites, teeth, catchlights) are gain-mapped to a
+    neutral target; saturated pink/blue/gold are left untouched."""
+    a = rgba.astype(np.float32)
+    rgb = a[..., :3]; al = a[..., 3]
+    mx = rgb.max(2); mn = rgb.min(2); sat = mx - mn
+    whiteish = (mx > 165) & (sat < 70) & (al > 40)
+    if whiteish.sum() > 20:
+        cur = rgb[whiteish].reshape(-1, 3).mean(0)
+        target = np.array([250.0, 253.0, 254.0])
+        gain = np.clip(target / np.maximum(cur, 1), 0.85, 1.25)
+        idx = np.where(whiteish)
+        for c in range(3):
+            rgb[..., c][idx] = np.clip(rgb[..., c][idx] * gain[c], 0, 255)
+    return np.dstack([rgb, al]).astype(np.uint8)
+
+def emit(name, render_folder, part, meta, mode="warp", fix_white=False):
     """mode: 'warp' = face homography (face parts) · 'scale' = similarity from
-    face-quad size (limbs) · 'none' = base space, as-is."""
+    face-quad size (limbs) · 'none' = base space, as-is.
+    fix_white: neutralize cream/yellow whites (eyes, pupils, teeth)."""
     rgba = load_part(render_folder, part)
     if rgba is None:
         print("  missing", render_folder, part); return False
@@ -97,6 +115,8 @@ def emit(name, render_folder, part, meta, mode="warp"):
         rgba = warp_into_base(rgba, render_folder)
     elif mode == "scale":
         rgba = scale_into_base(rgba, render_folder)
+    if fix_white:
+        rgba = neutralize_whites(rgba)
     Image.fromarray(rgba, "RGBA").save(f"{OUT}/{name}.png")
     meta[name] = bbox(rgba)
     return True
@@ -191,26 +211,47 @@ def main():
     mouths = {}
     for name, (render, part) in MOUTHS.items():
         layer = f"mouth_{name}"
-        if emit(layer, render, part, meta, mode=("none" if render==BASE else "warp")):
+        if emit(layer, render, part, meta, mode=("none" if render==BASE else "warp"), fix_white=True):
             mouths[name] = layer
 
     eyes = {}
     for mood, render in EYES.items():
         for s in ("l", "r"):
-            emit(f"eye_{mood}_{s}", render, f"eye_{s}", meta, mode=("none" if render==BASE else "warp"))
+            emit(f"eye_{mood}_{s}", render, f"eye_{s}", meta, mode=("none" if render==BASE else "warp"), fix_white=True)
         eyes[mood] = {"l": f"eye_{mood}_l", "r": f"eye_{mood}_r"}
 
     pupils = {}
     for mood, render in PUPILS.items():
         for s in ("l", "r"):
-            emit(f"pupil_{mood}_{s}", render, f"pupil_{s}", meta, mode=("none" if render==BASE else "warp"))
+            emit(f"pupil_{mood}_{s}", render, f"pupil_{s}", meta, mode=("none" if render==BASE else "warp"), fix_white=True)
         pupils[mood] = {"l": f"pupil_{mood}_l", "r": f"pupil_{mood}_r"}
 
-    # sliding eyelid (cut art) — warped into base face-plane
+    # Eyelids: keep the per-eye face-warp (this places + sizes them correctly,
+    # resting at ~half coverage). Each side is the same cut, warped to its eye.
     eyelid = {}
     for s in ("l", "r"):
         if emit(f"eyelid_{s}", EYELID, f"eyelid_{s}", meta, mode="warp"):
             eyelid[s] = f"eyelid_{s}"
+
+    # Lash-line: derive the bottom-edge band from EACH side's own warped lid, so
+    # the lash follows that eye's true rotation/curve (the eyes sit at slightly
+    # different angles in the 3/4 view — a naive mirror is wrong).
+    lashline = {}
+    LASH = (40, 72, 120, 255)
+    for s in ("l", "r"):
+        if not eyelid.get(s):
+            continue
+        a = np.array(Image.open(f"{OUT}/eyelid_{s}.png").convert("RGBA"))
+        m = (a[..., 3] > 120).astype(np.uint8)
+        N = 10; up = np.zeros_like(m); up[:-N] = m[N:]
+        band = ((m == 1) & (up == 0)).astype(np.uint8)
+        band = cv2.dilate(band, np.ones((4, 4), np.uint8))
+        ys, _ = np.where(m > 0)
+        if len(ys):
+            band[: int(ys.min() + (ys.max()-ys.min()) * 0.45)] = 0
+        out = np.zeros(a.shape, np.uint8); out[band > 0] = LASH
+        Image.fromarray(out, "RGBA").save(f"{OUT}/lashline_{s}.png")
+        lashline[s] = f"lashline_{s}"
 
     # white-only masks per mood eye — the bright interior only (no navy outline),
     # used to clip the eyelid so it sits on the white, not the eye rim.
@@ -264,20 +305,23 @@ def main():
     socketsByMood = {}
     for mood, e in eyes.items():
         socketsByMood[mood] = {"l": socket(meta[e["l"]], nl), "r": socket(meta[e["r"]], nr)}
-    # pupil rest position per mood (where the pupil should sit in each socket).
-    # normal/smug: centered; happy: eyes closed → pupils hidden anyway.
+    # pupil rest position per mood. Pull pupils slightly INWARD (toward the nose
+    # center) so he doesn't look wall-eyed / spaced-out. face center x ≈ 0.6.
+    INWARD = 0.012
+    cxL = sockets["l"]["cx"] + INWARD   # left eye → nudge right (inward)
+    cxR = sockets["r"]["cx"] - INWARD   # right eye → nudge left (inward)
     pupilRest = {
-        "normal": {"l": {"x": sockets["l"]["cx"], "y": sockets["l"]["cy"]},
-                   "r": {"x": sockets["r"]["cx"], "y": sockets["r"]["cy"]}},
-        "smug":   {"l": {"x": sockets["l"]["cx"], "y": sockets["l"]["cy"] + 0.02},
-                   "r": {"x": sockets["r"]["cx"], "y": sockets["r"]["cy"] + 0.02}},
+        "normal": {"l": {"x": cxL, "y": sockets["l"]["cy"]},
+                   "r": {"x": cxR, "y": sockets["r"]["cy"]}},
+        "smug":   {"l": {"x": cxL, "y": sockets["l"]["cy"] + 0.02},
+                   "r": {"x": cxR, "y": sockets["r"]["cy"] + 0.02}},
     }
 
     # base face quad (0..1) for runtime face-space re-projection later
     bq = anchors[BASE].get("quad")
     json.dump({"canvas": C, "order": order, "base": BASE_LAYERS, "meta": meta,
                "mouths": mouths, "eyes": eyes, "pupils": pupils,
-               "eyelid": eyelid, "eyeMask": eyeMask, "puppy": puppy,
+               "eyelid": eyelid, "lashline": lashline, "eyeMask": eyeMask, "puppy": puppy,
                "armR": arm_r, "armL": arm_l, "legs": legs,
                "defaults": {"mouth": "smile", "eyes": "normal", "pupils": "normal",
                             "armR": "thumbsup", "armL": "down", "legs": "stand"},
