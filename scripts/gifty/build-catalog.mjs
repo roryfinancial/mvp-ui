@@ -37,8 +37,8 @@ const fullCrop = { left: 0, top: 120, width: 1024, height: 900 };
 // ── Labels: what each primitive DEPICTS (action/appearance), not a mood. ──────
 const EYE_LABELS = {
   normal: "Wide open round eyes, neutral forward gaze.",
-  smug: "Half-lidded eyes — upper lid lowered (heavy-lidded / unimpressed / sly).",
-  happy: "Closed upward-arc eyes (squint/smiling-shut); pupils hidden.",
+  smug: "Closed upward-arc eyes (squint / smiling-shut); pupils hidden.",
+  happy: "Half-lidded eyes — upper lid lowered (heavy-lidded / relaxed / sly).",
   puppy: "Big watery bashful eyes with tear-pools (standalone, replaces all eye parts).",
 };
 const MOUTH_LABELS = {
@@ -71,18 +71,18 @@ const ARMR_LABELS = {
   wave: { do: "Raised open hand waving.", rel: "Raised at right; tucks BEHIND body (animated by `wave`)." },
   fist: { do: "Raised fist.", rel: "Root at right side; tucks BEHIND body." },
   salute: { do: "Hand to brow (salute).", rel: "Reaches toward head; FRONT — see head-clip note." },
-  down: { do: "Arm hanging straight down.", rel: "At right side; FRONT — sits too far in, needs nudge right." },
-  sad: { do: "Limp arm, hand drooping.", rel: "Mostly hidden behind body; FRONT — needs nudge right." },
+  down: { do: "Arm hanging straight down.", rel: "At right side; FRONT, nudged out so the hand clears the body." },
+  sad: { do: "Limp arm, hand drooping.", rel: "At right side; FRONT, slight nudge so the hand peeks at the edge." },
   open: { do: "Open palm presented outward.", rel: "Extends out/up at right; tucks BEHIND body." },
   present: { do: "Hand holding/offering an item.", rel: "Fully outside body (z-order irrelevant)." },
-  calm: { do: "Relaxed arm at side.", rel: "At right side; FRONT — needs nudge right." },
+  calm: { do: "Relaxed arm at side.", rel: "At right side; FRONT, slight nudge so the hand peeks at the edge." },
 };
 const ARML_LABELS = {
   thumbsup: { do: "Thumbs-up, hand at side.", rel: "Crosses toward body; tucks BEHIND." },
   down: { do: "Arm hanging straight down.", rel: "At left side; FRONT (across-body)." },
   wave: { do: "Raised open hand waving.", rel: "Raised at left; FRONT (art includes cross-body part)." },
   hip: { do: "Hand on hip (akimbo).", rel: "Bent to hip; tucks BEHIND." },
-  salute: { do: "Hand to head (currently 'salute'). Better read: scratching head / bashful.", rel: "Arm passes head corner: upper arm should be BEHIND the cube, sleeve/hand IN FRONT — single flat layer can't do both. NEEDS SPLIT." },
+  salute: { do: "Hand up to head — scratching head / bashful (key still 'salute').", rel: "SPLIT into behind+front parts: upper arm tucks BEHIND the cube, forearm+hand show IN FRONT. Reads as a proper head-scratch now." },
   sad: { do: "Limp arm, hand drooping.", rel: "Across body; FRONT." },
   open: { do: "Open palm presented outward.", rel: "Extends out/up at left; tucks BEHIND." },
   hold: { do: "Both-hands holding/cradling across front.", rel: "Crosses the whole front; FRONT (on purpose)." },

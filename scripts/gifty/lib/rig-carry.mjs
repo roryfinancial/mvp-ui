@@ -1,8 +1,8 @@
 // Copy the rig's behavioral (non-image) fields into the per-tier web JSON.
 
 const CARRY_KEYS = [
-  "order", "base", "mouths", "eyes", "pupils", "eyelid", "lashline", "eyerim",
-  "eyeMask", "puppy", "puppyRest", "legRise", "armBehind",
+  "order", "base", "mouths", "eyes", "eyesClosed", "pupils", "eyelid", "lashline", "eyerim",
+  "eyeMask", "puppy", "puppyRest", "legRise", "armBehind", "armNudge", "armSplit",
   "armR", "armL", "legs", "defaults", "sockets",
   "socketsByMood", "pupilRest", "lidRest", "faceBlue", "lidBlue", "faceQuad",
 ];

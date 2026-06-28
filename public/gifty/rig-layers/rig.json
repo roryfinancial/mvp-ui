@@ -424,6 +424,22 @@
    "y": 0.310546875,
    "w": 0.1123046875,
    "h": 0.13671875
+  },
+  "armL_salute_front": {
+   "cx": 0.25,
+   "cy": 0.31103515625,
+   "x": 0.1455078125,
+   "y": 0.1982421875,
+   "w": 0.208984375,
+   "h": 0.2255859375
+  },
+  "armL_salute_behind": {
+   "cx": 0.23779296875,
+   "cy": 0.46337890625,
+   "x": 0.1455078125,
+   "y": 0.4091796875,
+   "w": 0.1845703125,
+   "h": 0.1083984375
   }
  },
  "mouths": {
@@ -441,12 +457,12 @@
    "r": "eye_normal_r"
   },
   "smug": {
-   "l": "eye_smug_l",
-   "r": "eye_smug_r"
-  },
-  "happy": {
    "l": "eye_happy_l",
    "r": "eye_happy_r"
+  },
+  "happy": {
+   "l": "eye_smug_l",
+   "r": "eye_smug_r"
   }
  },
  "pupils": {
@@ -477,12 +493,12 @@
    "r": "eyemask_normal_r"
   },
   "smug": {
-   "l": "eyemask_smug_l",
-   "r": "eyemask_smug_r"
-  },
-  "happy": {
    "l": "eyemask_happy_l",
    "r": "eyemask_happy_r"
+  },
+  "happy": {
+   "l": "eyemask_smug_l",
+   "r": "eyemask_smug_r"
   }
  },
  "puppy": "puppy",
@@ -569,24 +585,6 @@
   },
   "smug": {
    "l": {
-    "cx": 0.5142,
-    "cy": 0.4004,
-    "w": 0.123,
-    "h": 0.1533,
-    "top": 0.3237,
-    "bot": 0.477
-   },
-   "r": {
-    "cx": 0.6909,
-    "cy": 0.3857,
-    "w": 0.1172,
-    "h": 0.1553,
-    "top": 0.308,
-    "bot": 0.4633
-   }
-  },
-  "happy": {
-   "l": {
     "cx": 0.52,
     "cy": 0.3979,
     "w": 0.1074,
@@ -601,6 +599,24 @@
     "h": 0.1436,
     "top": 0.31,
     "bot": 0.4536
+   }
+  },
+  "happy": {
+   "l": {
+    "cx": 0.5142,
+    "cy": 0.4004,
+    "w": 0.123,
+    "h": 0.1533,
+    "top": 0.3237,
+    "bot": 0.477
+   },
+   "r": {
+    "cx": 0.6909,
+    "cy": 0.3857,
+    "w": 0.1172,
+    "h": 0.1553,
+    "top": 0.308,
+    "bot": 0.4633
    }
   }
  },
@@ -663,8 +679,27 @@
   "armL": [
    "open",
    "hip",
-   "thumbsup",
-   "salute"
+   "thumbsup"
   ]
+ },
+ "armNudge": {
+  "armR": {
+   "down": 0.02,
+   "salute": 0.022,
+   "sad": 0.008,
+   "calm": 0.008
+  },
+  "armL": {}
+ },
+ "eyesClosed": [
+  "smug"
+ ],
+ "armSplit": {
+  "armL": {
+   "salute": {
+    "behind": "armL_salute_behind",
+    "front": "armL_salute_front"
+   }
+  }
  }
 }

@@ -27,6 +27,7 @@ interface Rig {
   meta: Record<string, Box>;
   mouths: Record<string, string>;       // name -> layer file
   eyes: Record<string, { l: string; r: string }>;
+  eyesClosed?: string[];                 // eye keys that are closed-arc (hide pupils/lid/rim)
   pupils: Record<string, { l: string; r: string }>;
   eyelid?: { l?: string; r?: string };  // cut eyelid layers (slide down to blink)
   lashline?: { l?: string; r?: string };// crisp lighter border on the lid bottom edge
@@ -37,6 +38,11 @@ interface Rig {
   puppyRest?: number;                   // frac nudge for the puppy layer (align to sockets)
   legRise?: number;                     // frac nudge legs UP so tops tuck under the breathing body
   armBehind?: { armR?: string[]; armL?: string[] }; // poses whose root tucks BEHIND the body
+  armNudge?: { armR?: Record<string, number>; armL?: Record<string, number> }; // per-pose x scootch (frac, + = away from body center)
+  // poses split into a behind-body part + an in-front part (e.g. head-scratch: upper
+  // arm behind the cube, forearm+hand in front)
+  armSplit?: { armR?: Record<string, { behind: string; front: string }>;
+               armL?: Record<string, { behind: string; front: string }> };
   armR: Record<string, string>;
   armL: Record<string, string>;
   legs: Record<string, { l: string; r: string }>;
@@ -168,7 +174,9 @@ export function RigGifty({
     : (mouth && mouth in SRC.mouths) ? mouth
     : (MOOD_MOUTH[mood] || SRC.defaults.mouth);
   const mouthLayer = SRC.mouths[mouthName] || SRC.mouths[SRC.defaults.mouth];
-  const happyEyesClosed = eyeMood === "happy";
+  // a "closed-arc" eye set (hides pupils + lid + rim). Data-driven so it follows the
+  // art, not the key name (the smug/happy art was relabeled to match its shape).
+  const happyEyesClosed = (SRC.eyesClosed ?? ["happy"]).includes(eyeMood);
 
   // Per-kind animation transform — SHARED by the HQ `img()` and the web `webImg()`
   // so both paths get byte-identical motion (bob/breathe/bow/wave/sniffle). The
@@ -424,24 +432,44 @@ export function RigGifty({
     (SRC.armBehind?.[side] ?? []).includes(name);
   const armLBehind = behind("armL", armLName);
   const armRBehind = behind("armR", armRName);
-  const emitArmL = () => emit(SRC.armL[armLName], armKind("l", armLName));
-  const emitArmR = () => emit(SRC.armR[armRName], armKind("r", armRName));
+  // per-pose x scootch so buried arms clear the body (R nudges right +x, L left −x)
+  const nudgeX = (side: "armR" | "armL", name: string) => {
+    const n = (SRC.armNudge?.[side]?.[name] ?? 0) * size;
+    return side === "armR" ? n : -n;
+  };
+  const withNudge = (node: React.ReactNode, dx: number, key: string) =>
+    dx === 0 ? node : (
+      <div key={key} style={{ position: "absolute", inset: 0, transform: `translateX(${dx}px)` }}>{node}</div>
+    );
+  const splitL = SRC.armSplit?.armL?.[armLName];
+  const splitR = SRC.armSplit?.armR?.[armRName];
+  // emit one part of an arm (a layer name) with the pose's kind + nudge
+  const emitArmPart = (side: "l" | "r", name: string, layer: string, key: string) =>
+    withNudge(emit(layer, armKind(side, name)), nudgeX(side === "l" ? "armL" : "armR", name), key);
+  const emitArmL = () => splitL ? emitArmPart("l", armLName, splitL.front, `aLf-${armLName}`)
+    : emitArmPart("l", armLName, SRC.armL[armLName], `aL-${armLName}`);
+  const emitArmR = () => splitR ? emitArmPart("r", armRName, splitR.front, `aRf-${armRName}`)
+    : emitArmPart("r", armRName, SRC.armR[armRName], `aR-${armRName}`);
 
   // build the ordered stack, expanding swap slots
   const stack: React.ReactNode[] = [];
   for (const slot of SRC.order) {
     if (slot === "body") {
-      // behind-body arms render JUST before the body so their roots tuck behind it
-      if (armLBehind) stack.push(emitArmL());
-      if (armRBehind) stack.push(emitArmR());
+      // Before the body: split poses' BEHIND part (upper arm tucks behind the cube);
+      // and whole non-split arms whose pose is classified behind-body.
+      if (splitL) stack.push(emitArmPart("l", armLName, splitL.behind, `aLb-${armLName}`));
+      else if (armLBehind) stack.push(emitArmL());
+      if (splitR) stack.push(emitArmPart("r", armRName, splitR.behind, `aRb-${armRName}`));
+      else if (armRBehind) stack.push(emitArmR());
       stack.push(emit("body", "body"));
     } else if (slot === "__legs__") {
       const l = SRC.legs[legsName];
       stack.push(emit(l.l, "leg"), emit(l.r, "leg"));
     } else if (slot === "__armL__") {
-      if (!armLBehind) stack.push(emitArmL());   // in-front arms keep their slot
+      // split poses always render their FRONT part here; non-split front arms too
+      if (splitL || !armLBehind) stack.push(emitArmL());
     } else if (slot === "__armR__") {
-      if (!armRBehind) stack.push(emitArmR());
+      if (splitR || !armRBehind) stack.push(emitArmR());
     } else if (slot === "__eyes__") {
       if (isPuppy) continue;                  // puppy replaces all eye features
       const e = SRC.eyes[eyeMood];            // static eye-whites, swap by mood
