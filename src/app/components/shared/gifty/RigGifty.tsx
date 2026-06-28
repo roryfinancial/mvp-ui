@@ -247,28 +247,6 @@ export function RigGifty({
   // (CSS mask) so the lid only ever shows over the eye — no bbox math.
   const LID_CLOSE = 0.14;    // downward travel (frac of size) on full blink — clears the eye bottom
 
-  // Web mask CSS: place an atlas cell within a FULL-CANVAS (size×size) box at the
-  // layer's place coords, scaling the atlas so the cell lands exactly where its
-  // full-canvas PNG would. Mirrors `spriteCss` math but for the mask layer and a
-  // size×size frame (so the masked wrapper shares the lid sprite's coord space —
-  // exactly as the HQ full-canvas mask does).
-  const webMaskStyle = (maskLayer: string): React.CSSProperties | null => {
-    const L = wd.layers[maskLayer];
-    if (!L) return null;
-    const divW = L.place.w * size, divH = L.place.h * size;
-    const scaleX = divW / L.cell.sw, scaleY = divH / L.cell.sh;
-    const maskUrl = `url(${atlasUrl})`;
-    const bgW = wd.atlas.w * scaleX, bgH = wd.atlas.h * scaleY;
-    const posX = L.place.x * size - L.cell.sx * scaleX;
-    const posY = L.place.y * size - L.cell.sy * scaleY;
-    return {
-      WebkitMaskImage: maskUrl, maskImage: maskUrl,
-      WebkitMaskSize: `${bgW}px ${bgH}px`, maskSize: `${bgW}px ${bgH}px`,
-      WebkitMaskPosition: `${posX}px ${posY}px`, maskPosition: `${posX}px ${posY}px`,
-      WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat",
-    };
-  };
-
   // Full-canvas sprite style for the MASKED eye layers (eyelid + lashline).
   // Unlike `placeStyle` (which sizes the div to its TIGHT place box), this paints
   // the atlas cell into a FULL-CANVAS (size×size) div at the layer's place coords —
@@ -303,16 +281,22 @@ export function RigGifty({
 
     if (tier === "web") {
       const lidBase = fullCanvasSpriteStyle(lid);
-      const mask = webMaskStyle(maskLayer);
-      if (!lidBase || !mask) return null;
+      if (!lidBase) return null;
       const lashLayer = SRC.lashline?.[side];
       const lashBase = lashLayer ? fullCanvasSpriteStyle(lashLayer) : null;
-      // mask sits on the STATIC full-canvas wrapper (fixed to the eye); the lid +
-      // lash sprites slide INSIDE it by `drop`, revealed only within the eye-white.
+      // Mask with the INDIVIDUAL eye-white PNG at 100% 100% — the SAME mask the HQ
+      // path uses (atlas-based CSS masking did not clip reliably across browsers).
+      // The lid + lash are full-canvas atlas divs sliding INSIDE the mask by `drop`,
+      // so they're revealed only within the eye-white shape.
+      const maskUrl = `url(${URL}/${maskLayer}.png)`;
       return (
         <div key={`lid-${side}`} aria-hidden
           style={{ position: "absolute", inset: 0, width: size, height: size,
-                   transform: `translateY(${bob}px)`, ...mask, pointerEvents: "none" }}>
+                   transform: `translateY(${bob}px)`,
+                   WebkitMaskImage: maskUrl, maskImage: maskUrl,
+                   WebkitMaskSize: "100% 100%", maskSize: "100% 100%",
+                   WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat",
+                   pointerEvents: "none" }}>
           <div style={{ ...lidBase, transform: `translateY(${drop}px)`, willChange: "transform" }} />
           {lashBase && (
             <div style={{ ...lashBase, transform: `translateY(${drop}px)`, willChange: "transform" }} />
