@@ -242,18 +242,20 @@ def main():
     # construction.
     lashline = {}
     LASH = (40, 72, 120)
-    def eye_geom(layer_eye, layer_lid):
+    ey_top, ey_h = {}, {}
+    def eye_geom(layer_eye, layer_lid, side):
         eye = np.array(Image.open(f"{OUT}/{layer_eye}.png").convert("RGBA"))[..., 3]
         lid = np.array(Image.open(f"{OUT}/{layer_lid}.png").convert("RGBA"))[..., 3]
         cnts, _ = cv2.findContours((eye > 120).astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         (cx, cy), _, ang = cv2.fitEllipse(max(cnts, key=cv2.contourArea))
         xs = np.where(eye > 120)[1]; w = xs.max() - xs.min()
+        ys = np.where(eye > 120)[0]; ey_top[side] = int(ys.min()); ey_h[side] = int(ys.max() - ys.min())
         lid_bot = np.where(lid > 120)[0].max()
         return cx, lid_bot, w, ang
     for s in ("l", "r"):
         if not eyelid.get(s):
             continue
-        cx, ybot, w, ang = eye_geom(f"eye_normal_{s}", f"eyelid_{s}")
+        cx, ybot, w, ang = eye_geom(f"eye_normal_{s}", f"eyelid_{s}", s)
         canvas = Image.new("RGBA", (C, C), (0, 0, 0, 0))
         d = ImageDraw.Draw(canvas)
         # arc spanning ~70% of eye width, gentle downward bow; thickness ~ eye/22
@@ -269,8 +271,12 @@ def main():
         tilt = ang if ang < 90 else ang - 180
         a = np.deg2rad(tilt)
         ca, sa = np.cos(a), np.sin(a)
-        ybot = ybot - int(w * 0.06)   # sit at the lid/white seam, not down in the white
-        place = [(cx + (px * ca - py * sa), ybot + (px * sa + py * ca)) for px, py in pts]
+        # Place the lash near the TOP of the eye (just above the pupil), not at the
+        # lid's full bottom (which dips into the pupil). Use the eye's own bbox:
+        # lash baseline ≈ eye_top + 20% of eye height.
+        eye_top = ey_top[s]; eye_h = ey_h[s]
+        ybase = int(eye_top + eye_h * 0.20)
+        place = [(cx + (px * ca - py * sa), ybase + (px * sa + py * ca)) for px, py in pts]
         d.line(place, fill=LASH + (255,), width=th, joint="curve")
         canvas.save(f"{OUT}/lashline_{s}.png")
         lashline[s] = f"lashline_{s}"
