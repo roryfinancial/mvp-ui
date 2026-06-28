@@ -10,10 +10,15 @@ import { RigGifty, type Mood } from "./shared/gifty/RigGifty";
 
 const MOODS: Mood[] = ["normal", "happy", "smug", "proud", "shy", "thinking"];
 
+const ARM_R = ["thumbsup", "wave", "fist", "down"];
+const ARM_L = ["down", "hold"];
+
 export default function GiftyDemo() {
   const [mood, setMood] = useState<Mood>("normal");
   const [talking, setTalking] = useState(false);
   const [wave, setWave] = useState(false);
+  const [armR, setArmR] = useState("thumbsup");
+  const [armL, setArmL] = useState("down");
 
   const btn = (on: boolean): React.CSSProperties => ({
     padding: "8px 16px", borderRadius: 999, cursor: "pointer",
@@ -26,7 +31,7 @@ export default function GiftyDemo() {
       <div style={{ textAlign: "center", color: "#fff", fontFamily: "system-ui, sans-serif" }}>
         <div style={{ width: 400, height: 400, margin: "0 auto", display: "grid", placeItems: "center",
                       background: "radial-gradient(circle at 50% 42%, #1b2f63, #0d1b3a)", borderRadius: 28 }}>
-          <RigGifty size={340} mood={mood} talking={talking} wave={wave} />
+          <RigGifty size={340} mood={mood} talking={talking} wave={wave} armR={armR} armL={armL} />
         </div>
 
         <p style={{ marginTop: 16, opacity: 0.7, fontSize: 13 }}>
@@ -41,7 +46,15 @@ export default function GiftyDemo() {
         </div>
         <div style={{ marginTop: 10, display: "flex", gap: 8, justifyContent: "center" }}>
           <button style={btn(talking)} onClick={() => setTalking((v) => !v)}>🗣 talk</button>
-          <button style={btn(wave)} onClick={() => setWave((v) => !v)}>👋 wave</button>
+          <button style={btn(wave)} onClick={() => setWave((v) => !v)}>👋 wave anim</button>
+        </div>
+        <p style={{ marginTop: 12, opacity: 0.5, fontSize: 12 }}>right arm</p>
+        <div style={{ display: "flex", gap: 6, justifyContent: "center", flexWrap: "wrap" }}>
+          {ARM_R.map((a) => <button key={a} style={btn(a === armR)} onClick={() => setArmR(a)}>{a}</button>)}
+        </div>
+        <p style={{ marginTop: 8, opacity: 0.5, fontSize: 12 }}>left arm</p>
+        <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>
+          {ARM_L.map((a) => <button key={a} style={btn(a === armL)} onClick={() => setArmL(a)}>{a}</button>)}
         </div>
       </div>
     </div>

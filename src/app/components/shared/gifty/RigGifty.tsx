@@ -25,7 +25,10 @@ interface Rig {
   mouths: Record<string, string>;       // name -> layer file
   eyes: Record<string, { l: string; r: string }>;
   pupils: Record<string, { l: string; r: string }>;
-  defaults: { mouth: string; eyes: string; pupils: string };
+  armR: Record<string, string>;
+  armL: Record<string, string>;
+  legs: Record<string, { l: string; r: string }>;
+  defaults: { mouth: string; eyes: string; pupils: string; armR: string; armL: string; legs: string };
   // base render's face quad (0..1) — all parts are warped into this plane.
   // carried for future face-space re-projection (flat PFP view, head turns).
   faceQuad?: Quad;
@@ -49,7 +52,9 @@ const reduced = () =>
 
 export function RigGifty({
   size = 320, mood = "normal", talking = false, wave = false,
-}: { size?: number; mood?: Mood; talking?: boolean; wave?: boolean }) {
+  armR, armL, legs,
+}: { size?: number; mood?: Mood; talking?: boolean; wave?: boolean;
+     armR?: string; armL?: string; legs?: string }) {
   const [rig, setRig] = useState<Rig | null>(null);
   const [t, setT] = useState(0);
   const [blink, setBlink] = useState(0);
@@ -100,26 +105,52 @@ export function RigGifty({
   const mouthLayer = rig.mouths[mouthName] || rig.mouths[rig.defaults.mouth];
   const happyEyesClosed = eyeMood === "happy";
 
+  // shared eye-line: blink both eyes around the SAME y (the top of the eye
+  // region), so an off-bbox eye can't squash weirdly. Use the higher (smaller cy)
+  // of the two eyes' tops as the lid line.
+  const eL = rig.meta[rig.eyes[eyeMood].l], eR = rig.meta[rig.eyes[eyeMood].r];
+  const eyeLineY = eL && eR ? Math.min(eL.y, eR.y) * 100 : 40;
+
   const img = (layer: string, kind: string) => {
     const b = rig.meta[layer];
     if (!b) return null;
-    const pivot = `${b.cx * 100}% ${b.cy * 100}%`;
+    let pivot = `${b.cx * 100}% ${b.cy * 100}%`;
     let transform = `translateY(${bob}px)`;
     if (kind === "body") transform = `translateY(${bob}px) scale(${1 + breathe})`;
     else if (kind === "bow") transform = `translateY(${bob + bowBob}px)`;
     else if (kind === "arm_r" && wave) transform = `translateY(${bob}px) rotate(${waveAng}deg)`;
-    else if (kind === "eye" && !happyEyesClosed) transform = `translateY(${bob}px) scaleY(${1 - blink})`;
-    else if (kind === "pupil") transform = `translateY(${bob}px) scaleY(${1 - blink})`;
+    else if (kind === "eye" && !happyEyesClosed) {
+      transform = `translateY(${bob}px) scaleY(${1 - blink})`;
+      pivot = `${b.cx * 100}% ${eyeLineY}%`;   // squash down to the shared lid line
+    }
+    else if (kind === "pupil") {
+      transform = `translateY(${bob}px) scaleY(${1 - blink})`;
+      pivot = `${b.cx * 100}% ${eyeLineY}%`;
+    }
     return (
       <img key={layer} src={`${URL}/${layer}.png`} alt="" draggable={false}
         style={{ position: "absolute", inset: 0, width: size, height: size, transform, transformOrigin: pivot, willChange: "transform" }} />
     );
   };
 
+  // resolve limb variants (fall back to defaults)
+  const armRName = (armR && rig.armR[armR]) ? armR : rig.defaults.armR;
+  const armLName = (armL && rig.armL[armL]) ? armL : rig.defaults.armL;
+  const legsName = (legs && rig.legs[legs]) ? legs : rig.defaults.legs;
+  // "wave" prop animates the right arm only if it's actually a waving pose
+  const canWave = wave && armRName === "wave";
+
   // build the ordered stack, expanding swap slots
   const stack: React.ReactNode[] = [];
   for (const slot of rig.order) {
-    if (slot === "__eyes__") {
+    if (slot === "__legs__") {
+      const l = rig.legs[legsName];
+      stack.push(img(l.l, "leg"), img(l.r, "leg"));
+    } else if (slot === "__armL__") {
+      stack.push(img(rig.armL[armLName], "arm_l"));
+    } else if (slot === "__armR__") {
+      stack.push(img(rig.armR[armRName], canWave ? "arm_r" : "arm_static"));
+    } else if (slot === "__eyes__") {
       const e = rig.eyes[eyeMood];
       stack.push(img(e.l, "eye"), img(e.r, "eye"));
     } else if (slot === "__pupils__") {

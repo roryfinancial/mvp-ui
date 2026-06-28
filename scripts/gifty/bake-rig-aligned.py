@@ -95,13 +95,44 @@ EYES = {
 }
 PUPILS = {"normal": BASE}
 
+# Arm/leg VARIANTS. NOTE: limbs are NOT on the face plane, so they are NOT warped
+# by the face quad — they're placed by their own position from the source render
+# (which frames the body similarly). Pick per side from whichever render has a
+# good pose. Right-arm options give gestures; left-arm holds the gift.
+ARM_R = {
+    "down":     (BASE, "arm_r"),
+    "thumbsup": ("Gemini_Generated_Image_1c2np91c2np91c2n", "arm_r"),
+    "wave":     ("Gemini_Generated_Image_kc9x3vkc9x3vkc9x", "arm_r"),
+    "fist":     ("Gemini_Generated_Image_u1b4qyu1b4qyu1b4", "arm_r"),
+}
+ARM_L = {
+    "down":  (BASE, "arm_l"),
+    "hold":  ("Gemini_Generated_Image_wvymdawvymdawvym", "arm_l"),
+}
+LEGS = {
+    "stand": (BASE, ("leg_l", "leg_r")),
+}
+
 def main():
     for f in os.listdir(OUT):
         if f.endswith(".png"): os.remove(os.path.join(OUT, f))
     meta = {}
 
-    for l in BASE_LAYERS:
-        emit(l, BASE, l, meta, do_warp=False)   # base space already
+    # body/bow/eyebrows from base (no warp)
+    for l in ["body", "bow", "eyebrow_l", "eyebrow_r"]:
+        emit(l, BASE, l, meta, do_warp=False)
+
+    # arm/leg variants — placed by own position, NOT face-warped (off the face plane)
+    arm_r, arm_l, legs = {}, {}, {}
+    for name, (render, part) in ARM_R.items():
+        layer = f"armR_{name}"
+        if emit(layer, render, part, meta, do_warp=False): arm_r[name] = layer
+    for name, (render, part) in ARM_L.items():
+        layer = f"armL_{name}"
+        if emit(layer, render, part, meta, do_warp=False): arm_l[name] = layer
+    for name, (render, (pl, pr)) in LEGS.items():
+        if emit(f"legL_{name}", render, pl, meta, do_warp=False) and emit(f"legR_{name}", render, pr, meta, do_warp=False):
+            legs[name] = {"l": f"legL_{name}", "r": f"legR_{name}"}
 
     mouths = {}
     for name, (render, part) in MOUTHS.items():
@@ -121,14 +152,16 @@ def main():
             emit(f"pupil_{mood}_{s}", render, f"pupil_{s}", meta, do_warp=(render != BASE))
         pupils[mood] = {"l": f"pupil_{mood}_l", "r": f"pupil_{mood}_r"}
 
-    order = ["body", "leg_l", "leg_r", "arm_l", "arm_r", "bow",
+    order = ["body", "__legs__", "__armL__", "__armR__", "bow",
              "eyebrow_l", "eyebrow_r", "__eyes__", "__pupils__", "__mouth__"]
 
     # base face quad (0..1) for runtime face-space re-projection later
     bq = anchors[BASE].get("quad")
     json.dump({"canvas": C, "order": order, "base": BASE_LAYERS, "meta": meta,
                "mouths": mouths, "eyes": eyes, "pupils": pupils,
-               "defaults": {"mouth": "smile", "eyes": "normal", "pupils": "normal"},
+               "armR": arm_r, "armL": arm_l, "legs": legs,
+               "defaults": {"mouth": "smile", "eyes": "normal", "pupils": "normal",
+                            "armR": "thumbsup", "armL": "down", "legs": "stand"},
                "faceQuad": bq, "baseRender": BASE},
               open(f"{OUT}/rig.json", "w"), indent=1)
     print("✓ baked quad-aligned rig")
