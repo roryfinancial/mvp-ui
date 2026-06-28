@@ -19,8 +19,20 @@ export default function GiftyDemo() {
   const [talking, setTalking] = useState(false);
   const [wave, setWave] = useState(false);
   const [armR, setArmR] = useState("thumbsup");
-  const [armL, setArmL] = useState("thumbsup");
+  const [armL, setArmL] = useState("down");      // not double-thumbsup by default
   const [legs, setLegs] = useState("stand");
+
+  // Prevent nonsensical mirrored gestures (double thumbsup/wave/salute): when one
+  // arm is set to such a pose, neutralize the other arm to a resting pose.
+  const MIRROR = ["thumbsup", "wave", "salute"];
+  const pickArmR = (a: string) => {
+    setArmR(a);
+    if (MIRROR.includes(a) && armL === a) setArmL("down");
+  };
+  const pickArmL = (a: string) => {
+    setArmL(a);
+    if (MIRROR.includes(a) && armR === a) setArmR("down");
+  };
 
   const btn = (on: boolean): React.CSSProperties => ({
     padding: "8px 16px", borderRadius: 999, cursor: "pointer",
@@ -52,11 +64,11 @@ export default function GiftyDemo() {
         </div>
         <p style={{ marginTop: 12, opacity: 0.5, fontSize: 12 }}>right arm</p>
         <div style={{ display: "flex", gap: 6, justifyContent: "center", flexWrap: "wrap", maxWidth: 460 }}>
-          {ARM_R.map((a) => <button key={a} style={btn(a === armR)} onClick={() => setArmR(a)}>{a}</button>)}
+          {ARM_R.map((a) => <button key={a} style={btn(a === armR)} onClick={() => pickArmR(a)}>{a}</button>)}
         </div>
         <p style={{ marginTop: 8, opacity: 0.5, fontSize: 12 }}>left arm</p>
         <div style={{ display: "flex", gap: 6, justifyContent: "center", flexWrap: "wrap", maxWidth: 460 }}>
-          {ARM_L.map((a) => <button key={a} style={btn(a === armL)} onClick={() => setArmL(a)}>{a}</button>)}
+          {ARM_L.map((a) => <button key={a} style={btn(a === armL)} onClick={() => pickArmL(a)}>{a}</button>)}
         </div>
         <p style={{ marginTop: 8, opacity: 0.5, fontSize: 12 }}>legs</p>
         <div style={{ display: "flex", gap: 6, justifyContent: "center" }}>

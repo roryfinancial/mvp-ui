@@ -34,6 +34,9 @@ interface Rig {
   lidRest?: { l?: number; r?: number }; // per-eye rest nudge (frac) to even the lids
   eyeMask?: Record<string, { l?: string; r?: string }>; // white-only clip per mood
   puppy?: string | null;                // standalone baked bashful look
+  puppyRest?: number;                   // frac nudge for the puppy layer (align to sockets)
+  legRise?: number;                     // frac nudge legs UP so tops tuck under the breathing body
+  armBehind?: { armR?: string[]; armL?: string[] }; // poses whose root tucks BEHIND the body
   armR: Record<string, string>;
   armL: Record<string, string>;
   legs: Record<string, { l: string; r: string }>;
@@ -53,10 +56,11 @@ interface Rig {
 export type Mood = "normal" | "happy" | "smug" | "proud" | "shy" | "thinking" | "puppy";
 const MOOD_EYES: Record<Mood, string> = {
   normal: "normal", happy: "happy", smug: "smug",
-  proud: "smug", shy: "normal", thinking: "normal", puppy: "normal",
+  proud: "normal", shy: "normal", thinking: "normal", puppy: "normal",
 };
 const MOOD_MOUTH: Record<Mood, string> = {
-  normal: "smile", happy: "talk_oh", smug: "proud",
+  // smug = half-lidded eyes + gentle smile (sly); proud = open eyes + big toothy grin
+  normal: "smile", happy: "talk_oh", smug: "smile",
   proud: "proud", shy: "shy", thinking: "hmm", puppy: "shy",
 };
 const TALK_CYCLE = ["talk_ah", "smile", "talk_oh", "talk_eh", "smile"];
@@ -133,6 +137,11 @@ export function RigGifty({
   const dartX = isStatic ? 0 : Math.sin(t * 0.6) * (size * 0.010);
   const dartY = isStatic ? 0 : Math.cos(t * 0.45) * (size * 0.006);
   const pupilRise = 0;
+  // attention pulse for thumbsup/wave arms: a subtle periodic scale bump every ~2.5s
+  // (always-on idle), stronger when the `wave` gesture prop is active.
+  const pulsePhase = isStatic ? 0 : Math.max(0, Math.sin(t * (2 * Math.PI / 2.5)));
+  const idlePulse = isStatic ? 0 : pulsePhase * pulsePhase * 0.05;   // ≤5% scale
+  const wavePulse = isStatic ? 0 : pulsePhase * pulsePhase * 0.09;   // stronger when waving
 
   // resolve active swap layers
   const eyeMood = MOOD_EYES[mood] in SRC.eyes ? MOOD_EYES[mood] : SRC.defaults.eyes;
@@ -145,19 +154,31 @@ export function RigGifty({
   // so both paths get byte-identical motion (bob/breathe/bow/wave/sniffle). The
   // HQ path can pass the layer's `cx,cy` for a precise pivot; the web path uses the
   // sprite's own box center ("center"), which coincides with the layer center.
+  const legRise = (SRC.legRise ?? 0) * size;    // nudge legs UP so tops tuck under body
+  const puppyRise = (SRC.puppyRest ?? 0) * size; // align puppy to the normal sockets (negative = up)
   const kindTransform = (kind: string, b?: Box): { transform: string; pivot: string } => {
     let pivot = b ? `${b.cx * 100}% ${b.cy * 100}%` : "center";
     let transform = `translateY(${bob}px)`;
     if (kind === "body") transform = `translateY(${bob}px) scale(${1 + breathe})`;
     else if (kind === "bow") transform = `translateY(${bob + bowBob}px)`;
-    else if (kind === "arm_r" && wave) transform = `translateY(${bob}px) rotate(${waveAng}deg)`;
+    else if (kind === "leg") transform = `translateY(${bob - legRise}px)`;   // tuck under the body
+    else if (kind === "arm_wave") {
+      // active wave gesture: swing from the shoulder + a stronger attention pulse
+      transform = `translateY(${bob}px) rotate(${waveAng}deg) scale(${1 + wavePulse})`;
+      pivot = b ? `${b.cx * 100}% ${(b.y + b.h) * 100}%` : "center bottom";
+    }
+    else if (kind === "arm_pulse") {
+      // thumbsup/wave at rest: subtle always-on attention pulse from the shoulder
+      transform = `translateY(${bob}px) scale(${1 + idlePulse})`;
+      pivot = b ? `${b.cx * 100}% ${(b.y + b.h) * 100}%` : "center bottom";
+    }
     else if (kind === "eye") {
       transform = `translateY(${bob}px)`;       // eye-whites are STATIC (no blink scale)
     }
     else if (kind === "puppy") {
       // subtle sniffle: tiny vertical stretch + faster bob (barely noticeable)
       const sniff = isStatic ? 1 : 1 + Math.sin(t * 4.2) * 0.012;
-      transform = `translateY(${bob}px) scaleY(${sniff})`;
+      transform = `translateY(${bob + puppyRise}px) scaleY(${sniff})`;
       pivot = b ? `${b.cx * 100}% ${(b.y + b.h) * 100}%` : "center bottom";   // stretch from the bottom
     }
     return { transform, pivot };
@@ -362,19 +383,36 @@ export function RigGifty({
   const armRName = (armR && SRC.armR[armR]) ? armR : SRC.defaults.armR;
   const armLName = (armL && SRC.armL[armL]) ? armL : SRC.defaults.armL;
   const legsName = (legs && SRC.legs[legs]) ? legs : SRC.defaults.legs;
-  // "wave" prop animates the right arm only if it's actually a waving pose
-  const canWave = wave && armRName === "wave";
+  // the `wave` gesture drives whichever arm is actually in the wave pose (L and/or R)
+  const waveR = wave && armRName === "wave";
+  const waveL = wave && armLName === "wave";
+  // a thumbsup/wave arm gets the attention pulse even without the wave prop
+  const pulses = (name: string) => name === "thumbsup" || name === "wave";
+  const armKind = (side: "l" | "r", name: string) =>
+    (side === "r" ? waveR : waveL) ? "arm_wave" : (pulses(name) ? "arm_pulse" : `arm_${side}`);
+  // poses whose root attaches at the side tuck BEHIND the body; "holding" poses stay in front
+  const behind = (side: "armR" | "armL", name: string) =>
+    (SRC.armBehind?.[side] ?? []).includes(name);
+  const armLBehind = behind("armL", armLName);
+  const armRBehind = behind("armR", armRName);
+  const emitArmL = () => emit(SRC.armL[armLName], armKind("l", armLName));
+  const emitArmR = () => emit(SRC.armR[armRName], armKind("r", armRName));
 
   // build the ordered stack, expanding swap slots
   const stack: React.ReactNode[] = [];
   for (const slot of SRC.order) {
-    if (slot === "__legs__") {
+    if (slot === "body") {
+      // behind-body arms render JUST before the body so their roots tuck behind it
+      if (armLBehind) stack.push(emitArmL());
+      if (armRBehind) stack.push(emitArmR());
+      stack.push(emit("body", "body"));
+    } else if (slot === "__legs__") {
       const l = SRC.legs[legsName];
       stack.push(emit(l.l, "leg"), emit(l.r, "leg"));
     } else if (slot === "__armL__") {
-      stack.push(emit(SRC.armL[armLName], "arm_l"));
+      if (!armLBehind) stack.push(emitArmL());   // in-front arms keep their slot
     } else if (slot === "__armR__") {
-      stack.push(emit(SRC.armR[armRName], canWave ? "arm_r" : "arm_static"));
+      if (!armRBehind) stack.push(emitArmR());
     } else if (slot === "__eyes__") {
       if (isPuppy) continue;                  // puppy replaces all eye features
       const e = SRC.eyes[eyeMood];            // static eye-whites, swap by mood
