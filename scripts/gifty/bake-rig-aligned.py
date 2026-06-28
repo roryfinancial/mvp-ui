@@ -225,10 +225,12 @@ def main():
             rgb = a[..., :3].astype(int); al = a[..., 3]
             mx = rgb.max(2); mn = rgb.min(2)
             white = ((mx > 175) & ((mx - mn) < 45) & (al > 120)).astype(np.uint8) * 255
-            # grow a hair onto the outline, then feather the edge so the lid blends
-            # into the rim instead of leaving a hard transparent seam against it.
-            white = cv2.dilate(white, np.ones((5, 5), np.uint8), iterations=1)
-            white = cv2.GaussianBlur(white, (0, 0), sigmaX=4)
+            # Feather must project OUTWARD: keep the white fully solid, then grow a
+            # soft halo PAST the white into the outline so the lid overlaps the rim
+            # (no inward erosion / no transparent gap). Solid core + outer falloff.
+            grown = cv2.dilate(white, np.ones((9, 9), np.uint8), iterations=1)
+            halo = cv2.GaussianBlur(grown, (0, 0), sigmaX=3)
+            white = np.maximum(white, halo)     # solid interior, feathered only outside
             out = np.zeros((a.shape[0], a.shape[1], 4), np.uint8)
             out[..., :3] = 255
             out[..., 3] = white                 # feathered alpha = soft mask edge
