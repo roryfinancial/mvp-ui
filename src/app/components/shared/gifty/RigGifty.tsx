@@ -299,7 +299,9 @@ export function RigGifty({
                    pointerEvents: "none" }}>
           <div style={{ ...lidBase, transform: `translateY(${drop}px)`, willChange: "transform" }} />
           {lashBase && (
-            <div style={{ ...lashBase, transform: `translateY(${drop}px)`, willChange: "transform" }} />
+            // the lash is a resting-edge accent; fade it out as the eye closes so it
+            // never reads as a hard light band sliding across the shut lid.
+            <div style={{ ...lashBase, transform: `translateY(${drop}px)`, opacity: 1 - blink, willChange: "transform, opacity" }} />
           )}
         </div>
       );
@@ -321,9 +323,11 @@ export function RigGifty({
           style={{ position: "absolute", inset: 0, width: size, height: size,
                    transform: `translateY(${drop}px)`, willChange: "transform" }} />
         {rig!.lashline?.[side] && (
+          // fade the lash out as the eye closes (matches the web path) so it never
+          // reads as a hard light band sliding across the shut lid.
           <img src={`${URL}/${rig!.lashline[side]}.png`} alt="" draggable={false}
             style={{ position: "absolute", inset: 0, width: size, height: size,
-                     transform: `translateY(${drop}px)`, willChange: "transform" }} />
+                     transform: `translateY(${drop}px)`, opacity: 1 - blink, willChange: "transform, opacity" }} />
         )}
       </div>
     );
