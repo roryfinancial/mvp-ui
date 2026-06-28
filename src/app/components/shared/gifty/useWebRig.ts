@@ -13,6 +13,14 @@ function supportsWebp(): boolean {
   return c.toDataURL("image/webp").startsWith("data:image/webp");
 }
 
+// Memoized at module level so the canvas allocation + toDataURL only runs once,
+// not on every animation frame (RigGifty re-renders at ~60fps via rAF state).
+let _webpExt: "webp" | "png" | null = null;
+function webpExt(): "webp" | "png" {
+  if (_webpExt === null) _webpExt = supportsWebp() ? "webp" : "png";
+  return _webpExt;
+}
+
 export type WebRig = { data: any | null; atlasUrl: string | null };
 
 export function useWebRig(): WebRig {
@@ -41,7 +49,7 @@ export function useWebRig(): WebRig {
     return () => { live = false; };
   }, [tier]);
 
-  const ext = supportsWebp() ? "webp" : "png";
+  const ext = webpExt();
   const atlasUrl = tier ? `${BASE}/rig-${tier}.${ext}` : null;
   return { data, atlasUrl };
 }
