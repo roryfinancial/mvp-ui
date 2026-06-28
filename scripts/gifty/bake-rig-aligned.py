@@ -199,14 +199,21 @@ def main():
     order = ["body", "__legs__", "__armL__", "__armR__", "bow",
              "eyebrow_l", "eyebrow_r", "__eyes__", "__pupils__", "__mouth__"]
 
-    # Clean per-eye SOCKET geometry (the eye whites all occupy the same sockets;
-    # auto-bbox is noisy for some moods, so derive sockets from the reliable
-    # 'normal' eye-white bboxes). Used to clip eyelids + place/rise pupils.
+    # Per-eye, PER-MOOD socket geometry (lids must hug each mood's actual eye).
+    # 'normal' is reliable; for other moods use that mood's eye-white bbox but
+    # guard against the noisy auto-bbox (clamp h to a sane range vs normal).
     nl, nr = meta["eye_normal_l"], meta["eye_normal_r"]
-    def socket(b):
-        return {"cx": b["cx"], "cy": b["cy"], "w": b["w"], "h": b["h"],
-                "top": round(b["cy"] - b["h"]/2, 4), "bot": round(b["cy"] + b["h"]/2, 4)}
-    sockets = {"l": socket(nl), "r": socket(nr)}
+    def socket(b, ref):
+        h = b["h"]
+        if not (0.5*ref["h"] <= h <= 1.6*ref["h"]):   # reject blown-out bbox
+            h = ref["h"]; cy = ref["cy"]
+        else: cy = b["cy"]
+        return {"cx": b["cx"], "cy": round(cy,4), "w": b["w"], "h": round(h,4),
+                "top": round(cy - h/2, 4), "bot": round(cy + h/2, 4)}
+    sockets = {"l": socket(nl, nl), "r": socket(nr, nr)}   # default = normal
+    socketsByMood = {}
+    for mood, e in eyes.items():
+        socketsByMood[mood] = {"l": socket(meta[e["l"]], nl), "r": socket(meta[e["r"]], nr)}
     # pupil rest position per mood (where the pupil should sit in each socket).
     # normal/smug: centered; happy: eyes closed → pupils hidden anyway.
     pupilRest = {
@@ -223,8 +230,8 @@ def main():
                "armR": arm_r, "armL": arm_l, "legs": legs,
                "defaults": {"mouth": "smile", "eyes": "normal", "pupils": "normal",
                             "armR": "thumbsup", "armL": "down", "legs": "stand"},
-               "sockets": sockets, "pupilRest": pupilRest,
-               "faceBlue": "#2F6BF5",
+               "sockets": sockets, "socketsByMood": socketsByMood, "pupilRest": pupilRest,
+               "faceBlue": "#2F6BF5", "lidBlue": "#1E4FC2",
                "faceQuad": bq, "baseRender": BASE},
               open(f"{OUT}/rig.json", "w"), indent=1)
     print("✓ baked quad-aligned rig")

@@ -32,8 +32,10 @@ interface Rig {
   defaults: { mouth: string; eyes: string; pupils: string; armR: string; armL: string; legs: string };
   // eye sockets (clip region for lids) + per-mood pupil rest positions + face color
   sockets: { l: Socket; r: Socket };
+  socketsByMood?: Record<string, { l: Socket; r: Socket }>;
   pupilRest: Record<string, { l: { x: number; y: number }; r: { x: number; y: number } }>;
   faceBlue?: string;
+  lidBlue?: string;
   // base render's face quad (0..1) — all parts are warped into this plane.
   // carried for future face-space re-projection (flat PFP view, head turns).
   faceQuad?: Quad;
@@ -83,9 +85,13 @@ export function RigGifty({
       if (blinkT < 0 && e > nextBlink) blinkT = 0;
       if (blinkT >= 0) {
         blinkT += 16;
-        const p = blinkT / 130;
-        setBlink(p < 0.5 ? p * 2 : Math.max(0, 2 - p * 2));
-        if (blinkT >= 130) { blinkT = -1; setBlink(0); nextBlink = e + 1800 + Math.random() * 3000; }
+        const DUR = 200;                       // a touch slower for a smoother sweep
+        const p = Math.min(1, blinkT / DUR);
+        // close faster than it opens, both eased (smoothstep) for soft motion
+        const phase = p < 0.45 ? (p / 0.45) : (1 - (p - 0.45) / 0.55);
+        const eased = phase * phase * (3 - 2 * phase);   // smoothstep
+        setBlink(Math.max(0, eased));
+        if (blinkT >= DUR) { blinkT = -1; setBlink(0); nextBlink = e + 1800 + Math.random() * 3000; }
       }
       if (talking && e - lastViseme > 110) { lastViseme = e; setViseme((v) => (v + 1) % TALK_CYCLE.length); }
       raf.current = requestAnimationFrame(loop);
@@ -134,12 +140,13 @@ export function RigGifty({
   // ── Eye assembly: static pupil that darts/rises + box-blue eyelids that sweep
   //    over the socket (top 75% down, bottom 25% up). Pupils sit at the per-mood
   //    rest position; lids are clipped to the socket so they only cover the eye.
-  const faceBlue = rig.faceBlue || "#2F6BF5";
+  const lidBlue = rig.lidBlue || "#1E4FC2";
+  const moodSockets = rig.socketsByMood?.[eyeMood] || rig.sockets;
   const restFor = (side: "l" | "r") =>
     (rig.pupilRest[eyeMood]?.[side]) || rig.pupilRest.normal[side];
 
   const eyeParts = (side: "l" | "r", pupilLayer: string) => {
-    const sock = rig.sockets[side];
+    const sock = moodSockets[side];
     const rest = restFor(side);
     const out: React.ReactNode[] = [];
     // pupil — positioned at rest, drifts with gaze, rises as the eye closes
@@ -162,7 +169,7 @@ export function RigGifty({
         left: `${L * 100}%`, width: `${W * 100}%`,
         top: fromTop ? `${T * 100}%` : `${(sock.bot - h) * 100}%`,
         height: `${h * 100}%`,
-        background: faceBlue,
+        background: lidBlue,
         borderRadius: fromTop ? `0 0 ${size * 0.04}px ${size * 0.04}px` : `${size * 0.04}px ${size * 0.04}px 0 0`,
         transform: `translateY(${bob}px)`,
       });
