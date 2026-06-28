@@ -17,6 +17,7 @@ import { useEffect, useRef, useState } from "react";
 
 type Box = { cx: number; cy: number; x: number; y: number; w: number; h: number };
 type Quad = { TL: { x: number; y: number }; TR: { x: number; y: number }; BR: { x: number; y: number }; BL: { x: number; y: number } };
+type Socket = { cx: number; cy: number; w: number; h: number; top: number; bot: number };
 interface Rig {
   canvas: number;
   order: string[];
@@ -29,6 +30,10 @@ interface Rig {
   armL: Record<string, string>;
   legs: Record<string, { l: string; r: string }>;
   defaults: { mouth: string; eyes: string; pupils: string; armR: string; armL: string; legs: string };
+  // eye sockets (clip region for lids) + per-mood pupil rest positions + face color
+  sockets: { l: Socket; r: Socket };
+  pupilRest: Record<string, { l: { x: number; y: number }; r: { x: number; y: number } }>;
+  faceBlue?: string;
   // base render's face quad (0..1) — all parts are warped into this plane.
   // carried for future face-space re-projection (flat PFP view, head turns).
   faceQuad?: Quad;
@@ -97,6 +102,10 @@ export function RigGifty({
   const breathe = isStatic ? 0 : Math.sin(ph) * 0.014;
   const bowBob = isStatic ? 0 : Math.sin(ph + 0.7) * (size * 0.01);
   const waveAng = wave && !isStatic ? 8 + Math.sin(t * 8) * 14 : 0;
+  // pupils drift slowly (a small wandering gaze) + rise as the eye closes
+  const dartX = isStatic ? 0 : Math.sin(t * 0.6) * (size * 0.010);
+  const dartY = isStatic ? 0 : Math.cos(t * 0.45) * (size * 0.006);
+  const pupilRise = blink * (size * 0.05);   // pupils roll up under the closing lid
 
   // resolve active swap layers
   const eyeMood = MOOD_EYES[mood] in rig.eyes ? MOOD_EYES[mood] : rig.defaults.eyes;
@@ -104,12 +113,6 @@ export function RigGifty({
   const mouthName = talking ? TALK_CYCLE[viseme] : (MOOD_MOUTH[mood] || rig.defaults.mouth);
   const mouthLayer = rig.mouths[mouthName] || rig.mouths[rig.defaults.mouth];
   const happyEyesClosed = eyeMood === "happy";
-
-  // shared eye-line: blink both eyes around the SAME y (the top of the eye
-  // region), so an off-bbox eye can't squash weirdly. Use the higher (smaller cy)
-  // of the two eyes' tops as the lid line.
-  const eL = rig.meta[rig.eyes[eyeMood].l], eR = rig.meta[rig.eyes[eyeMood].r];
-  const eyeLineY = eL && eR ? Math.min(eL.y, eR.y) * 100 : 40;
 
   const img = (layer: string, kind: string) => {
     const b = rig.meta[layer];
@@ -119,18 +122,57 @@ export function RigGifty({
     if (kind === "body") transform = `translateY(${bob}px) scale(${1 + breathe})`;
     else if (kind === "bow") transform = `translateY(${bob + bowBob}px)`;
     else if (kind === "arm_r" && wave) transform = `translateY(${bob}px) rotate(${waveAng}deg)`;
-    else if (kind === "eye" && !happyEyesClosed) {
-      transform = `translateY(${bob}px) scaleY(${1 - blink})`;
-      pivot = `${b.cx * 100}% ${eyeLineY}%`;   // squash down to the shared lid line
-    }
-    else if (kind === "pupil") {
-      transform = `translateY(${bob}px) scaleY(${1 - blink})`;
-      pivot = `${b.cx * 100}% ${eyeLineY}%`;
+    else if (kind === "eye") {
+      transform = `translateY(${bob}px)`;       // eye-whites are STATIC (no blink scale)
     }
     return (
       <img key={layer} src={`${URL}/${layer}.png`} alt="" draggable={false}
         style={{ position: "absolute", inset: 0, width: size, height: size, transform, transformOrigin: pivot, willChange: "transform" }} />
     );
+  };
+
+  // ── Eye assembly: static pupil that darts/rises + box-blue eyelids that sweep
+  //    over the socket (top 75% down, bottom 25% up). Pupils sit at the per-mood
+  //    rest position; lids are clipped to the socket so they only cover the eye.
+  const faceBlue = rig.faceBlue || "#2F6BF5";
+  const restFor = (side: "l" | "r") =>
+    (rig.pupilRest[eyeMood]?.[side]) || rig.pupilRest.normal[side];
+
+  const eyeParts = (side: "l" | "r", pupilLayer: string) => {
+    const sock = rig.sockets[side];
+    const rest = restFor(side);
+    const out: React.ReactNode[] = [];
+    // pupil — positioned at rest, drifts with gaze, rises as the eye closes
+    if (!happyEyesClosed && rig.meta[pupilLayer]) {
+      const pm = rig.meta[pupilLayer];
+      // shift pupil so its center lands on the mood rest point, + dart + rise
+      const dx = (rest.x - pm.cx) * size + dartX;
+      const dy = (rest.y - pm.cy) * size + dartY - pupilRise;
+      out.push(
+        <img key={`pup-${side}`} src={`${URL}/${pupilLayer}.png`} alt="" draggable={false}
+          style={{ position: "absolute", inset: 0, width: size, height: size,
+                   transform: `translate(${dx}px, ${bob + dy}px)`, willChange: "transform" }} />
+      );
+    }
+    // eyelids — only over moods whose white is open (skip happy = already closed)
+    if (!happyEyesClosed) {
+      const L = sock.cx - sock.w / 2, T = sock.top, W = sock.w, H = sock.bot - sock.top;
+      const lidStyle = (h: number, fromTop: boolean): React.CSSProperties => ({
+        position: "absolute",
+        left: `${L * 100}%`, width: `${W * 100}%`,
+        top: fromTop ? `${T * 100}%` : `${(sock.bot - h) * 100}%`,
+        height: `${h * 100}%`,
+        background: faceBlue,
+        borderRadius: fromTop ? `0 0 ${size * 0.04}px ${size * 0.04}px` : `${size * 0.04}px ${size * 0.04}px 0 0`,
+        transform: `translateY(${bob}px)`,
+      });
+      // top lid sweeps to 75% of socket height, bottom lid to 25%
+      const topH = H * 0.75 * blink;
+      const botH = H * 0.25 * blink;
+      out.push(<div key={`lidT-${side}`} aria-hidden style={lidStyle(topH, true)} />);
+      out.push(<div key={`lidB-${side}`} aria-hidden style={lidStyle(botH, false)} />);
+    }
+    return out;
   };
 
   // resolve limb variants (fall back to defaults)
@@ -151,13 +193,13 @@ export function RigGifty({
     } else if (slot === "__armR__") {
       stack.push(img(rig.armR[armRName], canWave ? "arm_r" : "arm_static"));
     } else if (slot === "__eyes__") {
+      // static eye-whites (swap by mood) — no blink scaling
       const e = rig.eyes[eyeMood];
       stack.push(img(e.l, "eye"), img(e.r, "eye"));
     } else if (slot === "__pupils__") {
-      if (!happyEyesClosed) { // closed-happy eyes hide pupils
-        const p = rig.pupils[pupilMood];
-        stack.push(img(p.l, "pupil"), img(p.r, "pupil"));
-      }
+      // pupils (darting/rising) + box-blue eyelids that sweep over each socket
+      const p = rig.pupils[pupilMood];
+      stack.push(...eyeParts("l", p.l), ...eyeParts("r", p.r));
     } else if (slot === "__mouth__") {
       stack.push(img(mouthLayer, "mouth"));
     } else {

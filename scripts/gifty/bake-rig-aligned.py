@@ -199,6 +199,23 @@ def main():
     order = ["body", "__legs__", "__armL__", "__armR__", "bow",
              "eyebrow_l", "eyebrow_r", "__eyes__", "__pupils__", "__mouth__"]
 
+    # Clean per-eye SOCKET geometry (the eye whites all occupy the same sockets;
+    # auto-bbox is noisy for some moods, so derive sockets from the reliable
+    # 'normal' eye-white bboxes). Used to clip eyelids + place/rise pupils.
+    nl, nr = meta["eye_normal_l"], meta["eye_normal_r"]
+    def socket(b):
+        return {"cx": b["cx"], "cy": b["cy"], "w": b["w"], "h": b["h"],
+                "top": round(b["cy"] - b["h"]/2, 4), "bot": round(b["cy"] + b["h"]/2, 4)}
+    sockets = {"l": socket(nl), "r": socket(nr)}
+    # pupil rest position per mood (where the pupil should sit in each socket).
+    # normal/smug: centered; happy: eyes closed → pupils hidden anyway.
+    pupilRest = {
+        "normal": {"l": {"x": sockets["l"]["cx"], "y": sockets["l"]["cy"]},
+                   "r": {"x": sockets["r"]["cx"], "y": sockets["r"]["cy"]}},
+        "smug":   {"l": {"x": sockets["l"]["cx"], "y": sockets["l"]["cy"] + 0.02},
+                   "r": {"x": sockets["r"]["cx"], "y": sockets["r"]["cy"] + 0.02}},
+    }
+
     # base face quad (0..1) for runtime face-space re-projection later
     bq = anchors[BASE].get("quad")
     json.dump({"canvas": C, "order": order, "base": BASE_LAYERS, "meta": meta,
@@ -206,6 +223,8 @@ def main():
                "armR": arm_r, "armL": arm_l, "legs": legs,
                "defaults": {"mouth": "smile", "eyes": "normal", "pupils": "normal",
                             "armR": "thumbsup", "armL": "down", "legs": "stand"},
+               "sockets": sockets, "pupilRest": pupilRest,
+               "faceBlue": "#2F6BF5",
                "faceQuad": bq, "baseRender": BASE},
               open(f"{OUT}/rig.json", "w"), indent=1)
     print("✓ baked quad-aligned rig")
