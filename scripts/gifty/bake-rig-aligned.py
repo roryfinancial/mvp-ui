@@ -224,9 +224,14 @@ def main():
             a = np.array(Image.open(src).convert("RGBA"))
             rgb = a[..., :3].astype(int); al = a[..., 3]
             mx = rgb.max(2); mn = rgb.min(2)
-            white = (mx > 175) & ((mx - mn) < 45) & (al > 120)
+            white = ((mx > 175) & ((mx - mn) < 45) & (al > 120)).astype(np.uint8) * 255
+            # grow a hair onto the outline, then feather the edge so the lid blends
+            # into the rim instead of leaving a hard transparent seam against it.
+            white = cv2.dilate(white, np.ones((5, 5), np.uint8), iterations=1)
+            white = cv2.GaussianBlur(white, (0, 0), sigmaX=4)
             out = np.zeros((a.shape[0], a.shape[1], 4), np.uint8)
-            out[white] = (255, 255, 255, 255)
+            out[..., :3] = 255
+            out[..., 3] = white                 # feathered alpha = soft mask edge
             name = f"eyemask_{mood}_{s}"
             Image.fromarray(out, "RGBA").save(f"{OUT}/{name}.png")
             eyeMask[mood][s] = name
