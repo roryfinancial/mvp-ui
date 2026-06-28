@@ -16,7 +16,7 @@ Out: public/gifty/rig-layers/ (PNGs warped into base space + rig.json)
 """
 import os, json
 import numpy as np, cv2
-from PIL import Image
+from PIL import Image, ImageDraw
 
 ROOT = "."
 PARTS = "public/gifty/parts"
@@ -236,24 +236,43 @@ def main():
     # the 3/4 view → lift it slightly so the eyes look even (not sleepy/lopsided).
     lidRest = {"l": 0.0, "r": -0.007}
 
-    # Lash-line: derive the bottom-edge band from EACH side's own warped lid, so
-    # the lash follows that eye's true rotation/curve (the eyes sit at slightly
-    # different angles in the 3/4 view — a naive mirror is wrong).
+    # Lash-line: ONE clean drawn arc (a gentle smile-curve), placed at each eye's
+    # lid bottom, scaled to the eye width and rotated to the eye's angle. Built —
+    # not traced from the messy lid edge — so the two lashes are symmetric by
+    # construction.
     lashline = {}
-    LASH = (40, 72, 120, 255)
+    LASH = (40, 72, 120)
+    def eye_geom(layer_eye, layer_lid):
+        eye = np.array(Image.open(f"{OUT}/{layer_eye}.png").convert("RGBA"))[..., 3]
+        lid = np.array(Image.open(f"{OUT}/{layer_lid}.png").convert("RGBA"))[..., 3]
+        cnts, _ = cv2.findContours((eye > 120).astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        (cx, cy), _, ang = cv2.fitEllipse(max(cnts, key=cv2.contourArea))
+        xs = np.where(eye > 120)[1]; w = xs.max() - xs.min()
+        lid_bot = np.where(lid > 120)[0].max()
+        return cx, lid_bot, w, ang
     for s in ("l", "r"):
         if not eyelid.get(s):
             continue
-        a = np.array(Image.open(f"{OUT}/eyelid_{s}.png").convert("RGBA"))
-        m = (a[..., 3] > 120).astype(np.uint8)
-        N = 10; up = np.zeros_like(m); up[:-N] = m[N:]
-        band = ((m == 1) & (up == 0)).astype(np.uint8)
-        band = cv2.dilate(band, np.ones((4, 4), np.uint8))
-        ys, _ = np.where(m > 0)
-        if len(ys):
-            band[: int(ys.min() + (ys.max()-ys.min()) * 0.45)] = 0
-        out = np.zeros(a.shape, np.uint8); out[band > 0] = LASH
-        Image.fromarray(out, "RGBA").save(f"{OUT}/lashline_{s}.png")
+        cx, ybot, w, ang = eye_geom(f"eye_normal_{s}", f"eyelid_{s}")
+        canvas = Image.new("RGBA", (C, C), (0, 0, 0, 0))
+        d = ImageDraw.Draw(canvas)
+        # arc spanning ~70% of eye width, gentle downward bow; thickness ~ eye/22
+        half = w * 0.36
+        bow = w * 0.10           # how much the middle dips
+        th = max(4, int(w / 18))
+        pts = []
+        for t in np.linspace(0, 1, 30):
+            x = -half + 2 * half * t
+            y = -bow * (1 - (2 * t - 1) ** 2)    # convex-UP: dips at ends, peaks in middle (∩)
+            pts.append((x, y))
+        # eye ellipse angle is measured from vertical; normalize to a small tilt
+        tilt = ang if ang < 90 else ang - 180
+        a = np.deg2rad(tilt)
+        ca, sa = np.cos(a), np.sin(a)
+        ybot = ybot - int(w * 0.06)   # sit at the lid/white seam, not down in the white
+        place = [(cx + (px * ca - py * sa), ybot + (px * sa + py * ca)) for px, py in pts]
+        d.line(place, fill=LASH + (255,), width=th, joint="curve")
+        canvas.save(f"{OUT}/lashline_{s}.png")
         lashline[s] = f"lashline_{s}"
 
     # white-only masks per mood eye — the bright interior only (no navy outline),
