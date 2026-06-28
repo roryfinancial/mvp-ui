@@ -176,21 +176,24 @@ export function RigGifty({
     const lm = lid ? rig.meta[lid] : null;
     if (!lid || !lm || happyEyesClosed) return null;
     const sock = moodSockets[side];
-    // The lid art's own height; park it fully ABOVE the eye when open, slide it
-    // down so its bottom reaches the eye bottom when closed.
-    const lidH = lm.h * size;
-    const lidBottomFrac = lm.y + lm.h;          // where the lid art's bottom sits
-    const closedShift = (sock.bot - lidBottomFrac) * size; // align lid bottom → eye bottom
-    const parkUp = -(lm.h + 0.02) * size;       // fully above the eye when open
-    const drop = parkUp + (closedShift - parkUp) * blink;  // open→closed
-    // clip box: TIGHT to this eye's socket (so a wide lid only shows over the eye),
-    // extended slightly above so the parked lid is hidden, down to the eye bottom.
-    const padX = sock.w * 0.18;
-    const clipTopFrac = sock.top - 0.03;        // just above the eye (hides parked lid)
+    // The lid art naturally sits over the eye top. To OPEN, slide it up out of the
+    // eye (by the eye height); to CLOSE, return it to its natural spot (covers eye).
+    //   blink 0 → fully up (open) · blink 1 → natural position (closed)
+    const eyeH = (sock.bot - sock.top) * size;
+    // CLOSED: push the lid down so its bottom reaches the eye bottom (fully covers).
+    const lidBottom = lm.y + lm.h;
+    const closed = (sock.bot - lidBottom) * size + size * 0.02;   // overshoot a hair
+    // OPEN: lift the lid clear above the eye.
+    const open = closed - (eyeH + size * 0.08);
+    const drop = open + (closed - open) * blink; // blink 0 → open, 1 → closed
+    // clip: tight to the socket, from just above the eye to the eye bottom, so the
+    // lifted lid is hidden above the window and only the lowered lid shows.
+    const padX = sock.w * 0.2;
+    const clipTopFrac = sock.top - 0.02;
     const L = (sock.cx - sock.w / 2 - padX) * size;
     const Wpx = (sock.w + padX * 2) * size;
     const Tpx = clipTopFrac * size;
-    const clipH = (sock.bot - clipTopFrac + 0.01) * size;
+    const clipH = (sock.bot - clipTopFrac + 0.02) * size;
     return (
       <div key={`lid-${side}`} aria-hidden
         style={{ position: "absolute", left: L, top: Tpx + bob, width: Wpx, height: clipH,
