@@ -27,6 +27,7 @@ interface Rig {
   eyes: Record<string, { l: string; r: string }>;
   pupils: Record<string, { l: string; r: string }>;
   eyelid?: { l?: string; r?: string };  // cut eyelid layers (slide down to blink)
+  eyeMask?: Record<string, { l?: string; r?: string }>; // white-only clip per mood
   puppy?: string | null;                // standalone baked bashful look
   armR: Record<string, string>;
   armL: Record<string, string>;
@@ -167,39 +168,30 @@ export function RigGifty({
     );
   };
 
-  // sliding cut eyelid. The lid art already sits resting just above/over the eye
-  // top. On blink it slides DOWN by the socket height to cover the eye. The clip
-  // box spans from above the eye to the eye bottom so only the descending lid is
-  // visible (its resting position is hidden just above the clip top).
+  // Cut eyelid at its NATURAL baked position (rest = half-way down the eye, from
+  // smug). `blink` nudges it further down to close. Clipped to the EYE-WHITE shape
+  // (CSS mask) so the lid only ever shows over the eye — no bbox math.
+  const LID_CLOSE = 0.10;    // downward travel (frac of size) on full blink
   const eyelidEl = (side: "l" | "r") => {
     const lid = rig.eyelid?.[side];
-    const lm = lid ? rig.meta[lid] : null;
-    if (!lid || !lm || happyEyesClosed) return null;
-    const sock = moodSockets[side];
-    // The lid art naturally sits over the eye top. To OPEN, slide it up out of the
-    // eye (by the eye height); to CLOSE, return it to its natural spot (covers eye).
-    //   blink 0 → fully up (open) · blink 1 → natural position (closed)
-    const eyeH = (sock.bot - sock.top) * size;
-    // CLOSED: push the lid down so its bottom reaches the eye bottom (fully covers).
-    const lidBottom = lm.y + lm.h;
-    const closed = (sock.bot - lidBottom) * size + size * 0.02;   // overshoot a hair
-    // OPEN: lift the lid clear above the eye.
-    const open = closed - (eyeH + size * 0.08);
-    const drop = open + (closed - open) * blink; // blink 0 → open, 1 → closed
-    // clip: tight to the socket, from just above the eye to the eye bottom, so the
-    // lifted lid is hidden above the window and only the lowered lid shows.
-    const padX = sock.w * 0.2;
-    const clipTopFrac = sock.top - 0.02;
-    const L = (sock.cx - sock.w / 2 - padX) * size;
-    const Wpx = (sock.w + padX * 2) * size;
-    const Tpx = clipTopFrac * size;
-    const clipH = (sock.bot - clipTopFrac + 0.02) * size;
+    if (!lid || !rig.meta[lid] || happyEyesClosed) return null;
+    // clip to the white-only mask (bright interior, no navy outline); fall back to
+    // the full eye-white if a mask isn't present.
+    const maskLayer = rig.eyeMask?.[eyeMood]?.[side] || rig.eyes[eyeMood][side];
+    const drop = blink * LID_CLOSE * size;
+    const maskUrl = `url(${URL}/${maskLayer}.png)`;
+    // mask sits on the STATIC parent (fixed to the eye); the lid <img> slides
+    // INSIDE it, so the lid is revealed only within the eye-white shape.
     return (
       <div key={`lid-${side}`} aria-hidden
-        style={{ position: "absolute", left: L, top: Tpx + bob, width: Wpx, height: clipH,
-                 overflow: "hidden", pointerEvents: "none" }}>
+        style={{ position: "absolute", inset: 0, width: size, height: size,
+                 transform: `translateY(${bob}px)`,
+                 WebkitMaskImage: maskUrl, maskImage: maskUrl,
+                 WebkitMaskSize: "100% 100%", maskSize: "100% 100%",
+                 WebkitMaskRepeat: "no-repeat", maskRepeat: "no-repeat",
+                 pointerEvents: "none" }}>
         <img src={`${URL}/${lid}.png`} alt="" draggable={false}
-          style={{ position: "absolute", left: -L, top: -Tpx, width: size, height: size,
+          style={{ position: "absolute", inset: 0, width: size, height: size,
                    transform: `translateY(${drop}px)`, willChange: "transform" }} />
       </div>
     );

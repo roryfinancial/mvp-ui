@@ -212,6 +212,25 @@ def main():
         if emit(f"eyelid_{s}", EYELID, f"eyelid_{s}", meta, mode="warp"):
             eyelid[s] = f"eyelid_{s}"
 
+    # white-only masks per mood eye — the bright interior only (no navy outline),
+    # used to clip the eyelid so it sits on the white, not the eye rim.
+    eyeMask = {}
+    for mood, e in eyes.items():
+        eyeMask[mood] = {}
+        for s in ("l", "r"):
+            src = f"{OUT}/{e[s]}.png"
+            if not os.path.exists(src):
+                continue
+            a = np.array(Image.open(src).convert("RGBA"))
+            rgb = a[..., :3].astype(int); al = a[..., 3]
+            mx = rgb.max(2); mn = rgb.min(2)
+            white = (mx > 175) & ((mx - mn) < 45) & (al > 120)
+            out = np.zeros((a.shape[0], a.shape[1], 4), np.uint8)
+            out[white] = (255, 255, 255, 255)
+            name = f"eyemask_{mood}_{s}"
+            Image.fromarray(out, "RGBA").save(f"{OUT}/{name}.png")
+            eyeMask[mood][s] = name
+
     # special baked "puppy" look (single layer, warped into face-plane)
     puppy = None
     if emit("puppy", PUPPY, "puppy_eyes", meta, mode="warp"):
@@ -251,7 +270,7 @@ def main():
     bq = anchors[BASE].get("quad")
     json.dump({"canvas": C, "order": order, "base": BASE_LAYERS, "meta": meta,
                "mouths": mouths, "eyes": eyes, "pupils": pupils,
-               "eyelid": eyelid, "puppy": puppy,
+               "eyelid": eyelid, "eyeMask": eyeMask, "puppy": puppy,
                "armR": arm_r, "armL": arm_l, "legs": legs,
                "defaults": {"mouth": "smile", "eyes": "normal", "pupils": "normal",
                             "armR": "thumbsup", "armL": "down", "legs": "stand"},

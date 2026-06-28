@@ -447,6 +447,20 @@
   "l": "eyelid_l",
   "r": "eyelid_r"
  },
+ "eyeMask": {
+  "normal": {
+   "l": "eyemask_normal_l",
+   "r": "eyemask_normal_r"
+  },
+  "smug": {
+   "l": "eyemask_smug_l",
+   "r": "eyemask_smug_r"
+  },
+  "happy": {
+   "l": "eyemask_happy_l",
+   "r": "eyemask_happy_r"
+  }
+ },
  "puppy": "puppy",
  "armR": {
   "thumbsup": "armR_thumbsup",
