@@ -1,8 +1,8 @@
 {
  "canvas": 1024,
  "order": [
-  "body",
   "__legs__",
+  "body",
   "__armL__",
   "__armR__",
   "bow",
@@ -676,11 +676,7 @@
    "fist",
    "open"
   ],
-  "armL": [
-   "open",
-   "hip",
-   "thumbsup"
-  ]
+  "armL": []
  },
  "armNudge": {
   "armR": {
@@ -701,5 +697,12 @@
     "front": "armL_salute_front"
    }
   }
+ },
+ "armFront": {
+  "armL": [
+   "hold",
+   "wave"
+  ],
+  "armR": []
  }
 }

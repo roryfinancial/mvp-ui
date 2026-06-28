@@ -37,7 +37,8 @@ interface Rig {
   puppy?: string | null;                // standalone baked bashful look
   puppyRest?: number;                   // frac nudge for the puppy layer (align to sockets)
   legRise?: number;                     // frac nudge legs UP so tops tuck under the breathing body
-  armBehind?: { armR?: string[]; armL?: string[] }; // poses whose root tucks BEHIND the body
+  armBehind?: { armR?: string[]; armL?: string[] }; // BEHIND allowlist (right arm: front-by-default)
+  armFront?: { armR?: string[]; armL?: string[] };  // FRONT allowlist (left arm: behind-by-default)
   armNudge?: { armR?: Record<string, number>; armL?: Record<string, number> }; // per-pose x scootch (frac, + = away from body center)
   // poses split into a behind-body part + an in-front part (e.g. head-scratch: upper
   // arm behind the cube, forearm+hand in front)
@@ -427,9 +428,19 @@ export function RigGifty({
   const pulses = (name: string) => name === "thumbsup" || name === "wave";
   const armKind = (side: "l" | "r", name: string) =>
     (side === "r" ? waveR : waveL) ? "arm_wave" : (pulses(name) ? "arm_pulse" : `arm_${side}`);
-  // poses whose root attaches at the side tuck BEHIND the body; "holding" poses stay in front
-  const behind = (side: "armR" | "armL", name: string) =>
-    (SRC.armBehind?.[side] ?? []).includes(name);
+  // Z-class: an arm tucks BEHIND the body unless it's a cross-front pose.
+  // - armFront[side] = explicit FRONT allowlist (used for the LEFT arm, which is
+  //   behind-by-default since it attaches at the side).
+  // - armBehind[side] = explicit BEHIND allowlist (used for the RIGHT arm, which
+  //   extends outward and is front-by-default).
+  // If a side has neither list it stays front. armFront wins if both name it.
+  const behind = (side: "armR" | "armL", name: string) => {
+    const front = SRC.armFront?.[side];
+    const back = SRC.armBehind?.[side];
+    if (front && front.includes(name)) return false;
+    if (front && !back) return true;          // front-list present → behind by default
+    return (back ?? []).includes(name);       // behind-list semantics
+  };
   const armLBehind = behind("armL", armLName);
   const armRBehind = behind("armR", armRName);
   // per-pose x scootch so buried arms clear the body (R nudges right +x, L left −x)

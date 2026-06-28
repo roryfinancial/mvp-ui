@@ -2,7 +2,7 @@
 
 const CARRY_KEYS = [
   "order", "base", "mouths", "eyes", "eyesClosed", "pupils", "eyelid", "lashline", "eyerim",
-  "eyeMask", "puppy", "puppyRest", "legRise", "armBehind", "armNudge", "armSplit",
+  "eyeMask", "puppy", "puppyRest", "legRise", "armBehind", "armFront", "armNudge", "armSplit",
   "armR", "armL", "legs", "defaults", "sockets",
   "socketsByMood", "pupilRest", "lidRest", "faceBlue", "lidBlue", "faceQuad",
 ];
