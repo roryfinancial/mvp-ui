@@ -65,9 +65,9 @@ const reduced = () =>
 
 export function RigGifty({
   size = 320, mood = "normal", talking = false, wave = false,
-  armR, armL, legs, tier = "web",
+  armR, armL, legs,
 }: { size?: number; mood?: Mood; talking?: boolean; wave?: boolean;
-     armR?: string; armL?: string; legs?: string; tier?: "web" | "hq" }) {
+     armR?: string; armL?: string; legs?: string }) {
   const [rig, setRig] = useState<Rig | null>(null);
   const [t, setT] = useState(0);
   const [blink, setBlink] = useState(0);
