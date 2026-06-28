@@ -52,10 +52,32 @@ def load_part(render_folder, part):
     return np.array(im)
 
 def warp_into_base(rgba, src_render):
-    """Homography from src render's face-quad → base face-quad."""
+    """Homography from src render's face-quad → base face-quad (FACE parts)."""
     src_q = quad_pts(src_render)
     H = cv2.getPerspectiveTransform(src_q, base_quad)
     return cv2.warpPerspective(rgba, H, (C, C), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0))
+
+def quad_metrics(q):
+    """centroid + mean edge length of a 4-pt quad (face size proxy)."""
+    cx, cy = q[:, 0].mean(), q[:, 1].mean()
+    # average of the two diagonals as a robust scale
+    d1 = np.linalg.norm(q[2] - q[0]); d2 = np.linalg.norm(q[3] - q[1])
+    return np.array([cx, cy]), (d1 + d2) / 2
+
+_BASE_C, _BASE_S = quad_metrics(base_quad)
+
+def scale_into_base(rgba, src_render):
+    """Similarity transform (uniform scale + translate) for LIMBS: not on the
+    face plane, but scaled by the src render's face-size vs base, and shifted so
+    the src face centroid maps onto the base face centroid. Keeps the limb's
+    shape (no shear), just makes it the right relative size/position."""
+    src_q = quad_pts(src_render)
+    src_c, src_s = quad_metrics(src_q)
+    s = _BASE_S / src_s                      # uniform scale factor
+    # affine: x' = s*(x - src_c) + base_c
+    M = np.float32([[s, 0, _BASE_C[0] - s * src_c[0]],
+                    [0, s, _BASE_C[1] - s * src_c[1]]])
+    return cv2.warpAffine(rgba, M, (C, C), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0))
 
 def bbox(rgba):
     a = rgba[..., 3] > 40
@@ -65,12 +87,16 @@ def bbox(rgba):
             "x": round(float(xs.min())/C, 4), "y": round(float(ys.min())/C, 4),
             "w": round(float(xs.max()-xs.min()+1)/C, 4), "h": round(float(ys.max()-ys.min()+1)/C, 4)}
 
-def emit(name, render_folder, part, meta, do_warp=True):
+def emit(name, render_folder, part, meta, mode="warp"):
+    """mode: 'warp' = face homography (face parts) · 'scale' = similarity from
+    face-quad size (limbs) · 'none' = base space, as-is."""
     rgba = load_part(render_folder, part)
     if rgba is None:
         print("  missing", render_folder, part); return False
-    if do_warp:
+    if mode == "warp":
         rgba = warp_into_base(rgba, render_folder)
+    elif mode == "scale":
+        rgba = scale_into_base(rgba, render_folder)
     Image.fromarray(rgba, "RGBA").save(f"{OUT}/{name}.png")
     meta[name] = bbox(rgba)
     return True
@@ -95,22 +121,37 @@ EYES = {
 }
 PUPILS = {"normal": BASE}
 
-# Arm/leg VARIANTS. NOTE: limbs are NOT on the face plane, so they are NOT warped
-# by the face quad — they're placed by their own position from the source render
-# (which frames the body similarly). Pick per side from whichever render has a
-# good pose. Right-arm options give gestures; left-arm holds the gift.
+# Arm/leg VARIANTS. Limbs aren't on the face plane, so they use a SIMILARITY
+# transform (mode="scale"): scaled by the source render's face-quad size vs base
+# and re-centered on the base face — correct relative size/position without shear.
+# One option per render that has the cut, named by its pose.
+G = "Gemini_Generated_Image_"
 ARM_R = {
-    "down":     (BASE, "arm_r"),
-    "thumbsup": ("Gemini_Generated_Image_1c2np91c2np91c2n", "arm_r"),
-    "wave":     ("Gemini_Generated_Image_kc9x3vkc9x3vkc9x", "arm_r"),
-    "fist":     ("Gemini_Generated_Image_u1b4qyu1b4qyu1b4", "arm_r"),
+    "thumbsup": (G+"1c2np91c2np91c2n", "arm_r"),
+    "wave":     (G+"kc9x3vkc9x3vkc9x", "arm_r"),
+    "fist":     (G+"u1b4qyu1b4qyu1b4", "arm_r"),
+    "salute":   (G+"r9wewpr9wewpr9we", "arm_r"),
+    "down":     (G+"cqmh61cqmh61cqmh", "arm_r"),
+    "sad":      (G+"bfzncmbfzncmbfzn", "arm_r"),
+    "open":     (G+"ew4fcuew4fcuew4f", "arm_r"),
+    "present":  (G+"wvymdawvymdawvym", "arm_r"),
+    "calm":     (G+"vcp61avcp61avcp6", "arm_r"),
 }
 ARM_L = {
-    "down":  (BASE, "arm_l"),
-    "hold":  ("Gemini_Generated_Image_wvymdawvymdawvym", "arm_l"),
+    "thumbsup": (G+"1c2np91c2np91c2n", "arm_l"),
+    "down":     (G+"cqmh61cqmh61cqmh", "arm_l"),
+    "wave":     (G+"kc9x3vkc9x3vkc9x", "arm_l"),
+    "hip":      (G+"u1b4qyu1b4qyu1b4", "arm_l"),
+    "salute":   (G+"r9wewpr9wewpr9we", "arm_l"),
+    "sad":      (G+"bfzncmbfzncmbfzn", "arm_l"),
+    "open":     (G+"ew4fcuew4fcuew4f", "arm_l"),
+    "hold":     (G+"wvymdawvymdawvym", "arm_l"),
+    "calm":     (G+"vcp61avcp61avcp6", "arm_l"),
 }
 LEGS = {
-    "stand": (BASE, ("leg_l", "leg_r")),
+    "stand":  (G+"1c2np91c2np91c2n", ("leg_l", "leg_r")),
+    "walk":   (G+"kc9x3vkc9x3vkc9x", ("leg_l", "leg_r")),
+    "sit":    (G+"vcp61avcp61avcp6", ("leg_l", "leg_r")),
 }
 
 def main():
@@ -118,38 +159,41 @@ def main():
         if f.endswith(".png"): os.remove(os.path.join(OUT, f))
     meta = {}
 
-    # body/bow/eyebrows from base (no warp)
+    # body/bow/eyebrows from base (no transform)
     for l in ["body", "bow", "eyebrow_l", "eyebrow_r"]:
-        emit(l, BASE, l, meta, do_warp=False)
+        emit(l, BASE, l, meta, mode="none")
 
-    # arm/leg variants — placed by own position, NOT face-warped (off the face plane)
+    # arm/leg variants — similarity-scaled by each render's face-quad vs base
     arm_r, arm_l, legs = {}, {}, {}
     for name, (render, part) in ARM_R.items():
         layer = f"armR_{name}"
-        if emit(layer, render, part, meta, do_warp=False): arm_r[name] = layer
+        m = "none" if render == BASE else "scale"
+        if emit(layer, render, part, meta, mode=m): arm_r[name] = layer
     for name, (render, part) in ARM_L.items():
         layer = f"armL_{name}"
-        if emit(layer, render, part, meta, do_warp=False): arm_l[name] = layer
+        m = "none" if render == BASE else "scale"
+        if emit(layer, render, part, meta, mode=m): arm_l[name] = layer
     for name, (render, (pl, pr)) in LEGS.items():
-        if emit(f"legL_{name}", render, pl, meta, do_warp=False) and emit(f"legR_{name}", render, pr, meta, do_warp=False):
+        m = "none" if render == BASE else "scale"
+        if emit(f"legL_{name}", render, pl, meta, mode=m) and emit(f"legR_{name}", render, pr, meta, mode=m):
             legs[name] = {"l": f"legL_{name}", "r": f"legR_{name}"}
 
     mouths = {}
     for name, (render, part) in MOUTHS.items():
         layer = f"mouth_{name}"
-        if emit(layer, render, part, meta, do_warp=(render != BASE)):
+        if emit(layer, render, part, meta, mode=("none" if render==BASE else "warp")):
             mouths[name] = layer
 
     eyes = {}
     for mood, render in EYES.items():
         for s in ("l", "r"):
-            emit(f"eye_{mood}_{s}", render, f"eye_{s}", meta, do_warp=(render != BASE))
+            emit(f"eye_{mood}_{s}", render, f"eye_{s}", meta, mode=("none" if render==BASE else "warp"))
         eyes[mood] = {"l": f"eye_{mood}_l", "r": f"eye_{mood}_r"}
 
     pupils = {}
     for mood, render in PUPILS.items():
         for s in ("l", "r"):
-            emit(f"pupil_{mood}_{s}", render, f"pupil_{s}", meta, do_warp=(render != BASE))
+            emit(f"pupil_{mood}_{s}", render, f"pupil_{s}", meta, mode=("none" if render==BASE else "warp"))
         pupils[mood] = {"l": f"pupil_{mood}_l", "r": f"pupil_{mood}_r"}
 
     order = ["body", "__legs__", "__armL__", "__armR__", "bow",
