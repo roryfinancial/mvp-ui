@@ -17,7 +17,8 @@
     "db:select:postgres": "node scripts/select-db.mjs postgres",
     "demo:setup": "node scripts/select-db.mjs sqlite && DATABASE_PROVIDER=sqlite DATABASE_URL=\"file:$PWD/prisma/demo.db\" prisma generate && DATABASE_PROVIDER=sqlite DATABASE_URL=\"file:$PWD/prisma/demo.db\" prisma db push --accept-data-loss && DEMO_MODE=true DATABASE_PROVIDER=sqlite DATABASE_URL=\"file:$PWD/prisma/demo.db\" npm run db:seed",
     "prod:restore": "node scripts/select-db.mjs postgres && prisma generate",
-    "demo": "DEMO_MODE=true DATABASE_PROVIDER=sqlite DATABASE_URL=\"file:$PWD/prisma/demo.db\" next dev"
+    "demo": "DEMO_MODE=true DATABASE_PROVIDER=sqlite DATABASE_URL=\"file:$PWD/prisma/demo.db\" next dev",
+    "test:rig": "node --test scripts/gifty/lib/*.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
