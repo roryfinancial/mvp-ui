@@ -1,0 +1,207 @@
+{
+ "eyes": [
+  {
+   "key": "normal",
+   "file": "eye_normal.png",
+   "label": "Wide open round eyes, neutral forward gaze."
+  },
+  {
+   "key": "smug",
+   "file": "eye_smug.png",
+   "label": "Half-lidded eyes — upper lid lowered (heavy-lidded / unimpressed / sly)."
+  },
+  {
+   "key": "happy",
+   "file": "eye_happy.png",
+   "label": "Closed upward-arc eyes (squint/smiling-shut); pupils hidden."
+  }
+ ],
+ "mouths": [
+  {
+   "key": "smile",
+   "file": "mouth_smile.png",
+   "label": "Gentle closed upward curve (soft smile)."
+  },
+  {
+   "key": "shy",
+   "file": "mouth_shy.png",
+   "label": "Small restrained closed curve (timid)."
+  },
+  {
+   "key": "proud",
+   "file": "mouth_proud.png",
+   "label": "Big open toothy grin (broad)."
+  },
+  {
+   "key": "hmm",
+   "file": "mouth_hmm.png",
+   "label": "Small wavy/uncertain squiggle (unsure / thinking)."
+  }
+ ],
+ "brows": [
+  {
+   "key": "neutral",
+   "file": "brow_neutral.png",
+   "label": "Resting brow pair (the baked default)."
+  },
+  {
+   "key": "raised",
+   "file": "brow_raised.png",
+   "label": "Both brows lifted high — surprise / attention."
+  },
+  {
+   "key": "lowered",
+   "file": "brow_lowered.png",
+   "label": "Both brows pushed down — focus / serious."
+  },
+  {
+   "key": "angry",
+   "file": "brow_angry.png",
+   "label": "Inner ends angled DOWN — anger / determination."
+  },
+  {
+   "key": "worried",
+   "file": "brow_worried.png",
+   "label": "Inner ends lifted UP — worry / sad / pleading."
+  },
+  {
+   "key": "skeptical",
+   "file": "brow_skeptical.png",
+   "label": "One brow raised, other low — doubt / smirk (asymmetric)."
+  }
+ ],
+ "armR": [
+  {
+   "key": "thumbsup",
+   "file": "armR_thumbsup.png",
+   "do": "Thumbs-up, hand at side.",
+   "rel": "Root at right side; tucks BEHIND body."
+  },
+  {
+   "key": "wave",
+   "file": "armR_wave.png",
+   "do": "Raised open hand waving.",
+   "rel": "Raised at right; tucks BEHIND body (animated by `wave`)."
+  },
+  {
+   "key": "fist",
+   "file": "armR_fist.png",
+   "do": "Raised fist.",
+   "rel": "Root at right side; tucks BEHIND body."
+  },
+  {
+   "key": "salute",
+   "file": "armR_salute.png",
+   "do": "Hand to brow (salute).",
+   "rel": "Reaches toward head; FRONT — see head-clip note."
+  },
+  {
+   "key": "down",
+   "file": "armR_down.png",
+   "do": "Arm hanging straight down.",
+   "rel": "At right side; FRONT — sits too far in, needs nudge right."
+  },
+  {
+   "key": "sad",
+   "file": "armR_sad.png",
+   "do": "Limp arm, hand drooping.",
+   "rel": "Mostly hidden behind body; FRONT — needs nudge right."
+  },
+  {
+   "key": "open",
+   "file": "armR_open.png",
+   "do": "Open palm presented outward.",
+   "rel": "Extends out/up at right; tucks BEHIND body."
+  },
+  {
+   "key": "present",
+   "file": "armR_present.png",
+   "do": "Hand holding/offering an item.",
+   "rel": "Fully outside body (z-order irrelevant)."
+  },
+  {
+   "key": "calm",
+   "file": "armR_calm.png",
+   "do": "Relaxed arm at side.",
+   "rel": "At right side; FRONT — needs nudge right."
+  }
+ ],
+ "armL": [
+  {
+   "key": "thumbsup",
+   "file": "armL_thumbsup.png",
+   "do": "Thumbs-up, hand at side.",
+   "rel": "Crosses toward body; tucks BEHIND."
+  },
+  {
+   "key": "down",
+   "file": "armL_down.png",
+   "do": "Arm hanging straight down.",
+   "rel": "At left side; FRONT (across-body)."
+  },
+  {
+   "key": "wave",
+   "file": "armL_wave.png",
+   "do": "Raised open hand waving.",
+   "rel": "Raised at left; FRONT (art includes cross-body part)."
+  },
+  {
+   "key": "hip",
+   "file": "armL_hip.png",
+   "do": "Hand on hip (akimbo).",
+   "rel": "Bent to hip; tucks BEHIND."
+  },
+  {
+   "key": "salute",
+   "file": "armL_salute.png",
+   "do": "Hand to head (currently 'salute'). Better read: scratching head / bashful.",
+   "rel": "Arm passes head corner: upper arm should be BEHIND the cube, sleeve/hand IN FRONT — single flat layer can't do both. NEEDS SPLIT."
+  },
+  {
+   "key": "sad",
+   "file": "armL_sad.png",
+   "do": "Limp arm, hand drooping.",
+   "rel": "Across body; FRONT."
+  },
+  {
+   "key": "open",
+   "file": "armL_open.png",
+   "do": "Open palm presented outward.",
+   "rel": "Extends out/up at left; tucks BEHIND."
+  },
+  {
+   "key": "hold",
+   "file": "armL_hold.png",
+   "do": "Both-hands holding/cradling across front.",
+   "rel": "Crosses the whole front; FRONT (on purpose)."
+  },
+  {
+   "key": "calm",
+   "file": "armL_calm.png",
+   "do": "Relaxed arm at side.",
+   "rel": "At left side; FRONT."
+  }
+ ],
+ "legs": [
+  {
+   "key": "stand",
+   "file": "legs_stand.png",
+   "label": "Both legs straight, standing."
+  },
+  {
+   "key": "walk",
+   "file": "legs_walk.png",
+   "label": "Mid-stride walking pose."
+  },
+  {
+   "key": "sit",
+   "file": "legs_sit.png",
+   "label": "Legs folded/seated."
+  }
+ ],
+ "puppy": {
+  "key": "puppy",
+  "file": "eye_puppy.png",
+  "label": "Big watery bashful eyes with tear-pools (standalone, replaces all eye parts)."
+ }
+}

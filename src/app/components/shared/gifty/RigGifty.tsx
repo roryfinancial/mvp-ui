@@ -65,15 +65,31 @@ const MOOD_MOUTH: Record<Mood, string> = {
 };
 const TALK_CYCLE = ["talk_ah", "smile", "talk_oh", "talk_eh", "smile"];
 
+// Eyebrow POSITIONS (a primitive, like eyes/mouths). The single baked brow art is
+// transformed at render time: dy = vertical raise/lower (frac of size, − is up),
+// rot = inner-end angle in degrees (+ pulls the INNER end down = angry; − lifts the
+// inner end = worried/sad). Per-side rot is mirrored so the pair reads symmetric.
+export type BrowPos = "neutral" | "raised" | "lowered" | "angry" | "worried" | "skeptical";
+const BROW_POS: Record<BrowPos, { dy: number; rot: number; skewOne?: boolean }> = {
+  neutral:    { dy: 0,      rot: 0 },
+  raised:     { dy: -0.030, rot: 0 },      // both up — surprise/attention
+  lowered:    { dy: 0.022,  rot: 0 },      // both down — focus/serious
+  angry:      { dy: 0.010,  rot: 12 },     // inner ends down — anger/determination
+  worried:    { dy: -0.006, rot: -12 },    // inner ends up — worry/sad/plead
+  skeptical:  { dy: -0.018, rot: 0, skewOne: true }, // one raised — doubt/smirk
+};
+
 const URL = "/gifty/rig-layers";
 const reduced = () =>
   typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 export function RigGifty({
   size = 320, mood = "normal", talking = false, wave = false,
-  armR, armL, legs, tier = "web",
+  armR, armL, legs, brow = "neutral", eyes, mouth, tier = "web",
 }: { size?: number; mood?: Mood; talking?: boolean; wave?: boolean;
-     armR?: string; armL?: string; legs?: string; tier?: "web" | "hq" }) {
+     armR?: string; armL?: string; legs?: string; brow?: BrowPos;
+     // direct primitive overrides (take precedence over `mood`) — for the tester/AI
+     eyes?: string; mouth?: string; tier?: "web" | "hq" }) {
   const [rig, setRig] = useState<Rig | null>(null);
   const [t, setT] = useState(0);
   const [blink, setBlink] = useState(0);
@@ -143,10 +159,14 @@ export function RigGifty({
   const idlePulse = isStatic ? 0 : pulsePhase * pulsePhase * 0.05;   // ≤5% scale
   const wavePulse = isStatic ? 0 : pulsePhase * pulsePhase * 0.09;   // stronger when waving
 
-  // resolve active swap layers
-  const eyeMood = MOOD_EYES[mood] in SRC.eyes ? MOOD_EYES[mood] : SRC.defaults.eyes;
+  // resolve active swap layers. Direct `eyes`/`mouth` props override the mood map
+  // (the AI/tester drives primitives directly; `mood` is just a convenience preset).
+  const eyeMood = (eyes && eyes in SRC.eyes) ? eyes
+    : (MOOD_EYES[mood] in SRC.eyes ? MOOD_EYES[mood] : SRC.defaults.eyes);
   const pupilMood = SRC.defaults.pupils;
-  const mouthName = talking ? TALK_CYCLE[viseme] : (MOOD_MOUTH[mood] || SRC.defaults.mouth);
+  const mouthName = talking ? TALK_CYCLE[viseme]
+    : (mouth && mouth in SRC.mouths) ? mouth
+    : (MOOD_MOUTH[mood] || SRC.defaults.mouth);
   const mouthLayer = SRC.mouths[mouthName] || SRC.mouths[SRC.defaults.mouth];
   const happyEyesClosed = eyeMood === "happy";
 
@@ -161,6 +181,15 @@ export function RigGifty({
     let transform = `translateY(${bob}px)`;
     if (kind === "body") transform = `translateY(${bob}px) scale(${1 + breathe})`;
     else if (kind === "bow") transform = `translateY(${bob + bowBob}px)`;
+    else if (kind === "eyebrow_l" || kind === "eyebrow_r") {
+      const bp = BROW_POS[brow] ?? BROW_POS.neutral;
+      const isL = kind === "eyebrow_l";
+      // mirror the inner-end angle per side; skeptical raises only the LEFT brow
+      const rot = bp.rot * (isL ? -1 : 1);
+      const dy = bp.dy + (bp.skewOne && !isL ? 0.026 : 0);   // right brow stays low for skeptical
+      transform = `translateY(${bob + dy * size}px) rotate(${rot}deg)`;
+      pivot = b ? `${(isL ? b.x + b.w : b.x) * 100}% ${b.cy * 100}%` : "center"; // rotate from the OUTER end
+    }
     else if (kind === "leg") transform = `translateY(${bob - legRise}px)`;   // tuck under the body
     else if (kind === "arm_wave") {
       // active wave gesture: swing from the shoulder + a stronger attention pulse
@@ -225,7 +254,7 @@ export function RigGifty({
   const moodSockets = SRC.socketsByMood?.[eyeMood] || SRC.sockets;
   const restFor = (side: "l" | "r") =>
     (SRC.pupilRest[eyeMood]?.[side]) || SRC.pupilRest.normal[side];
-  const isPuppy = mood === "puppy" && SRC.puppy;
+  const isPuppy = (mood === "puppy" || eyes === "puppy") && SRC.puppy;
 
   // pupil center in face-fraction coords. HQ reads the full-canvas bbox center
   // (`meta.cx/cy`); web derives the same center from the atlas place box

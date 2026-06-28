@@ -1,0 +1,127 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Gifty Expression Primitive Catalog</title>
+<style>
+  body{font:14px/1.5 system-ui,sans-serif;background:#0d1b3a;color:#eef;margin:0;padding:24px}
+  h1{margin:0 0 4px} p.note{opacity:.7;margin:0 0 20px}
+  h2{margin:28px 0 10px;border-bottom:1px solid #2a3a6a;padding-bottom:6px}
+  .grid{display:flex;flex-wrap:wrap;gap:14px}
+  figure{margin:0;width:200px;background:#14224a;border-radius:10px;padding:8px}
+  figure img{width:100%;border-radius:6px;display:block;background:#1b2f63}
+  figcaption{margin-top:6px;font-size:12px}
+  code{background:#22305c;padding:1px 5px;border-radius:4px;color:#9fd}
+</style></head><body>
+<h1>Gifty Expression Primitive Catalog</h1>
+<p class="note">Each primitive labeled by WHAT IT DEPICTS (not a mood). The AI character composes moods from these. Images are filesystem paths for realtime perception. Regenerate: <code>node scripts/gifty/build-catalog.mjs</code></p>
+<section><h2>Eyes</h2><div class="grid"><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/eye_normal.png" alt="normal">
+    <figcaption><code>normal</code><br>Wide open round eyes, neutral forward gaze.</figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/eye_smug.png" alt="smug">
+    <figcaption><code>smug</code><br>Half-lidded eyes — upper lid lowered (heavy-lidded / unimpressed / sly).</figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/eye_happy.png" alt="happy">
+    <figcaption><code>happy</code><br>Closed upward-arc eyes (squint/smiling-shut); pupils hidden.</figcaption>
+  </figure></div></section>
+<section><h2>Eyes — standalone</h2><div class="grid"><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/eye_puppy.png" alt="puppy">
+    <figcaption><code>puppy</code><br>Big watery bashful eyes with tear-pools (standalone, replaces all eye parts).</figcaption>
+  </figure></div></section>
+<section><h2>Mouths (talk visemes excluded)</h2><div class="grid"><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/mouth_smile.png" alt="smile">
+    <figcaption><code>smile</code><br>Gentle closed upward curve (soft smile).</figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/mouth_shy.png" alt="shy">
+    <figcaption><code>shy</code><br>Small restrained closed curve (timid).</figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/mouth_proud.png" alt="proud">
+    <figcaption><code>proud</code><br>Big open toothy grin (broad).</figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/mouth_hmm.png" alt="hmm">
+    <figcaption><code>hmm</code><br>Small wavy/uncertain squiggle (unsure / thinking).</figcaption>
+  </figure></div></section>
+<section><h2>Eyebrows</h2><div class="grid"><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/brow_neutral.png" alt="neutral">
+    <figcaption><code>neutral</code><br>Resting brow pair (the baked default).</figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/brow_raised.png" alt="raised">
+    <figcaption><code>raised</code><br>Both brows lifted high — surprise / attention.</figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/brow_lowered.png" alt="lowered">
+    <figcaption><code>lowered</code><br>Both brows pushed down — focus / serious.</figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/brow_angry.png" alt="angry">
+    <figcaption><code>angry</code><br>Inner ends angled DOWN — anger / determination.</figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/brow_worried.png" alt="worried">
+    <figcaption><code>worried</code><br>Inner ends lifted UP — worry / sad / pleading.</figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/brow_skeptical.png" alt="skeptical">
+    <figcaption><code>skeptical</code><br>One brow raised, other low — doubt / smirk (asymmetric).</figcaption>
+  </figure></div></section>
+<section><h2>Arms — Right</h2><div class="grid"><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/armR_thumbsup.png" alt="thumbsup">
+    <figcaption><code>thumbsup</code><br><b>Thumbs-up, hand at side.</b><br><i>Root at right side; tucks BEHIND body.</i></figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/armR_wave.png" alt="wave">
+    <figcaption><code>wave</code><br><b>Raised open hand waving.</b><br><i>Raised at right; tucks BEHIND body (animated by `wave`).</i></figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/armR_fist.png" alt="fist">
+    <figcaption><code>fist</code><br><b>Raised fist.</b><br><i>Root at right side; tucks BEHIND body.</i></figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/armR_salute.png" alt="salute">
+    <figcaption><code>salute</code><br><b>Hand to brow (salute).</b><br><i>Reaches toward head; FRONT — see head-clip note.</i></figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/armR_down.png" alt="down">
+    <figcaption><code>down</code><br><b>Arm hanging straight down.</b><br><i>At right side; FRONT — sits too far in, needs nudge right.</i></figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/armR_sad.png" alt="sad">
+    <figcaption><code>sad</code><br><b>Limp arm, hand drooping.</b><br><i>Mostly hidden behind body; FRONT — needs nudge right.</i></figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/armR_open.png" alt="open">
+    <figcaption><code>open</code><br><b>Open palm presented outward.</b><br><i>Extends out/up at right; tucks BEHIND body.</i></figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/armR_present.png" alt="present">
+    <figcaption><code>present</code><br><b>Hand holding/offering an item.</b><br><i>Fully outside body (z-order irrelevant).</i></figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/armR_calm.png" alt="calm">
+    <figcaption><code>calm</code><br><b>Relaxed arm at side.</b><br><i>At right side; FRONT — needs nudge right.</i></figcaption>
+  </figure></div></section>
+<section><h2>Arms — Left</h2><div class="grid"><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/armL_thumbsup.png" alt="thumbsup">
+    <figcaption><code>thumbsup</code><br><b>Thumbs-up, hand at side.</b><br><i>Crosses toward body; tucks BEHIND.</i></figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/armL_down.png" alt="down">
+    <figcaption><code>down</code><br><b>Arm hanging straight down.</b><br><i>At left side; FRONT (across-body).</i></figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/armL_wave.png" alt="wave">
+    <figcaption><code>wave</code><br><b>Raised open hand waving.</b><br><i>Raised at left; FRONT (art includes cross-body part).</i></figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/armL_hip.png" alt="hip">
+    <figcaption><code>hip</code><br><b>Hand on hip (akimbo).</b><br><i>Bent to hip; tucks BEHIND.</i></figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/armL_salute.png" alt="salute">
+    <figcaption><code>salute</code><br><b>Hand to head (currently 'salute'). Better read: scratching head / bashful.</b><br><i>Arm passes head corner: upper arm should be BEHIND the cube, sleeve/hand IN FRONT — single flat layer can't do both. NEEDS SPLIT.</i></figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/armL_sad.png" alt="sad">
+    <figcaption><code>sad</code><br><b>Limp arm, hand drooping.</b><br><i>Across body; FRONT.</i></figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/armL_open.png" alt="open">
+    <figcaption><code>open</code><br><b>Open palm presented outward.</b><br><i>Extends out/up at left; tucks BEHIND.</i></figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/armL_hold.png" alt="hold">
+    <figcaption><code>hold</code><br><b>Both-hands holding/cradling across front.</b><br><i>Crosses the whole front; FRONT (on purpose).</i></figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/armL_calm.png" alt="calm">
+    <figcaption><code>calm</code><br><b>Relaxed arm at side.</b><br><i>At left side; FRONT.</i></figcaption>
+  </figure></div></section>
+<section><h2>Legs</h2><div class="grid"><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/legs_stand.png" alt="stand">
+    <figcaption><code>stand</code><br>Both legs straight, standing.</figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/legs_walk.png" alt="walk">
+    <figcaption><code>walk</code><br>Mid-stride walking pose.</figcaption>
+  </figure><figure>
+    <img src="file:///Users/aap/Projects/Rory/mvp-ui/public/gifty/catalog/legs_sit.png" alt="sit">
+    <figcaption><code>sit</code><br>Legs folded/seated.</figcaption>
+  </figure></div></section>
+</body></html>
