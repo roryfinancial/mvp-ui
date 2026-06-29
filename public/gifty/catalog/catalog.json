@@ -155,7 +155,7 @@
    "key": "salute",
    "file": "armL_salute.png",
    "do": "Hand up to head — scratching head / bashful (key still 'salute').",
-   "rel": "SPLIT into behind+front parts: upper arm tucks BEHIND the cube, forearm+hand show IN FRONT. Reads as a proper head-scratch now."
+   "rel": "Whole arm IN FRONT of the body (hand reaches the head)."
   },
   {
    "key": "sad",

@@ -82,7 +82,7 @@ const ARML_LABELS = {
   down: { do: "Arm hanging straight down.", rel: "At left side; FRONT (across-body)." },
   wave: { do: "Raised open hand waving.", rel: "Raised at left; FRONT (art includes cross-body part)." },
   hip: { do: "Hand on hip (akimbo).", rel: "Bent to hip; tucks BEHIND." },
-  salute: { do: "Hand up to head — scratching head / bashful (key still 'salute').", rel: "SPLIT into behind+front parts: upper arm tucks BEHIND the cube, forearm+hand show IN FRONT. Reads as a proper head-scratch now." },
+  salute: { do: "Hand up to head — scratching head / bashful (key still 'salute').", rel: "Whole arm IN FRONT of the body (hand reaches the head)." },
   sad: { do: "Limp arm, hand drooping.", rel: "Across body; FRONT." },
   open: { do: "Open palm presented outward.", rel: "Extends out/up at left; tucks BEHIND." },
   hold: { do: "Both-hands holding/cradling across front.", rel: "Crosses the whole front; FRONT (on purpose)." },

@@ -428,19 +428,10 @@ export function RigGifty({
   const pulses = (name: string) => name === "thumbsup" || name === "wave";
   const armKind = (side: "l" | "r", name: string) =>
     (side === "r" ? waveR : waveL) ? "arm_wave" : (pulses(name) ? "arm_pulse" : `arm_${side}`);
-  // Z-class: an arm tucks BEHIND the body unless it's a cross-front pose.
-  // - armFront[side] = explicit FRONT allowlist (used for the LEFT arm, which is
-  //   behind-by-default since it attaches at the side).
-  // - armBehind[side] = explicit BEHIND allowlist (used for the RIGHT arm, which
-  //   extends outward and is front-by-default).
-  // If a side has neither list it stays front. armFront wins if both name it.
-  const behind = (side: "armR" | "armL", name: string) => {
-    const front = SRC.armFront?.[side];
-    const back = SRC.armBehind?.[side];
-    if (front && front.includes(name)) return false;
-    if (front && !back) return true;          // front-list present → behind by default
-    return (back ?? []).includes(name);       // behind-list semantics
-  };
+  // Z-class: arms render in FRONT by default; only poses in the per-side armBehind
+  // allowlist tuck behind the body (used for the right arm's side-attached poses).
+  const behind = (side: "armR" | "armL", name: string) =>
+    (SRC.armBehind?.[side] ?? []).includes(name);
   const armLBehind = behind("armL", armLName);
   const armRBehind = behind("armR", armRName);
   // per-pose x scootch so buried arms clear the body (R nudges right +x, L left −x)
