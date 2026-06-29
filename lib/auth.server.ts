@@ -11,6 +11,18 @@ const trustedOrigins = [APP_URL].filter((o): o is string => !!o);
 if (process.env.NODE_ENV !== "production" || process.env.DEMO_MODE === "true") {
   trustedOrigins.push("http://localhost:3000", "http://localhost:3300");
 }
+// Vercel preview deploys get dynamic *.vercel.app URLs that aren't APP_URL, so
+// auth would reject them as invalid origins. Trust the Vercel wildcard domains —
+// but ONLY on preview deploys (VERCEL_ENV=preview), never in production, so the
+// live site stays locked to its real origin. better-auth supports `*` wildcards.
+if (process.env.VERCEL_ENV === "preview") {
+  trustedOrigins.push(
+    "https://*.vercel.app",
+    "https://*.vercel.dev",
+  );
+  // each preview also has a stable per-deploy URL Vercel exposes via VERCEL_URL
+  if (process.env.VERCEL_URL) trustedOrigins.push(`https://${process.env.VERCEL_URL}`);
+}
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
