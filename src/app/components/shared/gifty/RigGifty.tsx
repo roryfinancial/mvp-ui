@@ -86,7 +86,7 @@ const BROW_POS: Record<BrowPos, { dy: number; rot: number; skewOne?: boolean }> 
   skeptical:  { dy: -0.018, rot: 0, skewOne: true }, // one raised — doubt/smirk
 };
 
-const URL = "/gifty/rig-layers";
+const URL = "/gifty/rig-final";
 const reduced = () =>
   typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 

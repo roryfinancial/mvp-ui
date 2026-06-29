@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..", "..");
-const DIR = path.join(ROOT, "public/gifty/rig-layers");
+const DIR = path.join(ROOT, "public/gifty/rig-final");
 const OUT = path.join(ROOT, "public/gifty/catalog");
 const j = JSON.parse(fs.readFileSync(path.join(DIR, "rig.json"), "utf8"));
 const C = 1024;

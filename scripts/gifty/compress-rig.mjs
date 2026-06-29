@@ -65,7 +65,7 @@ export async function compressRig({
   scale = 1,
   out = path.join(root, "public/gifty/rig-web"),
 } = {}) {
-  const layersDir = path.join(root, "public/gifty/rig-layers");
+  const layersDir = path.join(root, "public/gifty/rig-final");
   const rig = JSON.parse(fs.readFileSync(path.join(layersDir, "rig.json"), "utf8"));
   const carried = carryRigData(rig);
   const names = listLayerFiles(layersDir);
