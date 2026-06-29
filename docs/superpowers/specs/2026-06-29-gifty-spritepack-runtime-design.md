@@ -29,13 +29,19 @@ Plan 1 (`giftyc`) shipped a deterministic **140KB sprite pack** at `mvp-ui/publi
 }
 ```
 
-Frame-name conventions the runtime keys off:
-- **face:** `mouth_<key>` (smile, shy, proud, hmm, talk_ah, talk_oh, talk_eh) and `eyes_<key>` (normal, smug, happy). A face render = one mouth frame + one eyes frame stacked.
+**Face is split into independent sub-channels (decided 2026-06-29).** Verifying the v2 pack revealed the original face channel baked each frame as a *complete face* (eyes+mouth+bow composited together), covering only `mouths×default-eyes + eyes×default-mouth` — so stacking an "eyes" frame over a "mouth" frame would overlay two whole faces. To get true independent expression (any eyes + any mouth + talking, all at once, AI-drivable), giftyc is amended (Task 0.5) to bake the face as **isolated sub-channels** instead. The rig already has isolated part PNGs (`mouth_smile` is a 0.13×0.04 patch, `eye_normal_l` a 0.12×0.15 patch — each registered in place on the 1024 canvas), so each part's alpha bbox gives exact `place` registration for free.
+
+Frame-name conventions the runtime keys off (post Task 0.5):
+- **facebase:** single `facebase` frame = bow + eyebrows (static, drawn under eyes/mouth).
+- **eyes:** `eyes_<key>` (normal, smug, happy) — isolated eyes (+pupils) only.
+- **mouth:** `mouth_<key>` (smile, shy, proud, hmm, talk_ah, talk_oh, talk_eh) — isolated mouth only.
 - **arms:** `armR_<pose>` and `armL_<pose>` (down, wave, thumbsup, fist, salute, open, present, calm, sad, hip, hold). An arms render = one armR + one armL frame stacked.
 - **body:** single `body` frame (the breathe/bob is a runtime CSS transform, not baked).
-- `cell` = pixel rect in the sheet. **`place`** = normalized `{x,y,w,h}` (0..1) bbox on the 1024 canvas — where this frame sits, for cross-channel registration (added in manifest v2; see §5). `ms` always a number; `transitions` always an array (uniform shape — guaranteed by Plan 1).
+- `cell` = pixel rect in the sheet. **`place`** = normalized `{x,y,w,h}` (0..1) bbox on the 1024 canvas — where this frame sits, for cross-channel registration (manifest v2). `ms` always a number; `transitions` always an array.
 
-**Hero note:** the hero is the full default composite (default mouth=smile, eyes=normal, armR=thumbsup, armL=down). It lives in `hero.webp`, a separate one-cell sheet.
+A full Gifty render stacks, in z-order: **body → armL → armR → facebase → eyes → mouth**. Each is one cropped div positioned by its `place`.
+
+**Hero note:** the hero is the full default composite (default mouth=smile, eyes=normal, armR=thumbsup, armL=down). It lives in `hero.webp`, a separate one-cell sheet — unchanged by the face split.
 
 ## 3. Prop surface (must match `RigGifty` exactly — drop-in)
 
@@ -44,9 +50,9 @@ RigGifty({ size=320, mood="normal", talking=false, wave=false,
            armR?, armL?, legs?, brow="neutral", eyes?, mouth?, tier="web" })
 ```
 
-`SpritePackPlayer` accepts the same props. v1 mapping:
-- `mood` → resolves to an `(eyes, mouth)` pair via a small mood table (same moods `RigGifty` supports). Direct `eyes`/`mouth` props override `mood` (as today).
-- `talking` → cycles the mouth through the `talk_*` visemes (110ms/frame, matching `RigGifty`'s `TALK_CYCLE`).
+`SpritePackPlayer` accepts the same props. v1 mapping (with the face sub-channel split, eyes and mouth are now fully independent):
+- `mood` → resolves to an `(eyes, mouth)` pair via a small mood table (same moods `RigGifty` supports). Direct `eyes`/`mouth` props override `mood` (as today). Because eyes and mouth are independent sub-channels, any combination renders — including expressive eyes WHILE talking.
+- `talking` → cycles the **mouth** sub-channel through the `talk_*` visemes (110ms/frame, matching `RigGifty`'s `TALK_CYCLE`); the eyes sub-channel is unaffected, so Gifty keeps his mood's eyes while talking.
 - `wave` → plays the right arm `wave` pose (v1: snap to wave + a CSS swing transform; baked wave-clip frames are a future giftyc addition).
 - `armR`/`armL`/`legs` → direct pose selection (legs has only `body` baked in v1 → ignored/no-op, documented).
 - `brow` → **not in the pack** (eyebrows are baked into the face band, not independently posable). v1: accepted but no-op, documented. (Independent brows would need a giftyc brow channel — out of scope.)
@@ -74,9 +80,9 @@ Each unit is independently testable:
 
 ## 5. Render model
 
-- A fixed-size square box (`size`×`size`). Inside, **three absolutely-positioned channel layers**, z-ordered body → arms → face (matching the bake band order, so the stack reproduces the full composite).
-- Each channel layer is a `<div>` (or two, for the two-frame channels) with `background-image: url(<sheet>)` and `background-position/size` computed by `frameStyle` to crop the active cell, scaled to fill the box. This is the same atlas-crop technique the current `spriteStyle.ts`/`useWebRig` already uses — proven, no canvas needed.
-- **face** = two stacked divs (mouth cell + eyes cell). **arms** = two stacked divs (armR + armL). **body** = one div.
+- A fixed-size square box (`size`×`size`). Inside, **absolutely-positioned channel layers**, z-ordered body → armL → armR → facebase → eyes → mouth (matching the bake draw order, so the stack reproduces the full composite).
+- Each layer is a `<div>` with `background-image: url(<sheet>)` and `background-position/size` computed by `frameStyle`, positioned by its frame's `place`. This is the same atlas-crop technique `spriteStyle.ts`/`useWebRig` already uses — proven, no canvas needed.
+- **body** = one div. **arms** = two divs (armL, armR). **facebase** = one div (bow+brows). **eyes** = one div. **mouth** = one div. ~6 cheap divs total, no masks.
 - Frames are placed using each frame's **`place`** field — its normalized bbox on the 1024 canvas (`{x,y,w,h}` in 0..1) — so channels register correctly over each other. The runtime sizes/positions each channel div to `place * size`, and crops the sheet cell into it via `frameStyle` (mirrors the existing `spriteCss` `{place, cell, atlas, size}` signature).
 
 **Manifest v2 amendment (giftyc Task 0):** the v1 pack records only `cell` (sheet coords), not where the frame sits on the canvas — the runtime can't register channels without that. giftyc is amended to add `place: {x,y,w,h}` (normalized 0..1, from the alpha bbox `crop_to_alpha` already computes) to every frame and the hero, and bump `version` to `2`. The golden pack is regenerated and re-verified. The runtime consumes v2; it refuses other major versions.
@@ -112,9 +118,9 @@ If the pack fetch fails, the hero frame stays (graceful degradation — Gifty st
 
 **Unchanged:** the prop surface (AI drives it identically); the pack format; `giftyc`.
 
-## 10. Open question carried from Plan 1
+## 10. Pupils / gaze (resolved)
 
-The pack bakes no independent pupils frame (face = mouths×default-eyes + eyes×default-mouth). If the product wants the `smug` mood's pupils to differ from `normal`, the `eyes_smug` frame already encodes that (eyes baked with their own pupils), so **mood-level pupil variation works**; what's missing is *independent* pupil drift/gaze. v1 accepts static pupils (whatever the eyes frame contains). If gaze is wanted later, add a giftyc pupils channel. **Decision for v1: static pupils, no independent gaze.**
+With the face sub-channel split (§2, Task 0.5), the `eyes` sub-channel bakes each eyes variant *with its own pupils* (`eyes_smug` includes smug pupils). So **eyes expression — including pupils — is fully independent and selectable.** What's still not in v1 is *animated* pupil drift/gaze (the pupils don't move within an eyes frame). v1 accepts static pupils per eyes frame. Animated gaze would need a separate pupils sub-channel; deferred. **Decision for v1: independent eyes (with baked pupils), no animated gaze.**
 
 ## 11. Success criteria
 

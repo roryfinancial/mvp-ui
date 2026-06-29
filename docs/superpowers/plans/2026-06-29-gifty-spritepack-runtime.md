@@ -139,6 +139,130 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 
 ---
 
+### Task 0.5: giftyc — split face into facebase/eyes/mouth sub-channels
+
+**Why:** Each current `face` frame is a *complete face* (bow+brows+eyes+pupils+mouth composited), so the runtime can't move eyes and mouth independently (talking would freeze the mood's eyes; arbitrary eyes+mouth combos aren't baked). Splitting the face into isolated sub-channels — `facebase` (bow+brows), `eyes`, `mouth` — gives true independent expression. The rig has isolated part PNGs already registered on the canvas, so `place` (Task 0) handles registration for free.
+
+**Files:**
+- Modify: `giftyc/src/build.rs` (replace the single face channel with 3 sub-channels; new band-filter helpers)
+- Test: `giftyc/tests/build_e2e.rs` (assert the new sheet set + determinism)
+- Regenerate: `mvp-ui/public/gifty/packs/256/*` (golden pack: face.webp → facebase/eyes/mouth.webp)
+
+**Interfaces:**
+- Produces sheets: `facebase.webp`, `eyes.webp`, `mouth.webp` (replacing `face.webp`), plus unchanged `arms.webp`, `body.webp`, `hero.webp`.
+- Produces manifest channels: `facebase` (1 frame `facebase`), `eyes` (frames `eyes_<key>`), `mouth` (frames `mouth_<key>`), `arms`, `body`. Still `version: 2`.
+
+- [ ] **Step 1: Update the e2e test for the new sheet set**
+
+In `giftyc/tests/build_e2e.rs`, change the asserted file list from `["manifest.json","face.webp","arms.webp","body.webp","hero.webp"]` to `["manifest.json","facebase.webp","eyes.webp","mouth.webp","arms.webp","body.webp","hero.webp"]` (both the existence loop and the byte-identity loop). Add an assertion that the manifest contains a `facebase`, `eyes`, and `mouth` channel:
+```rust
+let manifest: String = std::fs::read_to_string(tmp.join("a").join("manifest.json")).unwrap();
+for ch in ["\"name\": \"facebase\"", "\"name\": \"eyes\"", "\"name\": \"mouth\""] {
+    assert!(manifest.contains(ch), "manifest missing channel {ch}");
+}
+```
+
+- [ ] **Step 2: Run to verify failure**
+
+Run: `cd giftyc && GIFTYC_RIG=/Users/aap/Projects/Rory/mvp-ui/public/gifty/rig-final cargo test --test build_e2e 2>&1 | head -20`
+Expected: FAIL — `face.webp` no longer written / new channels absent.
+
+- [ ] **Step 3: Add the three sub-channel band helpers in build.rs**
+
+Replace `face_layers` with three helpers (each returns the isolated layers for that sub-channel). Note the selection: `facebase` ignores eyes/mouth; `eyes` is just the eyes(+pupils); `mouth` is just the mouth:
+```rust
+/// facebase: bow + eyebrows only (static under the eyes/mouth).
+fn facebase_layers(_rig: &Rig, _sel: &Selection) -> Result<Vec<String>> {
+    Ok(vec!["bow".into(), "eyebrow_l".into(), "eyebrow_r".into()])
+}
+/// eyes: the eye pair (+ pupils if present) for the selected eyes key. No bow/brows/mouth.
+fn eyes_layers(rig: &Rig, sel: &Selection) -> Result<Vec<String>> {
+    let e = rig.eyes.get(&sel.eyes)
+        .ok_or_else(|| anyhow::anyhow!("unknown eyes key: {}", sel.eyes))?;
+    let mut v = vec![e.l.clone(), e.r.clone()];
+    if let Some(p) = rig.pupils.get(&sel.pupils) { v.push(p.l.clone()); v.push(p.r.clone()); }
+    Ok(v)
+}
+/// mouth: just the mouth for the selected mouth key.
+fn mouth_layers(rig: &Rig, sel: &Selection) -> Result<Vec<String>> {
+    let m = rig.mouths.get(&sel.mouth)
+        .ok_or_else(|| anyhow::anyhow!("unknown mouth key: {}", sel.mouth))?;
+    Ok(vec![m.clone()])
+}
+```
+(Leave the old `face_layers` removed; nothing else references it after Step 4.)
+
+- [ ] **Step 4: Rebuild the channel assembly in build_pack**
+
+Replace the FACE block (the `face_states` / `let face = bake_channel(... &face_layers)` section) and the later `face_frames` line with three sub-channel bakes. The `bake_channel`, `pack_and_write`, `place` machinery is unchanged:
+```rust
+    // FACEBASE: single static state (bow + eyebrows).
+    let facebase_states = vec![("facebase".to_string(), sel_with(d, None, None))];
+    let facebase = bake_channel(&rig, rig_dir, t, &facebase_states, &facebase_layers)?;
+
+    // EYES: each eyes variant (isolated).
+    let mut eyes_states = Vec::new();
+    let mut eyes_keys: Vec<_> = rig.eyes.keys().cloned().collect(); eyes_keys.sort();
+    for e in &eyes_keys { eyes_states.push((format!("eyes_{e}"), sel_with(d, None, Some(e)))); }
+    let eyes_ch = bake_channel(&rig, rig_dir, t, &eyes_states, &eyes_layers)?;
+
+    // MOUTH: each mouth variant (isolated, incl. talk visemes).
+    let mut mouth_states = Vec::new();
+    let mut mouth_keys: Vec<_> = rig.mouths.keys().cloned().collect(); mouth_keys.sort();
+    for m in &mouth_keys { mouth_states.push((format!("mouth_{m}"), sel_with(d, Some(m), None))); }
+    let mouth_ch = bake_channel(&rig, rig_dir, t, &mouth_states, &mouth_layers)?;
+```
+Then replace the `let face_frames = pack_and_write(out_dir, "face.webp", &face)?;` line and the face entry in the `Manifest { channels: vec![...] }` construction. Write the three sheets:
+```rust
+    let facebase_frames = pack_and_write(out_dir, "facebase.webp", &facebase)?;
+    let eyes_frames = pack_and_write(out_dir, "eyes.webp", &eyes_ch)?;
+    let mouth_frames = pack_and_write(out_dir, "mouth.webp", &mouth_ch)?;
+```
+And in the manifest `channels` vec, replace the single face `ChannelEntry` with three (keep arms + body entries as they are):
+```rust
+        ChannelEntry { name: "facebase".into(), sheet: "facebase.webp".into(), frames: facebase_frames, transitions: vec![] },
+        ChannelEntry { name: "eyes".into(),     sheet: "eyes.webp".into(),     frames: eyes_frames,     transitions: vec![] },
+        ChannelEntry { name: "mouth".into(),    sheet: "mouth.webp".into(),    frames: mouth_frames,    transitions: vec![] },
+```
+
+- [ ] **Step 5: Full suite**
+
+Run: `cd giftyc && GIFTYC_RIG=/Users/aap/Projects/Rory/mvp-ui/public/gifty/rig-final cargo test 2>&1 | tail -20`
+Expected: all green — build_e2e (new sheets, byte-identical across two builds), spike, manifest, tier, pack. `cargo build` warning-free.
+
+- [ ] **Step 6: Regenerate the golden pack + verify**
+
+```bash
+cd giftyc && cargo build --release
+# remove the now-stale face.webp from the golden dir first
+rm -f /Users/aap/Projects/Rory/mvp-ui/public/gifty/packs/256/face.webp
+./target/release/giftyc build --rig /Users/aap/Projects/Rory/mvp-ui/public/gifty/rig-final --out /Users/aap/Projects/Rory/mvp-ui/public/gifty/packs/256 --tier 256
+./target/release/giftyc verify --rig /Users/aap/Projects/Rory/mvp-ui/public/gifty/rig-final --golden /Users/aap/Projects/Rory/mvp-ui/public/gifty/packs/256 --tier 256
+du -sk /Users/aap/Projects/Rory/mvp-ui/public/gifty/packs/256
+ls -la /Users/aap/Projects/Rory/mvp-ui/public/gifty/packs/256
+```
+Expected: `verify OK`. New sheet set (facebase/eyes/mouth/arms/body/hero + manifest). Record total size — isolated face parts should keep it near/under the prior ~140KB (smaller per-sheet content). Confirm `face.webp` is gone.
+
+- [ ] **Step 7: Commit (two repos)**
+
+giftyc:
+```bash
+cd giftyc && git add src/build.rs tests/build_e2e.rs
+git commit -m "feat(giftyc): split face into facebase/eyes/mouth sub-channels for independent expression
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
+```
+mvp-ui (stage ONLY the pack dir — confirm with git status):
+```bash
+cd /Users/aap/Projects/Rory/mvp-ui && git add public/gifty/packs/256
+git status   # confirm ONLY packs/256 files staged (facebase/eyes/mouth added, face.webp removed, manifest changed)
+git commit -m "feat(gifty): regenerate golden pack with split face sub-channels
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
+```
+
+---
+
 ### Task 1: Manifest TS types + `frameStyle` pure module
 
 **Files:**
@@ -360,8 +484,8 @@ export function useSpritePack(): { hero: HeroState | null; pack: LoadedPack | nu
       await loadImg(`${BASE}/hero.webp`);
       if (!alive) return;
       setHero({ url: `${BASE}/hero.webp`, frame: manifest.hero });
-      // then channel sheets
-      const names = ["face", "arms", "body"] as const;
+      // then channel sheets (face split into facebase/eyes/mouth sub-channels)
+      const names = ["facebase", "eyes", "mouth", "arms", "body"] as const;
       const dims = await Promise.all(names.map((n) => loadImg(`${BASE}/${n}.webp`)));
       if (!alive) return;
       const sheets: Record<string, SheetImg> = {};
@@ -391,7 +515,9 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 
 ---
 
-### Task 4: `SpritePackPlayer` component (hero-first, 3-channel stack, talk/wave/breathe)
+### Task 4: `SpritePackPlayer` component (hero-first, sub-channel stack, talk/wave/breathe)
+
+> Render model: stacks body → armL → armR → facebase → eyes → mouth, each one cropped div positioned by its frame `place`. Eyes and mouth are independent, so talking cycles the mouth while the mood's eyes stay put.
 
 **Files:**
 - Create: `mvp-ui/src/app/components/shared/gifty/spritepack/SpritePackPlayer.tsx`
@@ -474,9 +600,12 @@ export function SpritePackPlayer({
     );
   }
 
-  const faceCh = pack.manifest.channels.find((c) => c.name === "face");
-  const armsCh = pack.manifest.channels.find((c) => c.name === "arms");
-  const bodyCh = pack.manifest.channels.find((c) => c.name === "body");
+  const ch = (name: string) => pack.manifest.channels.find((c) => c.name === name);
+  const facebaseCh = ch("facebase");
+  const eyesCh = ch("eyes");
+  const mouthCh = ch("mouth");
+  const armsCh = ch("arms");
+  const bodyCh = ch("body");
 
   const layer = (chName: string, frame: Frame | undefined, key: string, extra?: React.CSSProperties) => {
     if (!frame) return null;
@@ -487,16 +616,15 @@ export function SpritePackPlayer({
 
   const waveSwing = wave ? `rotate(${Math.sin(t * 8) * 12}deg)` : undefined;
 
+  // z-order: body → armL → armR → facebase → eyes → mouth (matches bake draw order)
   return (
     <div style={box}>
-      {/* body */}
       {layer("body", findFrame(bodyCh, "body"), "body")}
-      {/* arms (armL behind, armR front to match band order) */}
       {layer("arms", findFrame(armsCh, `armL_${armLKey}`), "armL")}
       {layer("arms", findFrame(armsCh, `armR_${armRKey}`), "armR", waveSwing ? { transform: waveSwing, transformOrigin: "30% 30%" } : undefined)}
-      {/* face: eyes then mouth */}
-      {layer("face", findFrame(faceCh, `eyes_${eyesKey}`), "eyes")}
-      {layer("face", findFrame(faceCh, `mouth_${mouthKey}`), "mouth")}
+      {layer("facebase", findFrame(facebaseCh, "facebase"), "facebase")}
+      {layer("eyes", findFrame(eyesCh, `eyes_${eyesKey}`), "eyes")}
+      {layer("mouth", findFrame(mouthCh, `mouth_${mouthKey}`), "mouth")}
     </div>
   );
 }
