@@ -12,3 +12,7 @@ tsconfig.tsbuildinfo
 # Demo (SQLite) database
 prisma/*.db
 prisma/*.db-journal
+
+# macOS
+.DS_Store
+**/.DS_Store
