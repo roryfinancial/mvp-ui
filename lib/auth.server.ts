@@ -6,7 +6,15 @@ import { prisma } from "./prisma";
 // BETTER_AUTH_URL lets local dev / demo override the production app URL without
 // touching .env. localhost origins are trusted only outside production (or in
 // demo mode) so the auth flow works on any dev port.
-const APP_URL = process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL;
+// On Vercel PREVIEW deploys, pin the auth baseURL to the STABLE per-branch URL
+// (VERCEL_BRANCH_URL, e.g. mvp-ui-git-preview-<scope>.vercel.app) instead of the
+// random per-deploy hash. That gives ONE fixed callback URL to register with the
+// OAuth providers once, so social login works on every preview-branch deploy.
+const PREVIEW_URL =
+  process.env.VERCEL_ENV === "preview" && process.env.VERCEL_BRANCH_URL
+    ? `https://${process.env.VERCEL_BRANCH_URL}`
+    : undefined;
+const APP_URL = PREVIEW_URL ?? process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL;
 const trustedOrigins = [APP_URL].filter((o): o is string => !!o);
 if (process.env.NODE_ENV !== "production" || process.env.DEMO_MODE === "true") {
   trustedOrigins.push("http://localhost:3000", "http://localhost:3300");
