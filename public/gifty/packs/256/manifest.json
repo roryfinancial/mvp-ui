@@ -1,0 +1,328 @@
+{
+  "version": 1,
+  "canvas": 1024,
+  "tier": 256,
+  "hero": {
+    "name": "hero",
+    "cell": {
+      "sx": 2,
+      "sy": 2,
+      "sw": 173,
+      "sh": 214
+    },
+    "ms": 0
+  },
+  "channels": [
+    {
+      "name": "face",
+      "sheet": "face.webp",
+      "frames": [
+        {
+          "name": "mouth_hmm",
+          "cell": {
+            "sx": 2,
+            "sy": 2,
+            "sw": 122,
+            "sh": 116
+          },
+          "ms": 0
+        },
+        {
+          "name": "mouth_proud",
+          "cell": {
+            "sx": 126,
+            "sy": 2,
+            "sw": 122,
+            "sh": 134
+          },
+          "ms": 0
+        },
+        {
+          "name": "mouth_shy",
+          "cell": {
+            "sx": 250,
+            "sy": 2,
+            "sw": 122,
+            "sh": 125
+          },
+          "ms": 0
+        },
+        {
+          "name": "mouth_smile",
+          "cell": {
+            "sx": 374,
+            "sy": 2,
+            "sw": 122,
+            "sh": 125
+          },
+          "ms": 0
+        },
+        {
+          "name": "mouth_talk_ah",
+          "cell": {
+            "sx": 498,
+            "sy": 2,
+            "sw": 122,
+            "sh": 141
+          },
+          "ms": 0
+        },
+        {
+          "name": "mouth_talk_eh",
+          "cell": {
+            "sx": 622,
+            "sy": 2,
+            "sw": 122,
+            "sh": 138
+          },
+          "ms": 0
+        },
+        {
+          "name": "mouth_talk_oh",
+          "cell": {
+            "sx": 746,
+            "sy": 2,
+            "sw": 122,
+            "sh": 141
+          },
+          "ms": 0
+        },
+        {
+          "name": "eyes_happy",
+          "cell": {
+            "sx": 870,
+            "sy": 2,
+            "sw": 123,
+            "sh": 125
+          },
+          "ms": 0
+        },
+        {
+          "name": "eyes_normal",
+          "cell": {
+            "sx": 995,
+            "sy": 2,
+            "sw": 122,
+            "sh": 125
+          },
+          "ms": 0
+        },
+        {
+          "name": "eyes_smug",
+          "cell": {
+            "sx": 1119,
+            "sy": 2,
+            "sw": 122,
+            "sh": 125
+          },
+          "ms": 0
+        }
+      ],
+      "transitions": []
+    },
+    {
+      "name": "arms",
+      "sheet": "arms.webp",
+      "frames": [
+        {
+          "name": "armR_calm",
+          "cell": {
+            "sx": 2,
+            "sy": 2,
+            "sw": 158,
+            "sh": 81
+          },
+          "ms": 0
+        },
+        {
+          "name": "armR_down",
+          "cell": {
+            "sx": 162,
+            "sy": 2,
+            "sw": 162,
+            "sh": 81
+          },
+          "ms": 0
+        },
+        {
+          "name": "armR_fist",
+          "cell": {
+            "sx": 326,
+            "sy": 2,
+            "sw": 174,
+            "sh": 92
+          },
+          "ms": 0
+        },
+        {
+          "name": "armR_open",
+          "cell": {
+            "sx": 502,
+            "sy": 2,
+            "sw": 200,
+            "sh": 176
+          },
+          "ms": 0
+        },
+        {
+          "name": "armR_present",
+          "cell": {
+            "sx": 704,
+            "sy": 2,
+            "sw": 196,
+            "sh": 81
+          },
+          "ms": 0
+        },
+        {
+          "name": "armR_sad",
+          "cell": {
+            "sx": 902,
+            "sy": 2,
+            "sw": 155,
+            "sh": 81
+          },
+          "ms": 0
+        },
+        {
+          "name": "armR_salute",
+          "cell": {
+            "sx": 1059,
+            "sy": 2,
+            "sw": 162,
+            "sh": 81
+          },
+          "ms": 0
+        },
+        {
+          "name": "armR_thumbsup",
+          "cell": {
+            "sx": 1223,
+            "sy": 2,
+            "sw": 173,
+            "sh": 92
+          },
+          "ms": 0
+        },
+        {
+          "name": "armR_wave",
+          "cell": {
+            "sx": 1398,
+            "sy": 2,
+            "sw": 197,
+            "sh": 133
+          },
+          "ms": 0
+        },
+        {
+          "name": "armL_calm",
+          "cell": {
+            "sx": 1597,
+            "sy": 2,
+            "sw": 174,
+            "sh": 93
+          },
+          "ms": 0
+        },
+        {
+          "name": "armL_down",
+          "cell": {
+            "sx": 1773,
+            "sy": 2,
+            "sw": 173,
+            "sh": 92
+          },
+          "ms": 0
+        },
+        {
+          "name": "armL_hip",
+          "cell": {
+            "sx": 1948,
+            "sy": 2,
+            "sw": 207,
+            "sh": 112
+          },
+          "ms": 0
+        },
+        {
+          "name": "armL_hold",
+          "cell": {
+            "sx": 2157,
+            "sy": 2,
+            "sw": 138,
+            "sh": 77
+          },
+          "ms": 0
+        },
+        {
+          "name": "armL_open",
+          "cell": {
+            "sx": 2297,
+            "sy": 2,
+            "sw": 221,
+            "sh": 142
+          },
+          "ms": 0
+        },
+        {
+          "name": "armL_sad",
+          "cell": {
+            "sx": 2520,
+            "sy": 2,
+            "sw": 170,
+            "sh": 91
+          },
+          "ms": 0
+        },
+        {
+          "name": "armL_salute",
+          "cell": {
+            "sx": 2692,
+            "sy": 2,
+            "sw": 192,
+            "sh": 119
+          },
+          "ms": 0
+        },
+        {
+          "name": "armL_thumbsup",
+          "cell": {
+            "sx": 2886,
+            "sy": 2,
+            "sw": 202,
+            "sh": 84
+          },
+          "ms": 0
+        },
+        {
+          "name": "armL_wave",
+          "cell": {
+            "sx": 3090,
+            "sy": 2,
+            "sw": 173,
+            "sh": 92
+          },
+          "ms": 0
+        }
+      ],
+      "transitions": []
+    },
+    {
+      "name": "body",
+      "sheet": "body.webp",
+      "frames": [
+        {
+          "name": "body",
+          "cell": {
+            "sx": 2,
+            "sy": 2,
+            "sw": 150,
+            "sh": 171
+          },
+          "ms": 0
+        }
+      ],
+      "transitions": []
+    }
+  ]
+}

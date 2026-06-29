@@ -20,6 +20,8 @@
     "demo": "DEMO_MODE=true DATABASE_PROVIDER=sqlite DATABASE_URL=\"file:$PWD/prisma/demo.db\" next dev",
     "test:rig": "node --test scripts/gifty/lib/*.test.mjs",
     "rig:compress": "node scripts/gifty/compress-rig.mjs",
+    "rig:build": "giftyc build --rig public/gifty/rig-final --out public/gifty/packs/256 --tier 256",
+    "rig:verify": "giftyc verify --rig public/gifty/rig-final --golden public/gifty/packs/256 --tier 256",
     "gifty:editor": "python3 scripts/gifty/part-editor/server.py"
   },
   "dependencies": {
