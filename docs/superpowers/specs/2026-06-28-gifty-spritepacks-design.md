@@ -69,6 +69,7 @@ At 512px the full catalog is ~270KB. **The entire any→any system at mobile res
 LAYER 1 — Asset Pipeline   → RUST (new, replaces Node+Python+sharp)
   rig-final/ PNGs + rig.json  →  giftyc  →  gifty.pack (manifest + channel WebP sheets)
   deterministic, golden-image tested, reproducible CLI
+  STANDALONE crate/repo; mvp-ui invokes it build-time with path args (§8)
 
 LAYER 2 — Runtime           → REACT/TS (RigGifty compositor replaced by SpritePackPlayer)
   plays pre-flattened idle frame instantly; lazy-loads pack;
@@ -127,6 +128,13 @@ Channel-independence preserves the idle hero as a one-layer instant paint while 
 
 Replaces `scripts/gifty/*` (Node `.mjs` + Python). Satisfies consistency, determinism, and performance motivations.
 
+**Placement: standalone crate/repo.** `giftyc` lives in its own repo with its own `Cargo.toml`, CI, and version — not inside mvp-ui or the mvp-rust workspace. mvp-ui consumes it as a vendored binary or `cargo install`'d tool; `npm run rig:build` invokes the installed `giftyc` with input/output paths passed as CLI args, so the tool stays repo-agnostic.
+
+- **Trade-off accepted:** version coordination (mvp-ui pins a `giftyc` version) and contributors needing the tool installed to rebuild packs, in exchange for clean separation and reusability with no entanglement in either repo's churn.
+- **Runtime is unaffected:** `giftyc` is build-time-only; the browser still fetches static `/gifty/packs/...` with no API/service URL.
+
+I/O is path-driven (repo-agnostic): input `--rig <path-to>/rig-final/`, output `--out <path-to>/public/gifty/packs/`.
+
 Steps:
 1. Read `rig-final/` PNGs + `rig.json` (existing source of truth; never overwritten).
 2. Composite each channel's named states into flat frames (`image` + `imageproc` crates; no sharp/Python).
@@ -162,7 +170,7 @@ Budgets are manifest-tunable (tier, channel inclusion) rather than hardcoded.
 
 **In scope (v1):**
 - `gifty.pack` format + versioned manifest schema.
-- `giftyc` Rust pipeline (build + verify + spike), golden-image tested.
+- `giftyc` Rust pipeline (build + verify + spike), golden-image tested, as a **standalone crate/repo** consumed by mvp-ui via path-driven CLI (§8).
 - `SpritePackPlayer` React runtime replacing the `RigGifty` compositor, prop-compatible.
 - Fidelity spike as the first implementation task.
 - Channels: Face, Arms, Body (Legs folded into Body).
