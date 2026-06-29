@@ -4,7 +4,7 @@
  * and the base PNGs, DESTROYING work this script knows nothing about:
  *   - eyelid / lashline / eyerim / eyemask layers (procedurally generated)
  *   - the puppy look, the mirrored pupil, the despeckle cleanup
- *   - all arm/leg POSE variants (armR_*/armL_*/legL_*/legR_*)
+ *   - all arm/leg POSE variants (armR_, armL_, legL_, legR_ …)
  *   - rig.json behavior: armBehind/armNudge/legRise/puppyRest/eyesClosed/socketsByMood,
  *     the corrected z-order (legs before body), pupilRest/lidRest tuning, etc.
  * `public/gifty/rig-layers/` + `rig.json` is now the SOURCE OF TRUTH; edit it directly
