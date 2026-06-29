@@ -1,0 +1,44 @@
+{
+  "_comment": "Gifty audio. voice/* = ElevenLabs (Gifty1 voice); sfx/* = chat-specific cues only (general UI sounds stay in src/lib/sounds.ts, procedural). Pool = pick one at random; single src = one cue.",
+  "base": "/gifty/audio",
+  "voice": {
+    "greeting": {
+      "pool": [
+        "voice/greetings/gifty-1.mp3", "voice/greetings/gifty-2.mp3", "voice/greetings/gifty-3.mp3",
+        "voice/greetings/gifty-4.mp3", "voice/greetings/gifty-5.mp3", "voice/greetings/gifty-6.mp3",
+        "voice/greetings/hey-1.mp3", "voice/greetings/hey-2.mp3", "voice/greetings/hey-3.mp3"
+      ],
+      "use": "play one at random when the user opens/clicks Gifty's face to start a chat"
+    },
+    "backchannel": {
+      "pool": [
+        "voice/backchannel/ack-1.mp3", "voice/backchannel/ack-2.mp3", "voice/backchannel/ack-3.mp3",
+        "voice/backchannel/ack-4.mp3", "voice/backchannel/ack-5.mp3", "voice/backchannel/ack-6.mp3"
+      ],
+      "use": "soft hum/ack ('hmm', 'mm', 'oh') — sprinkle occasionally when Gifty starts replying, not every message"
+    },
+    "onboarding": {
+      "pool": ["voice/onboarding/welcome-1.mp3", "voice/onboarding/welcome-2.mp3"],
+      "use": "onboarding screen welcome line"
+    },
+    "lines": {
+      "_comment": "1:1 named catchphrases for specific app moments (not a random pool).",
+      "welcome":   "voice/lines/welcome.mp3",
+      "goalSet":   "voice/lines/goal-set.mp3",
+      "giftIn":    "voice/lines/gift-received.mp3",
+      "milestone": "voice/lines/milestone.mp3",
+      "empty":     "voice/lines/empty-state.mp3",
+      "lowFees":   "voice/lines/tagline-lowfees.mp3"
+    }
+  },
+  "sfx": {
+    "_comment": "ONLY chat-specific cues. General UI sounds (click/success/error/pop/etc.) are procedural in src/lib/sounds.ts — do not duplicate them here.",
+    "msgSend":        { "src": "sfx/msg-send.mp3",        "use": "user sends a message" },
+    "msgReceive":     { "src": "sfx/msg-receive.mp3",     "use": "agent message arrives" },
+    "thinking":       { "src": "sfx/thinking-pulse.mp3",  "loop": true, "use": "loop softly while the agent is generating; stop on first token" },
+    "typingTick":     { "src": "sfx/typing-tick.mp3",     "use": "subtle per-chunk tick while streaming (throttle, not every char)" },
+    "typingEllipsis": { "src": "sfx/typing-ellipsis.mp3", "use": "the '…' bounce for a 'Gifty is typing' indicator" },
+    "panelOpen":      { "src": "sfx/panel-open.mp3",      "use": "conversation panel opens" },
+    "panelClose":     { "src": "sfx/panel-close.mp3",     "use": "conversation panel closes" }
+  }
+}

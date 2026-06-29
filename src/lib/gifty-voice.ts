@@ -1,75 +1,109 @@
-// Gifty voice-over playback — plays the recorded ElevenLabs greeting/reaction
-// clips (mp3s in /public/gifty/voice). Respects the SAME mute toggle as the
-// procedural Sounds (localStorage "rory_sounds"), never autoplays, and rate-limits
-// so rapid clicks don't stack overlapping audio.
+// Gifty audio playback — recorded ElevenLabs voice clips + chat-specific SFX
+// (see /public/gifty/audio/manifest.json). General UI sounds stay procedural in
+// ./sounds. Respects the SAME mute toggle ("rory_sounds"), never autoplays, and
+// rate-limits voice so rapid clicks don't stack overlapping audio.
 import { isSoundMuted } from "./sounds";
 
-const BASE = "/gifty/voice";
+const BASE = "/gifty/audio";
 
-// Pools of interchangeable clips. The face-icon click picks one at random from
-// `greetings`. Fill `greetings` with the chosen short reaction clips once selected
-// (e.g. greetings/gifty-1.mp3, hey-1.mp3, …). Single-purpose lines below are 1:1.
+// Random-pick voice pools (interchangeable clips for one event).
 const POOLS = {
-  greetings: [
-    // populated from public/gifty/voice/greetings/ once the keepers are chosen
-  ] as string[],
-};
+  greeting: [
+    "voice/greetings/gifty-1.mp3", "voice/greetings/gifty-2.mp3", "voice/greetings/gifty-3.mp3",
+    "voice/greetings/gifty-4.mp3", "voice/greetings/gifty-5.mp3", "voice/greetings/gifty-6.mp3",
+    "voice/greetings/hey-1.mp3", "voice/greetings/hey-2.mp3", "voice/greetings/hey-3.mp3",
+  ],
+  backchannel: [
+    "voice/backchannel/ack-1.mp3", "voice/backchannel/ack-2.mp3", "voice/backchannel/ack-3.mp3",
+    "voice/backchannel/ack-4.mp3", "voice/backchannel/ack-5.mp3", "voice/backchannel/ack-6.mp3",
+  ],
+  onboarding: ["voice/onboarding/welcome-1.mp3", "voice/onboarding/welcome-2.mp3"],
+} satisfies Record<string, string[]>;
+type Pool = keyof typeof POOLS;
 
-// Single-purpose lines for specific app moments (1:1, not a random pool).
+// 1:1 named catchphrase lines for specific app moments.
 const LINES = {
-  welcome: `${BASE}/01_welcome.mp3`,
-  goalSet: `${BASE}/02_goal_set.mp3`,
-  giftIn: `${BASE}/03_gift_in.mp3`,
-  milestone: `${BASE}/04_milestone.mp3`,
-  empty: `${BASE}/05_empty.mp3`,
-  lowFees: `${BASE}/06_lowfees.mp3`,
-} as const;
-
+  welcome: "voice/lines/welcome.mp3",
+  goalSet: "voice/lines/goal-set.mp3",
+  giftIn: "voice/lines/gift-received.mp3",
+  milestone: "voice/lines/milestone.mp3",
+  empty: "voice/lines/empty-state.mp3",
+  lowFees: "voice/lines/tagline-lowfees.mp3",
+} satisfies Record<string, string>;
 export type GiftyLine = keyof typeof LINES;
 
-const COOLDOWN_MS = 1200;        // ignore re-triggers within this window
-let lastPlayed = 0;
-let current: HTMLAudioElement | null = null;
-let lastGreetingSrc: string | null = null;   // avoid repeating the same greeting twice
+// Chat-specific SFX (general UI sounds live in ./sounds, procedural).
+const SFX = {
+  msgSend: "sfx/msg-send.mp3",
+  msgReceive: "sfx/msg-receive.mp3",
+  typingTick: "sfx/typing-tick.mp3",
+  typingEllipsis: "sfx/typing-ellipsis.mp3",
+  panelOpen: "sfx/panel-open.mp3",
+  panelClose: "sfx/panel-close.mp3",
+} satisfies Record<string, string>;
+export type GiftySfx = keyof typeof SFX;
+const THINKING_SRC = "sfx/thinking-pulse.mp3";
 
-function canPlay(): boolean {
-  if (typeof window === "undefined") return false;
-  if (isSoundMuted()) return false;
+const url = (rel: string) => `${BASE}/${rel}`;
+
+const VOICE_COOLDOWN_MS = 1200;   // voice never stacks; UI SFX are exempt
+let lastVoiceAt = 0;
+let currentVoice: HTMLAudioElement | null = null;
+const lastFromPool: Partial<Record<Pool, string>> = {};
+
+function muted(): boolean {
+  return typeof window === "undefined" || isSoundMuted();
+}
+
+function playVoice(rel: string): void {
   const now = Date.now();
-  if (now - lastPlayed < COOLDOWN_MS) return false;
-  lastPlayed = now;
-  return true;
-}
-
-function play(src: string): void {
-  // stop any clip still playing so they never overlap
-  if (current) { current.pause(); current = null; }
-  const a = new Audio(src);
+  if (muted() || now - lastVoiceAt < VOICE_COOLDOWN_MS) return;
+  lastVoiceAt = now;
+  if (currentVoice) { currentVoice.pause(); currentVoice = null; }
+  const a = new Audio(url(rel));
   a.volume = 0.9;
-  current = a;
-  // play() returns a promise that rejects if the browser blocks it — swallow it;
-  // this is always user-gesture-initiated (a click), so it normally succeeds.
+  currentVoice = a;
+  a.play().catch(() => {});   // always user-gesture-initiated; swallow autoplay rejects
+  a.addEventListener("ended", () => { if (currentVoice === a) currentVoice = null; });
+}
+
+function pick(pool: Pool): string {
+  let list: string[] = POOLS[pool];
+  const last = lastFromPool[pool];
+  if (list.length > 1 && last) list = list.filter((s) => s !== last);
+  const chosen = list[Math.floor(Math.random() * list.length)];
+  lastFromPool[pool] = chosen;
+  return chosen;
+}
+
+/** Random greeting (click-to-greet face icon). */
+export function playGiftyGreeting(): void { playVoice(pick("greeting")); }
+/** Occasional soft ack when Gifty starts replying. */
+export function playGiftyBackchannel(): void { playVoice(pick("backchannel")); }
+/** Onboarding welcome line (random of the two). */
+export function playGiftyOnboarding(): void { playVoice(pick("onboarding")); }
+/** A specific named catchphrase for an app moment. */
+export function playGiftyLine(line: GiftyLine): void { playVoice(LINES[line]); }
+
+/** Fire a short chat SFX (not rate-limited; respects mute). */
+export function playGiftySfx(name: GiftySfx): void {
+  if (muted()) return;
+  const a = new Audio(url(SFX[name]));
+  a.volume = 0.5;
   a.play().catch(() => {});
-  a.addEventListener("ended", () => { if (current === a) current = null; });
 }
 
-/** Play one random greeting from the pool (for the click-to-greet face icon). */
-export function playGiftyGreeting(): void {
-  if (!canPlay() || POOLS.greetings.length === 0) return;
-  let pool = POOLS.greetings;
-  if (pool.length > 1 && lastGreetingSrc) pool = pool.filter((s) => s !== lastGreetingSrc);
-  const src = pool[Math.floor(Math.random() * pool.length)];
-  lastGreetingSrc = src;
-  play(src);
+// Looping "thinking" cue — start while generating, stop on first token.
+let thinking: HTMLAudioElement | null = null;
+export function startGiftyThinking(): void {
+  if (muted() || thinking) return;
+  thinking = new Audio(url(THINKING_SRC));
+  thinking.loop = true;
+  thinking.volume = 0.35;
+  thinking.play().catch(() => {});
 }
-
-/** Play a specific named line for an app moment (welcome, giftIn, …). */
-export function playGiftyLine(line: GiftyLine): void {
-  if (!canPlay()) return;
-  play(LINES[line]);
-}
-
-/** Register the greeting pool (call once with the chosen clip filenames). */
-export function setGiftyGreetings(files: string[]): void {
-  POOLS.greetings = files.map((f) => (f.startsWith("/") ? f : `${BASE}/greetings/${f}`));
+export function stopGiftyThinking(): void {
+  if (!thinking) return;
+  thinking.pause();
+  thinking = null;
 }
