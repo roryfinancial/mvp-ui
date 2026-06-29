@@ -18,6 +18,7 @@
 - **Defaults (verbatim):** `mouth=smile, eyes=normal, pupils=normal, armR=thumbsup, armL=down, legs=stand`.
 - **Channels v1:** Face, Arms, Body (Legs fold into Body). Subject to revision by the spike result (Task 1).
 - **Manifest schema is versioned:** `version: 1`. Runtime refuses unknown major versions.
+- **External dependency `cwebp`:** the pipeline shells out to `cwebp` for lossy WebP encoding (Task 5.5), pinned to version `1.6.0` for byte-reproducibility. The build fails fast if a different version is present. Document this prerequisite in the README (Task 7).
 
 ---
 
@@ -908,6 +909,125 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 
 ---
 
+### Task 5.5: Lossy WebP encode via pinned `cwebp` (hit the mobile budget)
+
+**Why:** Task 5's measured output is ~390KB at 256px — 3.5× the spec's ~110KB budget — because the `image` crate's WebP encoder is lossless regardless of the quality arg. Measured `cwebp -q 90` shrinks the face sheet 198KB→56KB; the whole pack projects to ~115KB, on budget. `cwebp 1.6.0` is verified byte-deterministic (two encodes produce identical bytes; no embedded timestamp), so it is safe for the Task 6 verify gate **as long as the version is pinned**.
+
+**Files:**
+- Modify: `giftyc/src/tier.rs` (swap `encode_webp` to shell out to `cwebp -q 90`)
+- Modify: `giftyc/src/build.rs` (assert `cwebp` version once at build start)
+- Test: `giftyc/tests/tier.rs` (encode test updated for lossy round-trip)
+
+**Interfaces:**
+- Produces: `encode_webp(img: &RgbaImage, quality: u8) -> anyhow::Result<Vec<u8>>` — now writes a temp PNG, runs `cwebp -q <quality> -mt 0`, reads the result. (Signature changes `quality: f32` → `u8`; update the call in `pack_and_write`.)
+- Produces: `assert_cwebp_version() -> anyhow::Result<()>` — fails the build if `cwebp` is not the pinned version, so the golden pack never silently changes under a `cwebp` upgrade.
+
+**Constraint:** `CWEBP_PINNED_VERSION = "1.6.0"`. `-mt 0` (single-threaded) guarantees deterministic output independent of core count.
+
+- [ ] **Step 1: Write the failing test**
+
+Replace the encode test in `giftyc/tests/tier.rs` with a lossy round-trip + determinism check:
+```rust
+#[test]
+fn encode_webp_is_lossy_and_deterministic() {
+    // A non-trivial image so lossy encode is meaningfully smaller than raw.
+    let mut img = image::RgbaImage::new(256, 256);
+    for (x, y, p) in img.enumerate_pixels_mut() {
+        *p = image::Rgba([(x % 256) as u8, (y % 256) as u8, 128, 255]);
+    }
+    let a = giftyc::tier::encode_webp(&img, 90).expect("encode a");
+    let b = giftyc::tier::encode_webp(&img, 90).expect("encode b");
+    assert_eq!(a, b, "cwebp output must be byte-deterministic for the verify gate");
+    assert!(a.starts_with(b"RIFF"), "must be a WebP/RIFF container");
+    assert!(!a.is_empty());
+}
+```
+
+- [ ] **Step 2: Run to verify failure**
+
+Run: `cd giftyc && cargo test --test tier encode_webp_is_lossy_and_deterministic 2>&1 | head -20`
+Expected: FAIL — signature mismatch (`90` is `u8`, current fn takes `f32`) / function shape changed.
+
+- [ ] **Step 3: Implement the lossy encoder**
+
+Replace `encode_webp` in `giftyc/src/tier.rs`:
+```rust
+use std::process::Command;
+
+pub const CWEBP_PINNED_VERSION: &str = "1.6.0";
+
+/// Lossy WebP via the pinned `cwebp` binary. Deterministic: `-mt 0` forces
+/// single-threaded encode so output does not vary with core count, and cwebp
+/// embeds no timestamp. Writes a temp PNG, encodes, reads the bytes back.
+pub fn encode_webp(img: &RgbaImage, quality: u8) -> Result<Vec<u8>> {
+    let dir = std::env::temp_dir();
+    let pid = std::process::id();
+    // Unique temp names; cleaned up before return.
+    let png = dir.join(format!("giftyc_enc_{pid}_{}.png", img.as_raw().len()));
+    let webp = dir.join(format!("giftyc_enc_{pid}_{}.webp", img.as_raw().len()));
+    img.save(&png).with_context(|| format!("write temp png {}", png.display()))?;
+    let status = Command::new("cwebp")
+        .args(["-q", &quality.to_string(), "-mt", "0", "-quiet"])
+        .arg(&png).arg("-o").arg(&webp)
+        .status().context("running cwebp (is it installed and on PATH?)")?;
+    let _ = std::fs::remove_file(&png);
+    if !status.success() {
+        let _ = std::fs::remove_file(&webp);
+        anyhow::bail!("cwebp failed with status {status}");
+    }
+    let bytes = std::fs::read(&webp).with_context(|| format!("read {}", webp.display()))?;
+    let _ = std::fs::remove_file(&webp);
+    Ok(bytes)
+}
+
+/// Fail the build unless `cwebp` is the pinned version. Guards the golden pack
+/// against silent byte drift when the local cwebp is upgraded.
+pub fn assert_cwebp_version() -> Result<()> {
+    let out = Command::new("cwebp").arg("-version").output()
+        .context("running `cwebp -version` (is cwebp installed?)")?;
+    let v = String::from_utf8_lossy(&out.stdout);
+    let v = v.lines().next().unwrap_or("").trim();
+    if v != CWEBP_PINNED_VERSION {
+        anyhow::bail!(
+            "cwebp version mismatch: found {v:?}, pipeline pinned to {CWEBP_PINNED_VERSION:?}. \
+             A different cwebp may change pack bytes and break the verify gate."
+        );
+    }
+    Ok(())
+}
+```
+
+Update the call in `giftyc/src/build.rs` `pack_and_write`: change `tier::encode_webp(&atlas, 90.0)?` to `tier::encode_webp(&atlas, 90)?`. At the top of `build_pack`, after `create_dir_all`, add the version guard:
+```rust
+    tier::assert_cwebp_version()?;
+```
+
+- [ ] **Step 4: Run to verify pass**
+
+Run: `cd giftyc && cargo test --test tier 2>&1 | tail -15`
+Expected: PASS — lossy round-trip is byte-deterministic, RIFF container.
+
+- [ ] **Step 5: Rebuild the pack and confirm the budget**
+
+Run: `cd giftyc && cargo run --bin giftyc -- build --rig /Users/aap/Projects/Rory/mvp-ui/public/gifty/rig-final --out /tmp/giftypack256_lossy --tier 256 && du -sk /tmp/giftypack256_lossy && ls -la /tmp/giftypack256_lossy`
+Expected: total ~110–150KB (down from ~390KB). Record the actual total.
+
+- [ ] **Step 6: Confirm full suite + e2e determinism still hold**
+
+Run: `cd giftyc && GIFTYC_RIG=/Users/aap/Projects/Rory/mvp-ui/public/gifty/rig-final cargo test 2>&1 | tail -20`
+Expected: all targets green — `build_e2e` still asserts byte-identity across two builds (cwebp is deterministic), `spike_fidelity` still passes.
+
+- [ ] **Step 7: Commit**
+
+```bash
+cd giftyc && git add src/tier.rs src/build.rs tests/tier.rs
+git commit -m "feat(giftyc): lossy cwebp -q90 encode (pinned 1.6.0) — pack 390KB→~115KB
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
+```
+
+---
+
 ### Task 6: `verify` command — golden-image determinism gate for CI
 
 **Files:**
@@ -1081,4 +1201,4 @@ Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"
 - Plan 2 builds `SpritePackPlayer` (React) consuming `public/gifty/packs/256/manifest.json` + sheets.
 - **Hub-and-spoke arm transitions and face crossfades are deferred to Plan 2** — they are runtime playback concerns. This plan bakes the *frames*; Plan 2 sequences them. (The manifest's `transitions` array is in place but emitted empty by v1 `giftyc`; if baked transition frames prove necessary, a follow-up giftyc task adds them.)
 - The body breathe/bob loop is a runtime CSS transform on the single body frame, not baked frames.
-- If the Task 5 size check shows lossless WebP is too heavy, add a giftyc task to shell out to `cwebp -q 90` (lossy) — but re-establish determinism by pinning the `cwebp` version and asserting in `verify`.
+- The lossy-encode contingency was triggered: Task 5's lossless output was ~390KB (3.5× budget), so **Task 5.5** swaps `encode_webp` to pinned `cwebp -q 90` (verified byte-deterministic), bringing the pack to ~115KB. The golden pack committed in Task 7 is the lossy one. Plan 2's runtime therefore loads a lossy pack — the 1/255 spike tolerance is moot since lossy WebP edge variation already exceeds it (and is visually fine at 256px).
