@@ -251,14 +251,18 @@ pub fn composite_rig(rig: &Rig, sel: &Selection, rig_dir: &Path) -> Result<RgbaI
 /// equal the full composite when channels are visually separable.
 pub fn composite_by_channels(rig: &Rig, sel: &Selection, rig_dir: &Path) -> Result<RgbaImage> {
     let layers = resolve_layers(rig, sel);
-    // Band split by layer role: body/legs/bow/eyebrow -> BODY; arms -> ARMS; eyes/pupils/mouth -> FACE.
+    // Band split (confirmed by spike): body/legs -> BODY; arms -> ARMS;
+    // bow + eyebrows + eyes/pupils/mouth -> FACE. bow+eyebrows MUST be in FACE
+    // because they draw AFTER arms in the global order; putting them in BODY
+    // interleaves the bands and reintroduces a seam.
     let mut bands: Vec<Vec<String>> = vec![Vec::new(), Vec::new(), Vec::new()]; // body, arms, face
     let arm_set: std::collections::BTreeSet<&String> =
         rig.arm_l.values().chain(rig.arm_r.values()).collect();
-    let face_set: std::collections::BTreeSet<String> = rig.mouths.values().cloned()
+    let mut face_set: std::collections::BTreeSet<String> = rig.mouths.values().cloned()
         .chain(rig.eyes.values().flat_map(|lr| [lr.l.clone(), lr.r.clone()]))
         .chain(rig.pupils.values().flat_map(|lr| [lr.l.clone(), lr.r.clone()]))
         .collect();
+    for fixed in ["bow", "eyebrow_l", "eyebrow_r"] { face_set.insert(fixed.to_string()); }
     for name in &layers {
         if arm_set.contains(name) { bands[1].push(name.clone()); }
         else if face_set.contains(name) { bands[2].push(name.clone()); }
@@ -836,7 +840,9 @@ fn sel_arm(d: &crate::rig::Defaults, ar: Option<&str>, al: Option<&str>) -> Sele
 }
 // Band filters: which resolved layers belong to each channel.
 fn face_layers(rig: &Rig, sel: &Selection) -> Vec<String> {
-    let mut v = Vec::new();
+    // bow + eyebrows ride with FACE (they draw after arms; see spike note in Task 1).
+    // Order matches global draw order: bow, eyebrows, eyes, pupils, mouth.
+    let mut v = vec!["bow".into(), "eyebrow_l".into(), "eyebrow_r".into()];
     let e = &rig.eyes[&sel.eyes]; v.push(e.l.clone()); v.push(e.r.clone());
     if let Some(p) = rig.pupils.get(&sel.pupils) { v.push(p.l.clone()); v.push(p.r.clone()); }
     v.push(rig.mouths[&sel.mouth].clone());
@@ -846,8 +852,9 @@ fn arm_layers(rig: &Rig, sel: &Selection) -> Vec<String> {
     vec![rig.arm_l[&sel.arm_l].clone(), rig.arm_r[&sel.arm_r].clone()]
 }
 fn body_layers(rig: &Rig, sel: &Selection) -> Vec<String> {
+    // Body band is legs + body only; bow/eyebrows moved to FACE (spike fix).
     let lr = &rig.legs[&sel.legs];
-    vec![lr.l.clone(), lr.r.clone(), "body".into(), "bow".into(), "eyebrow_l".into(), "eyebrow_r".into()]
+    vec![lr.l.clone(), lr.r.clone(), "body".into()]
 }
 ```
 

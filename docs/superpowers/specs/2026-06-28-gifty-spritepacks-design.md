@@ -36,10 +36,12 @@ The escape is **channel decomposition**, which turns multiplication into additio
 
 | Channel | States (from `rig.json`) | Plays independently |
 |---|---|---|
-| **Face** | 3 eyes × 7 mouths (incl. talk visemes `talk_ah/oh/eh`), + blink overlay | yes |
+| **Face** | 3 eyes × 7 mouths (incl. talk visemes `talk_ah/oh/eh`), + blink overlay; **also carries `bow` + `eyebrow_l/r`** (see note) | yes |
 | **Arms** | 9 `armR` + 9 `armL` poses, + wave/gesture clips | yes |
-| **Body** | breathe/bob loop, lean | yes |
+| **Body** | `body` + legs; breathe/bob loop, lean | yes |
 | **Legs** | stand / walk / sit (low priority; folds into Body band for v1) | yes |
+
+**Band-boundary note (resolved by Task 1 fidelity spike, 2026-06-28):** the rig's draw `order` is `[legs, body, armL, armR, bow, eyebrow_l, eyebrow_r, eyes, pupils, eyelid, puppy, mouth]`. Because `bow` and the eyebrows draw *after* the arms, they must ride in the **Face** band — not Body — so that stacking Body→Arms→Face reproduces the exact global draw order. With this split the bands are three contiguous runs (Body 0-1, Arms 2-3, Face 4+), the spike's full-vs-channel diff is 0, and there are no seams.
 
 Runtime composites **≤3 flat channel sheets**, not 12 cropped+masked layers. Within each channel, any→any is free (channels are orthogonal). Cross-channel and within-channel *motion* transitions use:
 
