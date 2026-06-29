@@ -16,3 +16,6 @@ prisma/*.db-journal
 # macOS
 .DS_Store
 **/.DS_Store
+
+# Next.js auto-generated (regenerates per build; should not be tracked)
+next-env.d.ts
