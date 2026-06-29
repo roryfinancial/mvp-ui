@@ -1,18 +1,39 @@
 #!/usr/bin/env node
 /**
+ * ⚠️ OBSOLETE — DO NOT RUN. This would OVERWRITE public/gifty/rig-layers/rig.json
+ * and the base PNGs, DESTROYING work this script knows nothing about:
+ *   - eyelid / lashline / eyerim / eyemask layers (procedurally generated)
+ *   - the puppy look, the mirrored pupil, the despeckle cleanup
+ *   - all arm/leg POSE variants (armR_*/armL_*/legL_*/legR_*)
+ *   - rig.json behavior: armBehind/armNudge/legRise/puppyRest/eyesClosed/socketsByMood,
+ *     the corrected z-order (legs before body), pupilRest/lidRest tuning, etc.
+ * `public/gifty/rig-layers/` + `rig.json` is now the SOURCE OF TRUTH; edit it directly
+ * (and re-run `npm run rig:compress` to rebuild the web atlas). Clean base-layer art
+ * has been propagated back to `public/gifty/parts/<BASE>/` for reference only.
+ * Kept for historical reference of the original bake. The body is hard-disabled below.
+ *
  * bake-rig.mjs — assemble the layered Gifty rig from cut parts.
  *
  * Base layers come from the most-complete render (thumbsup / 1c2np9). Mouth and
  * eye VARIANTS are pulled from other renders to give talking visemes + moods,
  * normalized to the same 1024 canvas so they swap in place.
  *
- *   node scripts/gifty/bake-rig.mjs
+ *   node scripts/gifty/bake-rig.mjs   ← refuses to run (see guard below)
  * Out: public/gifty/rig-layers/  (PNGs + rig.json)
  */
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
+
+if (!process.env.FORCE_BAKE_RIG_OVERWRITE) {
+  console.error(
+    "bake-rig.mjs is OBSOLETE and refuses to run: it would overwrite rig-layers/rig.json\n" +
+    "and destroy the eyelid/eyerim/lashline/puppy/arm-pose work it knows nothing about.\n" +
+    "rig-layers/ is now the source of truth. If you REALLY mean to re-bake from scratch,\n" +
+    "set FORCE_BAKE_RIG_OVERWRITE=1 (you will lose the current rig).");
+  process.exit(1);
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..", "..");
