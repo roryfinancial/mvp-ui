@@ -19,7 +19,8 @@
     "prod:restore": "node scripts/select-db.mjs postgres && prisma generate",
     "demo": "DEMO_MODE=true DATABASE_PROVIDER=sqlite DATABASE_URL=\"file:$PWD/prisma/demo.db\" next dev",
     "test:rig": "node --test scripts/gifty/lib/*.test.mjs",
-    "rig:compress": "node scripts/gifty/compress-rig.mjs"
+    "rig:compress": "node scripts/gifty/compress-rig.mjs",
+    "gifty:editor": "python3 scripts/gifty/part-editor/server.py"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
