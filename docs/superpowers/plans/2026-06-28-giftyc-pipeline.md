@@ -620,7 +620,7 @@ use serde::Serialize;
 pub struct Frame {
     pub name: String,
     pub cell: Cell,
-    #[serde(skip_serializing_if = "is_zero")] pub ms: u32,
+    pub ms: u32,   // always emitted — uniform wire shape for the JS/TS runtime
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -636,7 +636,7 @@ pub struct ChannelEntry {
     pub name: String,
     pub sheet: String,
     pub frames: Vec<Frame>,
-    #[serde(skip_serializing_if = "Vec::is_empty")] pub transitions: Vec<TransitionClip>,
+    pub transitions: Vec<TransitionClip>,   // always emitted as [] when empty
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -647,8 +647,6 @@ pub struct Manifest {
     pub hero: Frame,
     pub channels: Vec<ChannelEntry>,
 }
-
-fn is_zero(n: &u32) -> bool { *n == 0 }
 
 // serde derive on Cell needs Serialize; add it in pack.rs:
 //   #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)] pub struct Cell {...}
